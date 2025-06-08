@@ -1,1 +1,212 @@
-/* Main stylesheet */
+/* General Reset and Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+}
+
+/* ================= HEADER ================= */
+header {
+    position: fixed;
+    /* changed to fixed for smoother hide/reveal */
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #002147;
+    /* Deep blue */
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+    will-change: transform;
+}
+
+header.hide {
+    transform: translateY(-100%);
+}
+
+header.show {
+    transform: translateY(0);
+}
+
+.header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Header Title */
+.header-text {
+    flex: 1;
+    text-align: center;
+}
+
+.header-text h1 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+/* Navigation Buttons */
+.header-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.button {
+    padding: 0.3rem 1rem;
+    background-color: #004080;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    font-weight: 250;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #0059b3;
+}
+
+/* Desktop-only login link (right side) */
+.login-link.login-desktop {
+    display: block;
+}
+
+/* Hide mobile login by default */
+.login-mobile {
+    display: none;
+}
+
+/* Mobile Menu Toggle */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.menu-toggle div {
+    width: 30px;
+    height: 3px;
+    background-color: white;
+    transition: 0.4s;
+}
+
+/* Hamburger to X toggle animation */
+.menu-toggle.open .bar1 {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle.open .bar2 {
+    opacity: 0;
+}
+
+.menu-toggle.open .bar3 {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+
+    /* Show the toggle menu icon */
+    .menu-toggle {
+        display: flex;
+    }
+
+    /* Stack the nav menu */
+    .header-links {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 100%;
+        background-color: #002147;
+        /* flex-direction: column; */
+        /* align-items: flex-start; */
+        padding: 1rem;
+        display: none;
+    }
+
+    /* Show nav when toggled */
+    .header-links.show {
+        display: flex;
+    }
+
+    /* Hide desktop login, show login inside nav */
+    .login-link.login-desktop {
+        display: none;
+    }
+
+    .login-mobile {
+        display: block;
+    }
+
+    /* On scroll down, hide nav menu, toggle */
+    header.hide .menu-toggle,
+    header.hide .header-links {
+        display: none !important;
+    }
+
+    /* Only header text visible when hidden */
+    header.hide .header-text {
+        flex: 1;
+        justify-content: center;
+        display: block;
+    }
+}
+
+/* Accessibility */
+a.button:focus {
+    outline: 2px solid #0059b3;
+    outline-offset: 2px;
+}
+
+
+/* Main Styles */
+main {
+    background: white;
+    padding: 3rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 70%;
+    margin: 2rem auto;
+}
+
+/* ========== FOOTER ========== */
+footer {
+    background-color: #002147;
+    color: #fff;
+    padding: 2rem;
+    text-align: center;
+}
+
+footer a {
+    color: #66bfff;
+}
+
+footer hr {
+    margin: 1rem 0;
+    border: none;
+    border-top: 1px solid #ccc;
+}
+
+footer .social-links {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+footer .social-links li a {
+    color: #fff;
+    font-size: 1.5rem;
+}

@@ -1,0 +1,62 @@
+/* Pension Calculator Styles */
+.calculator-section {
+    top: 40px;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin: 2rem auto;
+}
+
+/* Results Display */
+#results {
+    margin-top: 1.5rem;
+    text-align: left;
+    background: #f9f9f9;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Hidden Utility */
+.hidden {
+    display: none;
+}
+
+/* Form Layout */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 97%;
+    padding: 0.5rem;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+}
+
+/* Buttons */
+.button-group {
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: #036;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn.btn-reset {
+    background: #aaa;
+    margin-left: 1rem;
+}

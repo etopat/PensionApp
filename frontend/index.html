@@ -1,1 +1,172 @@
-<!-- index.html HTML scaffold -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Basic Meta Tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>PensionsGo - Welcome</title>
+
+    <!-- Link to CSS stylesheets -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/calculator.css" />
+
+    <!-- Calculator JavaScript -->
+    <script defer src="js/calculator.js"></script>
+</head>
+
+<body>
+    <!-- ================= HEADER ================= -->
+    <header id="mainHeader">
+        <div class="header-wrapper">
+    
+            <!-- Mobile menu toggle (hamburger icon) -->
+            <div class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div>
+            </div>
+    
+            <!-- Navigation Links (mobile only login included here) -->
+            <nav class="header-links" id="navLinks">
+                <a href="about.html" class="button">About</a>
+                <a href="faq.html" class="button">FAQs</a>
+                <a href="login.html" class="button login-mobile">Login</a>
+            </nav>
+    
+            <!-- Header Title Text -->
+            <div class="header-text">
+                <h1>PensionsGo - Benefits Calculator</h1>
+            </div>
+    
+            <!-- Login Link (desktop view only) -->
+            <div class="login-link login-desktop">
+                <a href="login.html" class="button login-button">Login</a>
+            </div>
+    
+        </div>
+    </header>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main>
+        <!-- Welcome Section -->
+        <section class="main-info">
+            <h2>Welcome to PensionsGo</h2>
+            <p>The Pension Workflow Automation System for Uganda Prisons Service.</p>
+            <p>This portal helps you estimate retirement benefits and access pension information.</p>
+        </section>
+
+        <!-- Pension Calculator Form -->
+        <section class="calculator-section">
+            <h2>Pension Benefits Estimator</h2>
+
+            <form id="benefitsForm">
+                <!-- Enlistment Date Input -->
+                <div class="form-group">
+                    <label for="enlistmentDate">Date of Enlistment</label>
+                    <input type="date" id="enlistmentDate" name="enlistmentDate" required />
+                </div>
+
+                <!-- Retirement Date Input -->
+                <div class="form-group">
+                    <label for="retirementDate">Date of Retirement</label>
+                    <input type="date" id="retirementDate" name="retirementDate" required />
+                </div>
+
+                <!-- Monthly Salary Input -->
+                <div class="form-group">
+                    <label for="monthlySalary">Monthly Salary at Retirement (UGX)</label>
+                    <input type="number" id="monthlySalary" name="monthlySalary" required />
+                </div>
+
+                <!-- Form Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-submit">Calculate</button>
+                    <button type="reset" class="btn btn-reset">Clear</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Calculator Results Display -->
+        <section id="results" class="hidden">
+            <h3>Results</h3>
+            <p><strong>Length of Service:</strong> <span id="lengthOfService"></span></p>
+            <p><strong>Annual Salary:</strong> <span id="annualSalary"></span></p>
+            <p><strong>Expected Gratuity:</strong> <span id="expectedGratuity"></span></p>
+            <p><strong>Expected Monthly Pension:</strong> <span id="expectedMonthlyPension"></span></p>
+            <p><strong>Expected Full Pension:</strong> <span id="expectedFullPension"></span></p>
+        </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer>
+        <!-- Contact Information -->
+        <p>Uganda Prisons Service Headquarters, P.O. Box 1782, Kampala (U)</p>
+        <p>
+            Email: <a href="mailto:KZpV4@example.com">KZpV4@example.com</a>,
+            Phone: <a href="tel:+256123456789">+256 123 456 789</a>
+        </p>
+
+        <!-- Social Media Links -->
+        <p>Follow us on:</p>
+        <ul class="social-links">
+            <li><a href="https://www.facebook.com/UPSRetirement" target="_blank">Facebook</a></li>
+            <li><a href="https://www.twitter.com/UPSRetirement" target="_blank">Twitter</a></li>
+            <li><a href="https://www.instagram.com/UPSRetirement" target="_blank">Instagram</a></li>
+            <li><a href="https://www.linkedin.com/company/UPSRetirement" target="_blank">LinkedIn</a></li>
+        </ul>
+
+        <!-- Developer Contact -->
+        <p>For technical support, contact: <a href="mailto:etopat2@gmail.com">etopat2@gmail.com</a></p>
+
+        <hr />
+
+        <!-- Copyright -->
+        <p>&copy; <span id="currentYear"></span> PensionsGo. All Rights Reserved.</p>
+        <p class="developed-by">
+            Developed by: Email <a href="mailto:etomet2patrick@gmail.com">Patrick</a>, or call
+            <a href="tel:+256773959039">+256 773 959 039</a>
+        </p>
+    </footer>
+
+    <!-- ================= SCRIPTS ================= -->
+    <script>
+        const menuToggle = document.getElementById("menuToggle");
+        const navLinks = document.getElementById("navLinks");
+        const header = document.getElementById("mainHeader");
+
+        // Toggle mobile menu and animate hamburger/X
+        function toggleMenu() {
+            navLinks.classList.toggle("show");
+            menuToggle.classList.toggle("open");
+        }
+
+        // Scroll detection to hide/show header with animation
+        let lastScrollTop = 0;
+        window.addEventListener("scroll", () => {
+            let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            if (currentScroll > lastScrollTop && currentScroll > 100) {
+                // scrolling down
+                header.classList.add("hide");
+                header.classList.remove("show");
+                // close menu if open
+                navLinks.classList.remove("show");
+                menuToggle.classList.remove("open");
+            } else if (currentScroll < lastScrollTop) {
+                // scrolling up
+                header.classList.remove("hide");
+                header.classList.add("show");
+            }
+            lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+        });
+    </script>
+    
+    <script>
+        // Set current year in footer
+        document.getElementById("currentYear").textContent = new Date().getFullYear();
+    </script>    
+</body>
+
+</html>
