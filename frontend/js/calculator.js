@@ -47,9 +47,9 @@ const fullPension = ((cappedMonths * annual) / 500) / 12;
 
 lengthOfServiceEl.textContent = `${months} months`;
 annualSalaryEl.textContent = `UGX ${annual.toLocaleString()}`;
-expectedGratuityEl.textContent = `UGX ${gratuity.toFixed(2).toLocaleString()}`;
-expectedMonthlyPensionEl.textContent = `UGX ${monthlyPension.toFixed(2).toLocaleString()}`;
-expectedFullPensionEl.textContent = `UGX ${fullPension.toFixed(2).toLocaleString()}`;
+expectedGratuityEl.textContent = `UGX ${Number(gratuity.toFixed(2)).toLocaleString()}`;
+expectedMonthlyPensionEl.textContent = `UGX ${Number(monthlyPension.toFixed(2)).toLocaleString()}`;
+expectedFullPensionEl.textContent = `UGX ${Number(fullPension.toFixed(2)).toLocaleString()}`;
 };
 
 form.addEventListener('submit', (e) => {
