@@ -1,0 +1,66 @@
+/* ================= COLOR VARIABLES ================= */
+
+/* ==== Primary Brand Colors ==== */
+:root {
+    --primary-color: #800000;
+    /* Maroon */
+    --primary-dark: #5a0000;
+
+    --secondary-color: #345b9d;
+    /* Blue */
+    --secondary-light: #6a8cc2;
+    --secondary-dark: #274075;
+
+    --accent-color: #f4b400;
+    /* Yellow Accent */
+    --accent-light: #fff1a3;
+    --accent-dark: #d4b400;
+}
+
+/* ==== Light Theme Colors ==== */
+:root {
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --heading-color: #4b002f;
+    --label-color: #444;
+
+    --card-bg: #ffffff;
+    --form-bg: #faf9f9;
+    --result-bg: #f9f9f9;
+    --result-border: #ccc;
+
+    --input-bg: #fff;
+    --input-text: #000;
+    --input-border: #bbb;
+
+    --muted-color: #aaa;
+    --muted-dark: #888;
+}
+
+/* ==== Dark Theme Overrides ==== */
+[data-theme="dark"] {
+    --primary-color: #d18787;
+    --primary-dark: #a85757;
+
+    --secondary-color: #7ca0d4;
+
+    --accent-color: #ffd24d;
+    --accent-dark: #bfa321;
+
+    --bg-color: #3b3b3b;
+    --text-color: #f5f5f5;
+    --heading-color: #af8f2f;
+    --label-color: #ccc;
+
+    --card-bg: #4b4848;
+    --form-bg: #353232;
+    --result-bg: #2a2a2a;
+    --result-border: #444;
+
+    --input-bg: #777676;
+    --input-text: #fff;
+    --input-border: #555;
+
+    --muted-color: #555;
+    --muted-dark: #444;
+}

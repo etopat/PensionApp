@@ -10,25 +10,9 @@
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/calculator.css" />
 
-    <!-- JS -->
+    <!-- JS Scripts -->
+    <script defer src="js/main.js"></script>
     <script defer src="js/calculator.js"></script>
-    <script defer>
-        // Theme toggle logic
-        document.addEventListener("DOMContentLoaded", () => {
-            const toggleBtn = document.getElementById("themeToggle");
-            const html = document.documentElement;
-            const storedTheme = localStorage.getItem("theme");
-
-            if (storedTheme) html.setAttribute("data-theme", storedTheme);
-
-            toggleBtn.addEventListener("click", () => {
-                const currentTheme = html.getAttribute("data-theme");
-                const newTheme = currentTheme === "light" ? "dark" : "light";
-                html.setAttribute("data-theme", newTheme);
-                localStorage.setItem("theme", newTheme);
-            });
-        });
-    </script>
 </head>
 
 <body>
@@ -69,7 +53,7 @@
             </section>
 
             <section class="calculator-section">
-                <h2>Pension Benefits Estimator</h2>
+                <h2>Retirement Benefits Estimator</h2>
 
                 <form id="benefitsForm">
                     <div class="form-group">
@@ -105,69 +89,7 @@
         </div>
     </main>
 
-    <!-- ================= FOOTER ================= -->
-    <footer>
-        <section class="contact-info">
-            <div class="contact-column contact-left">
-                <h3>Uganda Prisons Service Headquarters</h3>
-                <p>P.O. Box 1782, Kampala (U)</p>
-                <p>
-                    Email: <a href="mailto:KZpV4@example.com">KZpV4@example.com</a><br />
-                    Phone: <a href="tel:+256123456789">+256 123 456 789</a>
-                </p>
-            </div>
-
-            <div class="vertical-divider"></div>
-            
-            <div class="contact-column social-media">
-                <h3>Connect with Us</h3>
-                <ul class="social-links">
-                    <li><a href="https://www.facebook.com/UPSRetirement" target="_blank">Facebook</a></li>
-                    <li><a href="https://www.twitter.com/UPSRetirement" target="_blank">Twitter</a></li>
-                    <li><a href="https://www.instagram.com/UPSRetirement" target="_blank">Instagram</a></li>
-                    <li><a href="https://www.linkedin.com/company/UPSRetirement" target="_blank">LinkedIn</a></li>
-                </ul>
-                <p>Technical Support: <a href="mailto:etopat2@gmail.com">etopat2@gmail.com</a></p>
-            </div>
-        </section>
-
-        <hr />
-
-        <p>&copy; <span id="currentYear"></span> PensionsGo. All Rights Reserved.</p>
-        <p class="developed-by">
-            Developed by: <a href="mailto:etomet2patrick@gmail.com">Patrick</a> |
-            <a href="tel:+256773959039">+256 773 959 039</a>
-        </p>
-    </footer>
-
-    <!-- Scroll/Year Scripts -->
-    <script>
-        const menuToggle = document.getElementById("menuToggle");
-        const navLinks = document.getElementById("navLinks");
-        const header = document.getElementById("mainHeader");
-
-        function toggleMenu() {
-            navLinks.classList.toggle("show");
-            menuToggle.classList.toggle("open");
-        }
-
-        let lastScrollTop = 0;
-        window.addEventListener("scroll", () => {
-            let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-            if (currentScroll > lastScrollTop && currentScroll > 100) {
-                header.classList.add("hide");
-                header.classList.remove("show");
-                navLinks.classList.remove("show");
-                menuToggle.classList.remove("open");
-            } else if (currentScroll < lastScrollTop) {
-                header.classList.remove("hide");
-                header.classList.add("show");
-            }
-            lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-        });
-
-        document.getElementById("currentYear").textContent = new Date().getFullYear();
-    </script>
+    <!-- ================= FOOTER (Injected by JS) ================= -->
 </body>
 
 </html>

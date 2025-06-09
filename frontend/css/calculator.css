@@ -1,7 +1,7 @@
-/* Pension Calculator Styles */
+/* ================= Calculator Styles ================= */
+@import url("color-variables.css");
 
-
-/* Calculator Section */
+/* Calculator Container */
 .calculator-section {
     background-color: var(--card-bg);
     padding: 1.5rem;
@@ -19,7 +19,7 @@
     color: var(--heading-color);
 }
 
-/* Benefits Form */
+/* ================= Benefits Form ================= */
 #benefitsForm {
     background-color: var(--form-bg);
     padding: 1.5rem;
@@ -28,7 +28,7 @@
     transition: background-color 0.3s ease;
 }
 
-/* Results Display */
+/* ================= Results Section ================= */
 #results {
     margin-top: 1.5rem;
     text-align: left;
@@ -52,12 +52,7 @@
     margin-bottom: 0.5rem;
 }
 
-/* Hidden Utility */
-.hidden {
-    display: none;
-}
-
-/* Form Layout */
+/* ================= Form Groups ================= */
 .form-group {
     margin-bottom: 1rem;
 }
@@ -85,7 +80,7 @@
     box-shadow: 0 0 4px var(--accent-color);
 }
 
-/* Buttons */
+/* ================= Button Styles ================= */
 .button-group {
     margin-top: 1rem;
 }
@@ -114,51 +109,7 @@
     background: var(--muted-dark);
 }
 
-/* Theme Variables */
-:root {
-    --primary-color: #800000;
-    /* maroon variant */
-    --primary-dark: #5a0000;
-
-    --accent-color: #f4b400;
-    /* yellow tone */
-    --muted-color: #aaa;
-    --muted-dark: #888;
-
-    --main-bg: #f2f0f0;
-    --card-bg: #ffffff;
-    --form-bg: #faf9f9;
-    --result-bg: #f9f9f9;
-    --result-border: #ccc;
-
-    --text-color: #222;
-    --heading-color: #4b002f;
-    --label-color: #444;
-
-    --input-bg: #fff;
-    --input-text: #000;
-    --input-border: #bbb;
-}
-
-[data-theme="dark"] {
-    --primary-color: #d18787;
-    --primary-dark: #a85757;
-
-    --accent-color: #ffd24d;
-    --muted-color: #555;
-    --muted-dark: #444;
-
-    --main-bg: #424040;
-    --card-bg: #4b4848;
-    --form-bg: #353232;
-    --result-bg: #2a2a2a;
-    --result-border: #444;
-
-    --text-color: #c7c5c5;
-    --heading-color: #af8f2f;
-    --label-color: #ccc;
-
-    --input-bg: #777676;
-    --input-text: #fff;
-    --input-border: #555;
+/* ================= Utilities ================= */
+.hidden {
+    display: none;
 }
