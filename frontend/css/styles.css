@@ -160,11 +160,16 @@ a.button:focus {
 
     .footer-holder {
         width: 100%;
-        font-size: 0.8rem;
+        font-size: 1rem;
         position: relative;
         bottom: 0;
         padding: 0.5rem 0.2rem;
         text-align: center;
+    }
+
+    .main-wrapper {
+            padding: 0.3rem 1rem;
+            width: 90%;
     }
 }
 
