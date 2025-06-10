@@ -149,7 +149,16 @@ a.button:focus {
     header.hide .header-links {
         display: none !important;
     }
-    footer-holder {
+
+    .header-wrapper {
+        width: 100%;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .footer-holder {
         width: 100%;
         font-size: 0.4rem;
         position: relative;
