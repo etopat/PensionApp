@@ -182,6 +182,7 @@ a.button:focus {
 
 /* ========== MAIN ========== */
 .main-wrapper {
+
     position: relative;
     top: 60px;
     background: var(--main-bg);
@@ -192,6 +193,7 @@ a.button:focus {
     width: 70%;
     max-width: 800px;
     transition: background-color 0.3s ease;
+    align-items: center;
 }
 
 .main-info h2 {
