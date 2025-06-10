@@ -25,6 +25,7 @@ header {
     z-index: 1000;
     transition: transform 1s ease-in-out;
     will-change: transform;
+    width: 100%;
 }
 
 header.hide {
@@ -146,6 +147,9 @@ a.button:focus {
     header.hide .menu-toggle,
     header.hide .header-links {
         display: none !important;
+    }
+    footer-holder {
+        width: 100%;
     }
 }
 
