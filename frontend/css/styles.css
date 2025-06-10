@@ -168,8 +168,15 @@ a.button:focus {
     }
 
     .main-wrapper {
-            padding: 0.3rem 1rem;
-            width: 90%;
+        position: relative;
+        top: 60px;
+        background: var(--main-bg);
+        padding: 0.3rem 1rem;
+        /* margin: 1.5rem auto 2rem; */
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        width: 90%;
+        transition: background-color 0.3s ease;
     }
 }
 
