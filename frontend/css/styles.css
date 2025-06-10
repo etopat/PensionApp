@@ -151,7 +151,11 @@ a.button:focus {
     }
     footer-holder {
         width: 100%;
-        font-size: 70%;
+        font-size: 0.4rem;
+        position: relative;
+        bottom: 0;
+        padding: 0.5rem 0.2rem;
+        text-align: center;
     }
 }
 
@@ -186,7 +190,7 @@ footer {
     bottom: -40px;
     background-color: var(--primary-color);
     color: #fff;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 0.2rem;
     text-align: center;
     transition: background-color 0.3s;
     width: 100%;
@@ -219,7 +223,7 @@ footer .social-links {
 
 footer .social-links li a {
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 /* ========== CONTACT INFO ========== */
