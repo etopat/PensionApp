@@ -69,8 +69,9 @@ header.show {
     border: none;
     border-radius: 5px;
     font-weight: 250;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.5s ease;
     cursor: pointer;
+    opacity: 70%;
 }
 
 .button:hover {
@@ -125,7 +126,7 @@ a.button:focus {
 
     .header-links {
         position: absolute;
-        top: 60px;
+        top: 40px;
         right: 0;
         width: 100%;
         background-color: var(--primary-color);
@@ -191,6 +192,16 @@ a.button:focus {
     text-align: justify;
     margin-bottom: 1rem;
     font-size: 1.1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .main-wrapper {
+        width: 90% !important;
+        padding: 1rem;
+        transition: 0.3s ease;
+    }
+
+
 }
 
 
