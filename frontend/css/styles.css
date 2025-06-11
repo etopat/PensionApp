@@ -160,40 +160,26 @@ a.button:focus {
 
     .footer-holder {
         width: 100%;
-        font-size: 1rem;
+        font-size: 0.8rem;
         position: relative;
         bottom: 0;
         padding: 0.5rem 0.2rem;
         text-align: center;
     }
-
-    .main-wrapper {
-        position: relative;
-        top: 60px;
-        background: var(--main-bg);
-        padding: 0.3rem 1rem;
-        /* margin: 1.5rem auto 2rem; */
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        width: 90%;
-        transition: background-color 0.3s ease;
-    }
 }
 
 /* ========== MAIN ========== */
-.main-wrapper {
 
+.main-wrapper {
     position: relative;
     top: 60px;
     background: var(--main-bg);
-    padding: 0.5rem 1.5rem;
-    /* margin: 1.5rem auto 2rem; */
+    padding: 0.5rem 3rem;
+    margin: 1.5rem auto 2rem;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     width: 70%;
-    max-width: 800px;
     transition: background-color 0.3s ease;
-    align-items: center;
 }
 
 .main-info h2 {
@@ -206,6 +192,8 @@ a.button:focus {
     margin-bottom: 1rem;
     font-size: 1.1rem;
 }
+
+
 
 /* ========== FOOTER ========== */
 footer {
