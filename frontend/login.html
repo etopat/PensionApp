@@ -1,1 +1,57 @@
-<!-- login.html HTML scaffold -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PensionsGo - Login</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    
+    <!-- JS Scripts -->
+    <script type="module" src="js/main.js"></script>
+
+</head>
+
+<body>
+    <!-- ================= HEADER ================= -->
+
+
+    <!-- ================= MAIN CONTENT (Injected by JS) ================= -->
+    <main>
+        <div class="main-wrapper">
+            <section class="main-info">
+                <h2>Staff Login Form</h2>
+                <p>Please enter your login details in the form below to access the portal.</p>
+                <p>Only registered staff can access this portal. If you are not registered, please contact your supervisor.</p>
+            </section>
+
+            <section class="form-section">
+                <h2>Login </h2>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Enter your email:</label>
+                        <input type="email" id="email" name="email" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Enter your password:</label>
+                        <input type="password" id="password" name="password" required />
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-submit">Login</button>
+                        <button type="reset" class="btn btn-reset">Clear</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- ================= FOOTER (Injected by JS) ================= -->
+</body>
+
+</html>
