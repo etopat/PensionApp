@@ -238,6 +238,7 @@ footer {
 
 footer a {
     color: var(--accent-color);
+    text-decoration: none;
 }
 
 footer hr {
@@ -253,6 +254,7 @@ footer .social-links {
     gap: 1rem;
     padding: 0;
     margin: 0.5rem 0;
+    text-decoration: none;
 }
 
 footer .social-links li a {
