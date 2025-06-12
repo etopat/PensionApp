@@ -1,12 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Load footer dynamically
     fetch("footer.html")
-      .then((res) => res.text())
-      .then((footerHTML) => {
+    .then((res) => res.text())
+    .then((footerHTML) => {
+        // Inject the footer into the page
         document.body.insertAdjacentHTML("beforeend", footerHTML);
-      });
 
-    
+        // Now that it's in the DOM, set the current year
+        const yearSpan = document.getElementById("currentYear");
+        if (yearSpan) {
+        yearSpan.textContent = new Date().getFullYear();
+        }
+    });
+
     // Theme toggle logic
     const toggleBtn = document.getElementById("themeToggle");
     const html = document.documentElement;

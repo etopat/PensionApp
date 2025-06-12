@@ -167,6 +167,18 @@ a.button:focus {
         padding: 0.5rem 0.2rem;
         text-align: center;
     }
+    .footer-wrapper h3 {
+        margin-bottom: 0.7rem;
+        font-size: 1.1rem;
+    }
+    .footer-wrapper p {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .footer-wrapper .social-links li a {
+        font-size: 1rem;
+    }
 }
 
 /* ========== MAIN ========== */
