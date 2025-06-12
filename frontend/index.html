@@ -11,39 +11,16 @@
     <link rel="stylesheet" href="css/calculator.css" />
 
     <!-- JS Scripts -->
-    <script defer src="js/main.js"></script>
     <script defer src="js/calculator.js"></script>
+    <script type="module" src="js/main.js"></script>
+
 </head>
 
 <body>
     <!-- ================= HEADER ================= -->
-    <header id="mainHeader">
-        <div class="header-wrapper">
-            <div class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
-                <div class="bar1"></div>
-                <div class="bar2"></div>
-                <div class="bar3"></div>
-            </div>
+    
 
-            <nav class="header-links" id="navLinks">
-                <a href="about.html" class="button">About</a>
-                <a href="faq.html" class="button">FAQs</a>
-                <a href="login.html" class="button login-mobile">Login</a>
-            </nav>
-
-            <div class="header-text">
-                <h1>PensionsGo</h1>
-            </div>
-
-            <div class="login-link login-desktop">
-                <a href="login.html" class="button login-button">Login</a>
-            </div>
-
-            <button id="themeToggle" class="theme-toggle" title="Toggle Light/Dark Mode">🌓</button>
-        </div>
-    </header>
-
-    <!-- ================= MAIN CONTENT ================= -->
+    <!-- ================= MAIN CONTENT (Injected by JS) ================= -->
     <main>
         <div class="main-wrapper">
             <section class="main-info">

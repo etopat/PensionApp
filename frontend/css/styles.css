@@ -74,6 +74,12 @@ header.show {
     opacity: 70%;
 }
 
+/* Highlight the active page's nav button */
+.nav-link.active {
+    font-weight: semibold;
+    border: var(--accent-color) 1px solid;
+}
+
 .button:hover {
     background-color: var(--accent-color);
     color: var(--primary-color);
@@ -104,7 +110,7 @@ a.button:focus {
     width: 30px;
     height: 3px;
     background-color: #d8d7d7;
-    transition: 0.7s;
+    transition: 0.3s;
 }
 
 .menu-toggle.open .bar1 {
