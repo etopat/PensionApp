@@ -198,6 +198,14 @@ a.button:focus {
     .footer-wrapper .social-links li a {
         font-size: 1rem;
     }
+    .header-text {
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        flex: 1;
+        text-align: center;
+    }
 }
 
 /* ========== MAIN ========== */
