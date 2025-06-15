@@ -1,0 +1,34 @@
+/* css/track-status.css */
+
+.track-section {
+    background-color: var(--card-bg);
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin: 2rem auto;
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tracking-result {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: var(--text-color, #333);
+}
+
+.status-label {
+    font-weight: bold;
+    color: green;
+}
+
+.note {
+    font-size: 0.9rem;
+    color: #777;
+    margin-top: 0.5rem;
+}
+
+.error-msg {
+    color: red;
+    font-weight: bold;
+}

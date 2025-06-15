@@ -45,9 +45,22 @@ header.show {
     width: 100%;
 }
 
-.header-text {
+.header-wrapper > :where(.header-text)  {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    /* Center the header text */
+    transform: translate(-50%, -40%);
     flex: 1;
     text-align: center;
+    
+}
+
+.header-wrapper> :where(.login-link.login-desktop) {
+    position: absolute;
+    right: 6rem;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .header-text h1 {
@@ -132,7 +145,7 @@ a.button:focus {
 
     .header-links {
         position: absolute;
-        top: 40px;
+        top: 45px;
         right: 0;
         width: 100%;
         background-color: var(--primary-color);
