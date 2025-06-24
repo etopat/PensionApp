@@ -2,12 +2,13 @@
 
 -- Table: tb_users
 CREATE TABLE tb_users (
-    userId INT PRIMARY KEY AUTO_INCREMENT,
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    userId VARCHAR(100) UNIQUE,
     userTitle VARCHAR(20),
     userName VARCHAR(100),
     userRole ENUM('admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver'),
     userEmail VARCHAR(100) UNIQUE,
-    userPassword VARCHAR(255),
+    userPassword VARCHAR(100),
     userPhoto VARCHAR(255),
     timeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     other TEXT
@@ -129,46 +130,51 @@ CREATE TABLE tb_lifeCertificates (
 -- Table: tb_payrolls
 CREATE TABLE tb_payrolls (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    month YEAR,
+    payrollYear YEAR,
+    payrollMonth INT,
     record_type ENUM('Pension', 'Gratuity', 'Arrears', 'Suspended'),
     file_path TEXT,
-    uploaded_by INT,
+    uploaded_by VARCHAR(100),
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (uploaded_by) REFERENCES tb_users(userId)
 );
 
 -- Table: tb_payroll_pension
 CREATE TABLE tb_payroll_pension (
-    id INT UNIQUE,
-    month YEAR,
-    supplierNo VARCHAR(50) PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    payrollYear YEAR,
+    payrollMonth INT,
+    supplierNo VARCHAR(50) UNIQUE,
     amount DECIMAL(10, 2),
     status ENUM('Paid', 'Suspended', 'Pending')
 );
 
 -- Table: tb_payroll_gratuity
 CREATE TABLE tb_payroll_gratuity (
-    id INT UNIQUE,
-    month YEAR,
-    supplierNo VARCHAR(50) PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    payrollYear YEAR,
+    payrollMonth INT,
+    supplierNo VARCHAR(50) UNIQUE,
     amount DECIMAL(10, 2),
     status ENUM('Paid', 'Suspended', 'Pending')
 );
 
 -- Table: tb_payroll_arrears
 CREATE TABLE tb_payroll_arrears (
-    id INT UNIQUE,
-    month YEAR,
-    supplierNo VARCHAR(50) PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    payrollYear YEAR,
+    payrollMonth INT,
+    supplierNo VARCHAR(50) UNIQUE,
     amount DECIMAL(10, 2),
     status ENUM('Paid', 'Suspended', 'Pending')
 );
 
 -- Table: tb_payroll_suspended
 CREATE TABLE tb_payroll_suspended (
-    id INT UNIQUE,
-    month YEAR,
-    supplierNo VARCHAR(50) PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    payrollYear YEAR,
+    payrollMonth INT,
+    supplierNo VARCHAR(50) UNIQUE,
     amount DECIMAL(10, 2),
     status ENUM('Paid', 'Suspended', 'Pending')
 );
@@ -179,7 +185,7 @@ CREATE TABLE tb_retained_payments (
     supplierNo VARCHAR(50),
     month DATE,
     retainedAmount DECIMAL(10, 2),
-    recorded_by INT,
+    recorded_by VARCHAR(100),
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (recorded_by) REFERENCES tb_users(userId)
 );
@@ -187,8 +193,8 @@ CREATE TABLE tb_retained_payments (
 -- Table: tb_tasks
 CREATE TABLE tb_tasks (
     taskId INT PRIMARY KEY AUTO_INCREMENT,
-    createdBy INT,
-    sentTo INT,
+    createdBy VARCHAR(100),
+    sentTo VARCHAR(100),
     details TEXT,
     other TEXT,
     timeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -199,8 +205,8 @@ CREATE TABLE tb_tasks (
 -- Table: tb_messages
 CREATE TABLE tb_messages (
     messageId INT PRIMARY KEY AUTO_INCREMENT,
-    senderId INT,
-    receiverId INT,
+    senderId VARCHAR(100),
+    receiverId VARCHAR(100),
     subject VARCHAR(255),
     body TEXT,
     status ENUM('read', 'unread') DEFAULT 'unread',
@@ -215,7 +221,7 @@ CREATE TABLE tb_budgetForecast (
     financialYear YEAR,
     estimatedPensionAmount DECIMAL(12,2),
     estimatedGratuityAmount DECIMAL(12,2),
-    createdBy INT,
+    createdBy VARCHAR(100),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (createdBy) REFERENCES tb_users(userId)
 );
@@ -229,6 +235,6 @@ CREATE TABLE tb_arrearsTracking (
     periodStart DATE,
     periodEnd DATE,
     recordedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    recordedBy INT,
+    recordedBy VARCHAR(100),
     FOREIGN KEY (recordedBy) REFERENCES tb_users(userId)
 );
