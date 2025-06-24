@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('registerForm');
 
   const titles = ['Mr.', 'Mrs.', 'Ms.', 'Dr.'];
-  const roles = ['admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver'];
+  const roles = ['admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver', 'user'];
 
   const populateSelect = (id, options) => {
     const select = document.getElementById(id);

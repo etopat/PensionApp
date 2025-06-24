@@ -20,7 +20,7 @@
 }
 
 /* ================= Form ================= */
-#loginForm {
+#loginForm, #registerForm {
     background-color: var(--form-bg);
     padding: 1.5rem;
     border-radius: 10px;
@@ -43,6 +43,14 @@
 .form-group input {
     width: 97%;
     padding: 0.5rem;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+.form-group select {
+     padding: 0.5rem;
     border: 1px solid var(--input-border);
     background-color: var(--input-bg);
     color: var(--input-text);

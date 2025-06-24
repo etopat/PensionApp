@@ -1,25 +1,19 @@
-Deny execution of PHP files in uploads directory
-<Directory "uploads/">
-<FilesMatch ".(php|php5|php7|phps)$">
-Order allow,deny
-Deny from all
-</FilesMatch>
-</Directory>
-
-Disable directory listing
+# Disable directory listing
 Options -Indexes
 
-Block access to sensitive files
-<FilesMatch "^(.env|config.php|composer.json|composer.lock)$">
-Order allow,deny
-Deny from all
+# Block access to sensitive files
+<FilesMatch "^(\.env|config\.php|composer\.json|composer\.lock)$">
+  Order allow,deny
+  Deny from all
 </FilesMatch>
 
-Prevent access to this .htaccess file itself
+# Prevent access to this .htaccess file itself
 <Files .htaccess>
-Order allow,deny
-Deny from all
+  Order allow,deny
+  Deny from all
 </Files>
 
-Enable CORS for API access (optional)
-<IfModule mod_headers.c> Header set Access-Control-Allow-Origin "*" </IfModule>
+# Enable CORS for API access (optional)
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+</IfModule>

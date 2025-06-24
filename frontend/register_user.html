@@ -6,10 +6,13 @@
   <title>Register User – PensionsGo</title>
   <link rel="stylesheet" href="css/forms.css" />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/menu.css" />
 
   <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
-
+  
   <script defer src="js/register_user.js"></script>
+  <script defer src="js/menu_toggle.js"></script>
+  <script defer src="js/users.js"></script>
   <script type="module" src="js/main.js"></script>
 
 </head>
@@ -26,7 +29,7 @@
 
           <div class="form-group">
             <label for="userName">Full Name</label>
-            <input type="text" name="userName" required />
+            <input id="userName" type="text" name="userName" required />
           </div>
 
           <div class="form-group">
@@ -36,18 +39,18 @@
 
           <div class="form-group">
             <label for="userEmail">Email</label>
-            <input type="email" name="userEmail" required />
+            <input id="userEmail" type="email" name="userEmail" required />
           </div>
 
           <div class="form-group">
             <label for="userPassword">Password</label>
-            <input type="password" name="userPassword" required />
+            <input id="userPassword" type="password" name="userPassword" required />
             <small>Password must include uppercase, lowercase, and a number.</small>
           </div>
 
           <div class="form-group">
             <label for="userPhoto">Upload Profile Photo (optional)</label>
-            <input type="file" name="userPhoto" accept="image/*" />
+            <input id="userPhoto" type="file" name="userPhoto" accept="image/*" />
           </div>
 
           <input type="hidden" name="userId" id="userId" />
