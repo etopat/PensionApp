@@ -1,42 +1,84 @@
+// frontend/js/register_user.js
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('registerForm');
+  const submitBtn = form.querySelector('button[type="submit"]');
 
   const titles = ['Mr.', 'Mrs.', 'Ms.', 'Dr.'];
-  const roles = ['admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver', 'user'];
+  const roles = ['admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver'];
 
-  const populateSelect = (id, options) => {
-    const select = document.getElementById(id);
-    options.forEach(val => {
-      const option = document.createElement('option');
-      option.value = val;
-      option.textContent = val;
-      select.appendChild(option);
+  // Populate selects if they exist
+  const populateSelect = (selector, arr) => {
+    const el = document.getElementById(selector);
+    if (!el) return;
+    arr.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      el.appendChild(opt);
     });
-    options.forEach(text => {
-        const optiontext = document.createElement('option')
-        optiontext.textContent = text;
-    }
-
-    )
   };
-
   populateSelect('userTitle', titles);
   populateSelect('userRole', roles);
 
-  form.addEventListener('submit', async (e) => {
-    const password = form.userPassword.value;
-    const passwordValid = /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password);
+  // Helper validators
+  const passwordValid = (pwd) => {
+    return /[a-z]/.test(pwd) && /[A-Z]/.test(pwd) && /\d/.test(pwd) && pwd.length >= 6;
+  };
 
-    if (!passwordValid) {
-      e.preventDefault();
-      alert("Password must contain at least one lowercase letter, one uppercase letter, and one number.");
+  const showMessage = (msg, type = 'info') => {
+    let box = document.getElementById('registerMessageBox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'registerMessageBox';
+      form.parentElement.insertBefore(box, form);
+    }
+    box.innerHTML = `<div class="message ${type}">${msg}</div>`;
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    showMessage('Processing... please wait', 'info');
+
+    const formData = new FormData(form);
+    const pwd = formData.get('userPassword');
+
+    if (!passwordValid(pwd)) {
+      showMessage('Password must be at least 6 characters and include lowercase, uppercase and a number.', 'error');
+      submitBtn.disabled = false;
       return;
     }
 
-    const rawId = crypto.randomUUID();
-    const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawId));
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-    document.getElementById('userId').value = hashHex;
+    // Client-side email simple check
+    const email = formData.get('userEmail') || '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showMessage('Please enter a valid email address.', 'error');
+      submitBtn.disabled = false;
+      return;
+    }
+
+    try {
+      const resp = await fetch('../backend/api/register_user.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+      });
+
+      const json = await resp.json();
+
+      if (resp.ok && json.success) {
+        showMessage(`Success: ${json.message}`, 'success');
+        // Optionally reset form
+        form.reset();
+      } else {
+        showMessage(`Error: ${json.message || 'Unknown server error'}`, 'error');
+      }
+    } catch (err) {
+      console.error('Register fetch error', err);
+      showMessage('Network error. Could not reach server.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 });
