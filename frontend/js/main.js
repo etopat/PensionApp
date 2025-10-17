@@ -4,8 +4,7 @@ import { loadFooter } from './modules/footer.js';
 // Load the correct header based on session login status
 function loadAppropriateHeader() {
   const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-  const headerPath = isLoggedIn ? 'header2.html' : 'header1.html';
-  
+  const headerPath = isLoggedIn ? './header2.html' : './header1.html';
 
   fetch(headerPath)
     .then(res => res.text())
