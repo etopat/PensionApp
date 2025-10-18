@@ -1,8 +1,6 @@
 // Load the footer
 import { loadFooter } from './modules/footer.js';
 
-import { loadHeader } from './modules/header.js';
-
 // Load the correct header based on session login status
 function loadAppropriateHeader() {
   const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
