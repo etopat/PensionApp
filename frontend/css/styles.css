@@ -273,6 +273,15 @@ footer .social-links {
   margin: 0.5rem auto;
 }
 
+footer .social-links a {
+    color: var(--bg-color);
+}
+
+footer .social-links a:hover {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
 /* ============================================================
    6. CONTACT INFO SECTION
 =============================================================== */
@@ -325,6 +334,14 @@ footer .social-links {
 
   .vertical-divider {
     display: none;
+  }
+
+  .contact-left {
+    transform: translate(-25%);
+  }
+
+  .social-media {
+    transform: translate(0%);
   }
 }
 
