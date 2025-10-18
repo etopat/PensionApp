@@ -67,9 +67,10 @@ header.show {
   color: #fff;
 }
 
-.header-links.login-mobile {
+.header-links .login-mobile {
     display: none;
 }
+
 
 /* ----- Centered Header Title ----- */
 .header-text {
@@ -87,6 +88,11 @@ header.show {
   letter-spacing: 0.5px;
 }
 
+.header-wrapper .login-desktop {
+    display: flex;
+    gap: 2rem;
+}
+
 .login-link a.button {
   padding: 0.4rem 1rem;
   background-color: var(--secondary-color);
@@ -101,6 +107,12 @@ header.show {
 .login-link a.button:hover {
   background-color: var(--accent-color);
   color: var(--primary-color);
+}
+
+hr {
+    margin-bottom: 2rem;
+    opacity: 50%;
+    border: #a39797 1.5px dashed;
 }
 
 /* ----- Theme Toggle ----- */
@@ -282,8 +294,9 @@ footer .social-links {
   border-left: 1px solid #cab9b9;
   height: 7rem;
   left: 50%;
-  top: 2px;
+  top: 0.5rem;
   position: absolute;
+  opacity: 50%;
 }
 
 .contact-left {
