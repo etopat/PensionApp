@@ -195,9 +195,6 @@ a.button:focus {
         font-size: 0.9rem;
     }
     
-    .footer-wrapper .social-links li a {
-        font-size: 1rem;
-    }
     .header-text {
         position: relative;
         left: 0;
@@ -294,9 +291,10 @@ footer hr {
 footer .social-links {
     list-style: none;
     display: flex;
-    justify-content: center;
-    gap: 1rem;
-    padding: 0;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-left: 15%;
+    padding-right: 15%;
     margin: 0.5rem 0;
     text-decoration: none;
 }
