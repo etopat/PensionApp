@@ -1,34 +1,36 @@
-const menuToggle = document.getElementById("menuToggle");
-menuToggle.addEventListener("mouseover", ()=>{
-    var target = document.getElementById("dropdownMenu");
-    target.classList.toggle("visible");
-    target.addEventListener("mouseleave", ()=>{
-        target.classList.remove("visible");
-    })
-})
+// menu_toggle.js
+document.addEventListener("DOMContentLoaded", () => {
+  const menuToggle = document.getElementById("menuToggle");
+  const navLinks = document.getElementById("navLinks");
+  const themeToggle = document.getElementById("themeToggle");
+  const html = document.documentElement;
 
+  // === Mobile menu toggle ===
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("show");
+      menuToggle.classList.toggle("open");
+    });
+  }
 
- // User profile script
+  // === Theme toggle ===
+  const storedTheme = localStorage.getItem("theme");
+  if (storedTheme) html.setAttribute("data-theme", storedTheme);
 
- const profileDropdownToggle = document.getElementById("profileDropdownToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const current = html.getAttribute("data-theme");
+      const newTheme = current === "light" ? "dark" : "light";
+      html.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+    });
+  }
 
- // Simulating user role (replace this with actual dynamic fetching logic)
- const userRole = sessionStorage.getItem("userRole") || "user"; // dynamically fetched user role (from a session)
- 
- // Dynamically show or hide the Settings menu item based on the user role
- const settingsMenuItem = document.getElementById("settingsMenuItem");
- if (userRole === "admin") {
-     settingsMenuItem.classList.remove("hidden");
- }
- 
- // Handle dropdown toggle on mouseover
- profileDropdownToggle.addEventListener("mouseover", () => {
-     const target = document.getElementById("profileDropdownMenu");
-     target.classList.toggle("visible");
- 
-     // Close dropdown on mouse leave
-     target.addEventListener("mouseleave", () => {
-         target.classList.remove("visible");
-     });
- });
- 
+  // === Hide menu when clicking outside (mobile) ===
+  document.addEventListener("click", (e) => {
+    if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+      navLinks.classList.remove("show");
+      menuToggle.classList.remove("open");
+    }
+  });
+});

@@ -1,378 +1,329 @@
-/* ================= STYLES.CSS ================= */
+/* ============================================================
+   STYLES.CSS — PENSIONSGO FRONTEND STYLESHEET
+=============================================================== */
+
 @import url("color-variables.css");
 
-/* ========== GLOBAL RESET & BASE ========== */
+/* ============================================================
+   1. GLOBAL RESET & BASE STYLES
+=============================================================== */
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s, color 0.3s;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
-/* ========== HEADER ========== */
+/* ============================================================
+   2. HEADER STYLES
+=============================================================== */
 header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background-color: var(--primary-color);
-    z-index: 1000;
-    transition: transform 1s ease-in-out;
-    will-change: transform;
-    width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--primary-color);
+  z-index: 1000;
+  transition: transform 0.8s ease-in-out;
+  width: 100%;
 }
 
 header.hide {
-    transform: translateY(-100%);
+  transform: translateY(-100%);
 }
 
 header.show {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
+/* ----- Header Layout Wrapper ----- */
 .header-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    flex-wrap: wrap;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  flex-wrap: nowrap;
+  width: 100%;
+  position: relative;
 }
 
-.header-wrapper > :where(.header-text)  {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    /* Center the header text */
-    transform: translate(-50%, -40%);
-    flex: 1;
-    text-align: center;
-    
+/* ----- Navigation Links (Left Section) ----- */
+.header-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  transition: all 0.3s ease-in-out;
 }
 
-.header-wrapper> :where(.login-link.login-desktop) {
-    position: absolute;
-    right: 6rem;
-    top: 50%;
-    transform: translateY(-50%);
+.header-links a {
+  text-decoration: none;
+  font-weight: 500;
+  color: #fff;
+}
+
+.header-links.login-mobile {
+    display: none;
+}
+
+/* ----- Centered Header Title ----- */
+.header-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .header-text h1 {
-    color: #fff;
-    font-size: 1.5rem;
+  color: #fff;
+  font-size: 1.6rem;
+  letter-spacing: 0.5px;
 }
 
-.header-links {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
+.login-link a.button {
+  padding: 0.4rem 1rem;
+  background-color: var(--secondary-color);
+  color: #fff;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 400;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
 }
 
-.button {
-    padding: 0.3rem 1rem;
-    background-color: var(--secondary-color);
-    color: #fff;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    font-weight: 250;
-    transition: background-color 0.5s ease;
-    cursor: pointer;
-    opacity: 70%;
+.login-link a.button:hover {
+  background-color: var(--accent-color);
+  color: var(--primary-color);
 }
 
-/* Highlight the active page's nav button */
-.nav-link.active {
-    font-weight: semibold;
-    border: var(--accent-color) 1px solid;
-}
-
-.button:hover {
-    background-color: var(--accent-color);
-    color: var(--primary-color);
-}
-
-a.button:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 2px;
-}
-
-/* Responsive Menu */
-.login-link.login-desktop {
-    display: block;
-}
-
-.login-mobile {
-    display: none;
-}
-
-.menu-toggle {
-    display: none;
-    flex-direction: column;
-    gap: 4px;
-    cursor: pointer;
-}
-
-.menu-toggle div {
-    width: 30px;
-    height: 3px;
-    background-color: #d8d7d7;
-    transition: 0.3s;
-}
-
-.menu-toggle.open .bar1 {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.menu-toggle.open .bar2 {
-    opacity: 0;
-}
-
-.menu-toggle.open .bar3 {
-    transform: rotate(-45deg) translate(5px, -5px);
-}
-
-@media screen and (max-width: 768px) {
-    .menu-toggle {
-        display: flex;
-    }
-
-    .header-links {
-        position: absolute;
-        top: 45px;
-        right: 0;
-        width: 100%;
-        background-color: var(--primary-color);
-        padding: 1rem;
-        display: none;
-    }
-
-    .header-links.show {
-        display: flex;
-    }
-
-    .login-link.login-desktop {
-        display: none;
-    }
-
-    .login-mobile {
-        display: block;
-    }
-
-    header.hide .menu-toggle,
-    header.hide .header-links {
-        display: none !important;
-    }
-
-    header .header-wrapper {
-        width: 100%;
-        justify-content: space-between;
-        padding: 0.5rem 1rem;
-        flex-wrap: nowrap;
-        align-items: center;
-    }
-
-    .footer-wrapper {
-        width: 100%;
-        font-size: 0.8rem;
-        position: relative;
-        bottom: 0;
-        padding: 0.5rem 0.2rem;
-        text-align: center;
-    }
-    .footer-wrapper h3 {
-        margin-bottom: 0.7rem;
-        font-size: 1.1rem;
-    }
-    .footer-wrapper p {
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-    }
-    
-    .header-text {
-        position: relative;
-        left: 0;
-        top: 0;
-        transform: none;
-        flex: 1;
-        text-align: center;
-    }
-}
-
-/* ========== MAIN ========== */
-
-.main-wrapper {
-    position: relative;
-    top: 60px;
-    background: var(--main-bg);
-    padding: 0.5rem 3rem;
-    margin: 1.5rem auto 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    width: 70%;
-    transition: background-color 0.3s ease;
-}
-
-h1 {
-    text-align: center;
-    color: var(--heading-color);
-    margin-bottom: 1rem;
-}
-
-h2 {
-    color: var(--accent-color);
-    margin-top: 0.5rem;
-}
-
-ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.main-info h2 {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.main-info p {
-    text-align: justify;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-}
-
-@media screen and (max-width: 768px) {
-    .main-wrapper {
-        width: 90% !important;
-        padding: 1rem;
-        transition: 0.3s ease;
-    }
-
-
-}
-
-
-
-/* ========== FOOTER ========== */
-footer {
-    position: relative;
-    bottom: -40px;
-    background-color: var(--primary-color);
-    color: #fff;
-    padding: 0.5rem 0.2rem;
-    text-align: center;
-    transition: background-color 0.3s;
-    width: 100%;
-}
-
-/* footer-holder {
-    position: relative;
-    width: 100%;
-    margin: 0 auto;
-} */
-
-footer a {
-    color: var(--accent-color);
-    text-decoration: none;
-}
-
-footer hr {
-    margin: 1rem 0;
-    border: none;
-    border-top: 1px solid #cab9b9;
-}
-
-footer .social-links {
-    list-style: none;
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding-left: 15%;
-    padding-right: 15%;
-    margin: 0.5rem 0;
-    text-decoration: none;
-}
-
-footer .social-links li a {
-    color: #fff;
-    font-size: 1rem;
-}
-
-/* ========== CONTACT INFO ========== */
-.contact-info {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    width: 100%;
-    padding: 1rem;
-    text-align: center;
-}
-
-.contact-info>div {
-    flex: 1;
-}
-
-.contact-info h3 {
-    color: var(--accent-color);
-}
-
-.vertical-divider {
-    position: absolute;
-    border-left: 1px solid #cab9b9;
-    height: 7rem;
-    left: 50%;
-    top: 2px;
-}
-
-.developed-by {
-    font-size: 1rem;
-    color: var(--text-color);
-    margin-top: 1rem;
-    font-family: 'Courier New', Courier, monospace;
-}
-
-@media screen and (max-width: 768px) {
-    .contact-info {
-        flex-direction: column;
-    }
-
-    .vertical-divider {
-        display: none;
-    }
-}
-
-/* ========== THEME TOGGLE ========== */
+/* ----- Theme Toggle ----- */
 .theme-toggle {
-    margin-left: 10px;
-    font-size: 1.5rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  font-size: 1.5rem;
+  border: 1px solid var(--accent-color);
+  background: transparent;
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .theme-toggle:hover {
-    background-color: var(--accent-color);
-    color: var(--primary-color);
+  background-color: var(--accent-color);
+  color: var(--primary-color);
 }
-/* ========== DARK AND LIGHT THEMES ========== */
-/* Light Theme */
+
+/* ----- Hamburger Menu (Mobile Only) ----- */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.menu-toggle div {
+  width: 28px;
+  height: 3px;
+  background-color: #fff;
+  border-radius: 2px;
+  transition: 0.3s ease;
+}
+
+/* Animate the toggle icon */
+.menu-toggle.open .bar1 {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.menu-toggle.open .bar2 {
+  opacity: 0;
+}
+.menu-toggle.open .bar3 {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* ============================================================
+   3. RESPONSIVE HEADER NAVIGATION
+=============================================================== */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  .header-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 55px;
+    right: 0;
+    background-color: var(--primary-color);
+    width: 100%;
+    padding: 1rem 0;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .header-links.show {
+    display: flex;
+    margin-top: 0.3rem;
+  }
+
+  .login-link a {
+    display: none;
+  }
+
+  .header-links .login-mobile {
+    display: block;
+  }
+
+  .header-text {
+    position: static;
+    transform: none;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .header-text h1 {
+    font-size: 1.3rem;
+  }
+
+  .theme-toggle {
+    margin-left: 0.5rem;
+  }
+}
+
+/* ============================================================
+   4. MAIN CONTENT STYLES
+=============================================================== */
+.main-wrapper {
+  position: relative;
+  top: 70px;
+  background: var(--main-bg);
+  padding: 0.5rem 3rem;
+  margin: 1.5rem auto 3rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  width: 70%;
+  transition: background-color 0.3s ease;
+}
+
+h1 {
+  text-align: center;
+  color: var(--heading-color);
+  margin-bottom: 1rem;
+}
+
+h2 {
+  color: var(--accent-color);
+  margin-top: 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+  .main-wrapper {
+    width: 90%;
+    padding: 1rem;
+  }
+}
+
+/* ============================================================
+   5. FOOTER STYLES
+=============================================================== */
+footer {
+  position: relative;
+  bottom: -40px;
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 0.5rem 0.2rem;
+  text-align: center;
+  width: 100%;
+}
+
+footer a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+footer .social-links {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 0;
+  margin: 0.5rem auto;
+}
+
+/* ============================================================
+   6. CONTACT INFO SECTION
+=============================================================== */
+.contact-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+}
+
+.contact-info h3 {
+  color: var(--accent-color);
+}
+
+.vertical-divider {
+  border-left: 1px solid #cab9b9;
+  height: 7rem;
+  left: 50%;
+  top: 2px;
+  position: absolute;
+}
+
+.contact-left {
+    position: relative;
+    left: 25%;
+  transform: translate(-50%, -10%);
+}
+
+.social-media {
+    position: relative;
+    right: 0%;
+  transform: translate(-25%, 0%);
+}
+
+.developed-by {
+  font-size: 1rem;
+  color: var(--text-color);
+  margin-top: 1rem;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+@media screen and (max-width: 768px) {
+  .contact-info {
+    flex-direction: column;
+  }
+
+  .vertical-divider {
+    display: none;
+  }
+}
+
+/* ============================================================
+   7. THEME STYLES
+=============================================================== */
 [data-theme="light"] {
-    background-color: white;
-    color: black;
+  background-color: #fff;
+  color: #000;
 }
 
-/* Dark Theme */
 [data-theme="dark"] {
-    background-color: #121212;
-    color: white;
+  background-color: #121212;
+  color: #fff;
 }
-
