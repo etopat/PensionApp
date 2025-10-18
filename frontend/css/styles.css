@@ -312,13 +312,13 @@ footer .social-links a:hover {
 .contact-left {
     position: relative;
     left: 25%;
-  transform: translate(-50%, -10%);
+    transform: translate(-50%, -10%);
 }
 
 .social-media {
     position: relative;
     right: 0%;
-  transform: translate(-25%, 0%);
+    transform: translate(-25%, 0%);
 }
 
 .developed-by {
@@ -331,6 +331,7 @@ footer .social-links a:hover {
 @media screen and (max-width: 768px) {
   .contact-info {
     flex-direction: column;
+    width: 100%;
   }
 
   .vertical-divider {
@@ -338,11 +339,13 @@ footer .social-links a:hover {
   }
 
   .contact-left {
-    transform: translate(-25%);
+    position: relative;
+    left: 50%;
   }
 
   .social-media {
-    transform: translate(0%);
+    width: 95%;
+    left: 25%;
   }
 }
 
