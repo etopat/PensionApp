@@ -350,6 +350,10 @@ footer .social-links a:hover {
     width: 95%;
     left: 25%;
   }
+
+  footer .social-links {
+    gap: 1.5rem;
+  }
 }
 
 /* ============================================================
