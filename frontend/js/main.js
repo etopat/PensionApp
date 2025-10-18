@@ -7,7 +7,6 @@ import { loadHeader } from './modules/header.js';
 function loadAppropriateHeader() {
   const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
   const headerPath = isLoggedIn ? './header2.html' : './header1.html';
-  const headerPath1 = './header1.html';
 
   fetch(headerPath)
     .then(res => res.text())
@@ -15,14 +14,9 @@ function loadAppropriateHeader() {
       document.body.insertAdjacentHTML('afterbegin', headerHTML);
       initializeThemeToggle(); // Setup the theme toggle after header is loaded
     })
-    .catch(
-    fetch(headerPath1)
-    .then(res => res.text())
-    .then(headerHTML => {
-      document.body.insertAdjacentHTML('afterbegin', headerHTML);
-      initializeThemeToggle(); // Setup the theme toggle after header is loaded
-    })
-    )
+    .catch(error => {
+      console.error('Failed to load header:', error);
+    });
 }
 
 // Theme toggle logic
