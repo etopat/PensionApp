@@ -43,13 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Stop pulsing after first interaction
     toggleBtn.style.animation = "none";
 
-    if (showingCalculator) {
-        showSection(calculator, tracker);
-        toggleBtn.textContent = "Show Application Tracker";
-    } else {
-        showSection(tracker, calculator);
-        toggleBtn.textContent = "Show Benefits Calculator";
-    }
   });
 
 });
