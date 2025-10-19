@@ -487,3 +487,29 @@ header {
   animation: slideFadeIn 0.8s ease-out forwards;
 }
 
+/* ============================================================
+   12. MAIN CONTENT FADE-IN AFTER HEADER LOAD
+=============================================================== */
+
+/* Keyframes for smooth upward fade-in */
+@keyframes contentFadeIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Apply animation to main content */
+.main-wrapper {
+  animation: contentFadeIn 0.9s ease-out 0.4s both;
+}
+
+/* Small fade-in for footer too */
+footer {
+  animation: contentFadeIn 1s ease-out 0.6s both;
+}
+
