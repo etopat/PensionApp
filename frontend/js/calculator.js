@@ -1,15 +1,14 @@
 // ============================================================
-// Pension Benefits Calculator Logic (Enhanced with Color Alerts)
+// Pension Benefits Calculator Logic (Enhanced with Visual Alerts)
 // ============================================================
 // Features:
-// ✅ Handles all retirement types and eligibility conditions
-// ✅ Validates mandatory retirement age (60 years)
-// ✅ Formats dates as DD-MMM-YYYY
+// ✅ Handles all retirement types (including Marriage & Contract)
+// ✅ Enforces 60 years for Mandatory Retirement
+// ✅ Formats all dates as DD-MMM-YYYY
 // ✅ Displays eligibility messages in color-coded alert boxes
-//    🔴 Red   → Not eligible
-//    🟡 Yellow → Eligible for gratuity/death gratuity only
-//    🔵 Blue  → Eligible for full benefits (gratuity + pension)
-// ✅ Includes fade-in animation for smooth UX
+//    🔴 Red = Not eligible
+//    🟡 Yellow = Partial benefits (gratuity only)
+//    🔵 Blue = Full benefits (gratuity + pension)
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dobGroup = document.getElementById('dobGroup');
   const birthDateInput = document.getElementById('birthDate');
 
-  // Output fields
+  // Output elements
   const lengthOfServiceEl = document.getElementById('lengthOfService');
   const annualSalaryEl = document.getElementById('annualSalary');
   const expectedGratuityEl = document.getElementById('expectedGratuity');
@@ -31,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const eligibilityNote = document.getElementById('eligibilityNote');
 
   // -------------------------
-  // Show/Hide Date of Birth Field
+  // Show or Hide Date of Birth field
   // -------------------------
   retirementTypeSelect.addEventListener('change', () => {
     const selectedType = retirementTypeSelect.value;
@@ -61,8 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const yearDiff = end.getFullYear() - start.getFullYear();
     const monthDiff = end.getMonth() - start.getMonth();
     let months = yearDiff * 12 + monthDiff;
+
     if (enlistmentMonthIsFull(start)) months += 1;
     if (!retirementMonthIsFull(end)) months -= 1;
+
     return Math.max(0, months);
   };
 
@@ -89,21 +90,25 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // -------------------------
-  // Core Computation Logic
+  // Main Benefit Calculation
   // -------------------------
   const calculateBenefits = (type, enlistDate, retireDate, salary, birthDate = null) => {
     const months = calculateLengthOfService(enlistDate, retireDate);
     const annual = salary * 12;
     const cappedMonths = Math.min(months, 900);
+
+    // Pension formulas
     const gratuityFormula = ((cappedMonths * annual) / 500) * (1 / 3) * 15;
     const monthlyPensionFormula = (((cappedMonths * annual) / 500) * (2 / 3)) / 12;
     const fullPensionFormula = ((cappedMonths * annual) / 500) / 12;
 
+    // Defaults
     let gratuity = 0, monthlyPension = 0, fullPension = 0;
-    let note = '', colorClass = 'red'; // default red (not eligible)
+    let note = '';
+    let colorClass = 'red'; // default = not eligible
 
     // -------------------------
-    // Logic per Retirement Type
+    // Apply Logic by Retirement Type
     // -------------------------
     switch (type) {
       // === Mandatory Retirement (60 years) ===
@@ -112,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Please enter your Date of Birth for Mandatory Retirement.');
           return;
         }
+
         const ageAtRetirement = calculateAgeAtRetirement(birthDate, retireDate);
         const mandatoryDate = calculateSixtiethBirthday(birthDate);
 
@@ -125,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const formattedRetire = formatDate(retireDate);
           const formattedMandatory = formatDate(mandatoryDate);
           note = `
-            <p>You don't qualify to retire mandatorily at <strong>${formattedRetire}</strong>.</p>
+            <p>You don't qualify to retire mandatorily at <strong>${age}</strong>.</p>
             <p>You will retire mandatorily on <strong>${formattedMandatory}</strong>.</p>
             <p>If you want to retire before then, apply for <strong>Early Retirement</strong> instead.</p>
           `;
@@ -155,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
           note = `<p>Eligible for full benefits (Early/AOR Retirement).</p>`;
           colorClass = 'blue';
         } else {
-          note = `<p>Not eligible: Must have at least 10 years of service and at least 45 years of age or above, or 20 years of service.</p>`;
+          note = `<p>Not eligible: Must have at least 10 years of service and at least 45 years of age, or 20 years of service.</p>`;
           colorClass = 'red';
         }
         break;
@@ -178,28 +184,36 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
-      // === Discharge, Contract, or Marriage Grounds ===
+      // === Marriage, Discharge, or Contract ===
+      case 'marriage':
       case 'discharge':
-      case 'contract':
-      case 'marriage': {
+      case 'contract': {
+        if (months >= 120) {
+          gratuity = gratuityFormula;
+          note = `<p>Eligible for gratuity only (no monthly pension or full pension under this type).</p>`;
+        } else {
+          gratuity = gratuityFormula * 0.5;
+          note = `<p>Eligible for short service gratuity only (less than 10 years of service).</p>`;
+        }
+        colorClass = 'yellow';
+        break;
+      }
+
+      // === Default (Other unexpected types) ===
+      default: {
         if (months >= 120) {
           gratuity = gratuityFormula;
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
-          note = `<p>Eligible for gratuity, monthly pension, and full pension (Discharge/Contract/Marriage Grounds).</p>`;
+          note = `<p>Eligible for full pension and gratuity benefits.</p>`;
           colorClass = 'blue';
         } else {
           gratuity = gratuityFormula * 0.5;
-          note = `<p>Eligible for short service gratuity only (less than 10 years of service under Discharge/Contract/Marriage Grounds).</p>`;
+          note = `<p>Eligible for short service gratuity only.</p>`;
           colorClass = 'yellow';
         }
         break;
       }
-
-      // === Fallback ===
-      default:
-        note = `<p>Invalid or unsupported retirement type selected.</p>`;
-        colorClass = 'red';
     }
 
     // -------------------------
@@ -211,20 +225,21 @@ document.addEventListener('DOMContentLoaded', () => {
     expectedMonthlyPensionEl.textContent = `UGX ${monthlyPension.toLocaleString()}`;
     expectedFullPensionEl.textContent = `UGX ${fullPension.toLocaleString()}`;
 
-    // Color-coded alert box
     eligibilityNote.innerHTML = `
-      <div class="eligibility-alert fade-in ${colorClass}">
+      <div class="eligibility-alert ${colorClass}">
         ${note}
-      </div>`;
+      </div>
+    `;
 
     resultsSection.classList.remove('hidden');
   };
 
   // -------------------------
-  // Form Submission Handler
+  // Form Submission
   // -------------------------
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+
     const enlistDate = document.getElementById('enlistmentDate').value;
     const retireDate = document.getElementById('retirementDate').value;
     const salary = parseFloat(document.getElementById('monthlySalary').value);

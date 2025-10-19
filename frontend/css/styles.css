@@ -13,6 +13,18 @@
   padding: 0;
 }
 
+/* 
+   Use Flexbox layout for sticky footer support:
+   - body expands to full height
+   - main grows to fill space
+   - footer sits at bottom if content is short
+*/
+html, body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--bg-color);
@@ -22,7 +34,7 @@ body {
 }
 
 li {
-    list-style: none;
+  list-style: none;
 }
 
 /* ============================================================
@@ -73,9 +85,8 @@ header.show {
 }
 
 .header-links .login-mobile {
-    display: none;
+  display: none;
 }
-
 
 /* ----- Centered Header Title ----- */
 .header-text {
@@ -94,8 +105,8 @@ header.show {
 }
 
 .header-wrapper .login-desktop {
-    display: flex;
-    gap: 2rem;
+  display: flex;
+  gap: 2rem;
 }
 
 .login-link a.button {
@@ -115,9 +126,9 @@ header.show {
 }
 
 hr {
-    margin-bottom: 2rem;
-    opacity: 50%;
-    border: #a39797 1.5px dashed;
+  margin-bottom: 2rem;
+  opacity: 50%;
+  border: #a39797 1.5px dashed;
 }
 
 /* ----- Theme Toggle ----- */
@@ -157,7 +168,6 @@ hr {
   transition: 0.3s ease;
 }
 
-/* Animate the toggle icon */
 .menu-toggle.open .bar1 {
   transform: rotate(45deg) translate(5px, 5px);
 }
@@ -172,9 +182,9 @@ hr {
    3. RESPONSIVE HEADER NAVIGATION
 =============================================================== */
 @media (max-width: 768px) {
-    header {
-        width: 100%;
-    }
+  header {
+    width: 100%;
+  }
   .menu-toggle {
     display: flex;
   }
@@ -224,6 +234,13 @@ hr {
 /* ============================================================
    4. MAIN CONTENT STYLES
 =============================================================== */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
 .main-wrapper {
   position: relative;
   top: 70px;
@@ -255,16 +272,18 @@ h2 {
 }
 
 /* ============================================================
-   5. FOOTER STYLES
+   5. FOOTER STYLES — Sticky Bottom Logic
 =============================================================== */
 footer {
-  position: relative;
-  bottom: -40px;
+  margin-top: auto;
   background-color: var(--primary-color);
   color: #fff;
-  padding: 0.5rem 0.2rem;
+  padding: 0.8rem 0.3rem;
   text-align: center;
   width: 100%;
+  transition: background-color 0.3s;
+  border-top: 2px solid var(--accent-color);
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
 }
 
 footer a {
@@ -282,12 +301,12 @@ footer .social-links {
 }
 
 footer .social-links a {
-    color: var(--bg-color);
+  color: var(--bg-color);
 }
 
 footer .social-links a:hover {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* ============================================================
@@ -317,15 +336,15 @@ footer .social-links a:hover {
 }
 
 .contact-left {
-    position: relative;
-    left: 25%;
-    transform: translate(-50%, -10%);
+  position: relative;
+  left: 25%;
+  transform: translate(-50%, -10%);
 }
 
 .social-media {
-    position: relative;
-    right: 0%;
-    transform: translate(-25%, 0%);
+  position: relative;
+  right: 0%;
+  transform: translate(-25%, 0%);
 }
 
 .developed-by {
@@ -392,8 +411,6 @@ footer .social-links a:hover {
 /* ============================================================
    9. THEME TOGGLE ANIMATION & PAGE FADE
 =============================================================== */
-
-/* Smooth color and background transition for main areas */
 html,
 body,
 header,
@@ -404,26 +421,14 @@ footer,
   transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
 }
 
-/* fade animation during theme switch */
 body.fade-theme {
   animation: fadeTheme 0.5s ease;
 }
 
 @keyframes fadeTheme {
-  from {
-    opacity: 0.85;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0.85; }
+  to { opacity: 1; }
 }
-
-/* Subtle feedback rotation on toggle */
-.theme-toggle.theme-toggled {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
-}
-
 
 .theme-toggle.theme-toggled {
   transform: rotate(180deg);
@@ -433,7 +438,6 @@ body.fade-theme {
 /* ============================================================
    10. SLIDING UNDERLINE ANIMATION FOR NAV LINKS
 =============================================================== */
-
 .header-links .nav-link {
   position: relative;
   display: inline-block;
@@ -442,7 +446,6 @@ body.fade-theme {
   transition: color 0.3s ease;
 }
 
-/* Sliding underline base */
 .header-links .nav-link::after {
   content: "";
   position: absolute;
@@ -454,17 +457,14 @@ body.fade-theme {
   transition: left 0.5s ease-in-out;
 }
 
-/* Animate underline on hover */
 .header-links .nav-link:hover::after {
   left: 0;
 }
 
-/* Keep underline for active page */
 .header-links .nav-link.active::after {
   left: 0;
 }
 
-/* Active link text color */
 .header-links .nav-link.active {
   color: var(--accent-color);
   font-weight: 600;
@@ -473,20 +473,11 @@ body.fade-theme {
 /* ============================================================
    11. HEADER ENTRANCE ANIMATION ON PAGE LOAD
 =============================================================== */
-
-/* Keyframes for sliding down + fade-in */
 @keyframes slideFadeIn {
-  from {
-    transform: translateY(-30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-/* Apply animation once the page loads */
 header {
   animation: slideFadeIn 0.5s ease-out forwards;
 }
@@ -494,27 +485,15 @@ header {
 /* ============================================================
    12. MAIN CONTENT FADE-IN AFTER HEADER LOAD
 =============================================================== */
-
-/* Keyframes for smooth upward fade-in */
 @keyframes contentFadeIn {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-
-/* Apply animation to main content */
 .main-wrapper {
   animation: contentFadeIn 0.5s ease-out 0.3s both;
 }
 
-/* Small fade-in for footer too */
 footer {
   animation: contentFadeIn 1s ease-out 0.2s both;
 }
-
