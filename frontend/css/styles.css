@@ -357,25 +357,6 @@ footer .social-links a:hover {
 }
 
 /* ============================================================
-   8. ACTIVE PAGE HIGHLIGHTING
-=============================================================== */
-
-.nav-link.active {
-  border-bottom: 2px solid var(--accent-color);
-  font-weight: 600;
-  opacity: 1;
-  transition: all 0.3s ease-in-out;
-}
-
-/* Slight hover highlight effect */
-.header-links .nav-link:hover {
-  opacity: 1;
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-
-/* ============================================================
    7. THEME STYLES
 =============================================================== */
 [data-theme="light"] {
@@ -389,17 +370,98 @@ footer .social-links a:hover {
 }
 
 /* ============================================================
-   9. SMOOTH THEME TRANSITION
+   8. ACTIVE PAGE HIGHLIGHTING
+=============================================================== */
+.nav-link.active {
+  border-bottom: 2px solid var(--accent-color);
+  font-weight: 600;
+  opacity: 1;
+  transition: all 0.3s ease-in-out;
+}
+
+.header-links .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+/* ============================================================
+   9. THEME TOGGLE ANIMATION & PAGE FADE
 =============================================================== */
 
-html, body, header, footer, .main-wrapper, .button, .theme-toggle {
-  transition: 
-    background-color 0.4s ease,
-    color 0.4s ease,
-    border-color 0.4s ease;
+/* Smooth color and background transition for main areas */
+html,
+body,
+header,
+footer,
+.main-wrapper,
+.button,
+.theme-toggle {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
 }
+
+/* fade animation during theme switch */
+body.fade-theme {
+  animation: fadeTheme 0.5s ease;
+}
+
+@keyframes fadeTheme {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Subtle feedback rotation on toggle */
+.theme-toggle.theme-toggled {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
 
 .theme-toggle.theme-toggled {
   transform: rotate(180deg);
   transition: transform 0.3s ease;
+}
+
+/* ============================================================
+   10. SLIDING UNDERLINE ANIMATION FOR NAV LINKS
+=============================================================== */
+
+.header-links .nav-link {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.3rem;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+/* Sliding underline base */
+.header-links .nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background-color: var(--accent-color);
+  transition: left 0.3s ease-in-out;
+}
+
+/* Animate underline on hover */
+.header-links .nav-link:hover::after {
+  left: 0;
+}
+
+/* Keep underline for active page */
+.header-links .nav-link.active::after {
+  left: 0;
+}
+
+/* Active link text color */
+.header-links .nav-link.active {
+  color: var(--accent-color);
+  font-weight: 600;
 }

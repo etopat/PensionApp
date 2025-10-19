@@ -40,11 +40,20 @@ function initializeThemeToggle() {
   const storedTheme = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', storedTheme);
 
-  // Smooth transition for theme change
-  html.style.transition = 'background-color 0.4s ease, color 0.4s ease';
+  // Smooth fade transition for color change
+  document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+  html.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+
+  const main = document.querySelector('.main-wrapper');
+  const header = document.querySelector('header');
+  const footer = document.querySelector('footer');
+
+  [main, header, footer].forEach(el => {
+    if (el) el.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+  });
 
   if (toggleBtn) {
-    // Remove old listeners
+    // Replace to prevent duplicate listeners
     const newBtn = toggleBtn.cloneNode(true);
     toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
 
@@ -52,14 +61,17 @@ function initializeThemeToggle() {
       const currentTheme = html.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       html.setAttribute('data-theme', newTheme);
+      document.body.classList.add('fade-theme');
+      setTimeout(() => document.body.classList.remove('fade-theme'), 500);
       localStorage.setItem('theme', newTheme);
 
-      // Animate toggle button feedback
+      // Add subtle feedback animation
       newBtn.classList.add('theme-toggled');
       setTimeout(() => newBtn.classList.remove('theme-toggled'), 300);
     });
   }
 }
+
 
 /**
  * Highlights the active navigation link based on the current page.
