@@ -1,4 +1,4 @@
-// (ES module) - loads correct header, footer and then initializes header interactions
+// (ES module) - loads correct header, footer and initializes header interactions + theme + nav highlight
 
 import { loadFooter } from './modules/footer.js';
 
@@ -14,20 +14,24 @@ async function loadAppropriateHeader() {
     // Insert header at top of body
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
-    // Setup theme toggle immediately (header contains #themeToggle)
+    // Initialize theme toggle and highlight active page
     initializeThemeToggle();
+    highlightActivePage();
 
     // After header is in DOM, dynamically import and initialize header interactions
-    // header_interactions.js exports initHeaderInteractions()
     const mod = await import('./modules/header_interactions.js');
     if (mod && typeof mod.initHeaderInteractions === 'function') {
       mod.initHeaderInteractions();
     }
+
   } catch (err) {
     console.error('Failed to load header:', err);
   }
 }
 
+/**
+ * Applies stored theme and animates transitions smoothly.
+ */
 function initializeThemeToggle() {
   const html = document.documentElement;
   const toggleBtn = document.getElementById('themeToggle');
@@ -36,20 +40,40 @@ function initializeThemeToggle() {
   const storedTheme = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', storedTheme);
 
-  if (toggleBtn) {
-    // remove any previous listener to avoid duplicates
-    toggleBtn.replaceWith(toggleBtn.cloneNode(true));
-    const newBtn = document.getElementById('themeToggle') || document.querySelector('#header-wrapper #themeToggle') || document.querySelector('#themeToggle');
+  // Smooth transition for theme change
+  html.style.transition = 'background-color 0.4s ease, color 0.4s ease';
 
-    if (newBtn) {
-      newBtn.addEventListener('click', () => {
-        const currentTheme = html.getAttribute('data-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        html.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-      });
-    }
+  if (toggleBtn) {
+    // Remove old listeners
+    const newBtn = toggleBtn.cloneNode(true);
+    toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
+
+    newBtn.addEventListener('click', () => {
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+
+      // Animate toggle button feedback
+      newBtn.classList.add('theme-toggled');
+      setTimeout(() => newBtn.classList.remove('theme-toggled'), 300);
+    });
   }
+}
+
+/**
+ * Highlights the active navigation link based on the current page.
+ */
+function highlightActivePage() {
+  const links = document.querySelectorAll('.nav-link');
+  const currentPage = window.location.pathname.split('/').pop();
+
+  links.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage) {
+      link.classList.add('active');
+    }
+  });
 }
 
 // DOM Ready
