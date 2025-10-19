@@ -1,119 +1,98 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>PensionsGo – Uganda Prisons Pension Portal</title>
 
-    <!-- SEO Meta Tags -->
-    <title>PensionsGo – Uganda Prisons Pension Portal</title>
-    <meta name="title" content="PensionsGo – Uganda Prisons Pension Portal" />
-    <meta name="description"
-        content="PensionsGo is a web-based platform that streamlines pension processing, retirement benefits estimation, file tracking, and budgeting for the Uganda Prisons Service." />
-    <meta name="keywords"
-        content="PensionsGo, Uganda Prisons Service, pension system, retirement calculator, pension automation, pension benefits, public service retirement" />
-    <meta name="author" content="Uganda Prisons ICT Unit" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://example.com/index.html" />
+  <!-- SEO Metadata -->
+  <meta name="description" content="PensionsGo is a web-based platform that streamlines pension processing, benefits estimation, and application tracking for the Uganda Prisons Service." />
+  <meta name="keywords" content="PensionsGo, Uganda Prisons Service, pension calculator, retirement, workflow automation" />
+  <meta name="author" content="Uganda Prisons ICT Unit" />
 
-    <!-- Open Graph Tags -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://example.com/" />
-    <meta property="og:title" content="PensionsGo – Uganda Prisons Pension Portal" />
-    <meta property="og:description"
-        content="Calculate pension benefits, track applications, and manage workflows for retirement processing in Uganda Prisons Service." />
-    <meta property="og:image" content="https://example.com/assets/images/og-preview.png" />
+  <!-- Favicon -->
+  <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PensionsGo – Uganda Prisons Pension Portal" />
-    <meta name="twitter:description"
-        content="Digital pension workflow and calculator system for the Uganda Prisons Service." />
-    <meta name="twitter:image" content="https://example.com/assets/images/og-preview.png" />
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/forms.css" />
+  <link rel="stylesheet" href="css/calculator.css" />
+  <link rel="stylesheet" href="css/track-status.css" />
 
-    <!-- Favicon -->
-    <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
-
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="css/forms.css" />
-    <link rel="stylesheet" href="css/calculator.css" />
-    <link rel="stylesheet" href="css/track-status.css" />
-
-    <!-- JS Scripts -->
-    <script defer src="js/calculator.js"></script>
-    <script defer src="js/track-status.js"></script>
-    <script type="module" src="js/main.js"></script>
-    <script defer src="js/menu_toggle.js"></script>
+  <!-- JS Scripts -->
+  <script defer src="js/calculator.js"></script>
+  <script defer src="js/track-status.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <script defer src="js/menu_toggle.js"></script>
+  <script defer src="js/toggle-sections.js"></script>
 </head>
 
 <body>
-    <!-- Header Section: populated by JS -->
+  <!-- Header injected dynamically -->
+  <main>
+    <div class="main-wrapper">
+      <!-- Welcome Section -->
+      <section class="main-info">
+        <h2>Welcome to PensionsGo</h2>
+        <p>The Pension Workflow Automation System for Uganda Prisons Service.</p>
+        <p>This portal helps you estimate retirement benefits and access pension information.</p>
 
-    <main>
-        <div class="main-wrapper">
-
-            <!-- Welcome Section -->
-            <section class="main-info">
-                <h2>Welcome to PensionsGo</h2>
-                <p>The Pension Workflow Automation System for Uganda Prisons Service.</p>
-                <p>This portal helps you estimate retirement benefits and access pension information.</p>
-            </section>
-
-            <!-- Benefits Calculator Section -->
-            <section class="calculator-section">
-                <h2>Benefits Calculator</h2>
-                <form id="benefitsForm">
-                    <div class="form-group">
-                        <label for="enlistmentDate">Date of Enlistment</label>
-                        <input type="date" id="enlistmentDate" name="enlistmentDate" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="retirementDate">Date of Retirement</label>
-                        <input type="date" id="retirementDate" name="retirementDate" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="monthlySalary">Monthly Salary (UGX)</label>
-                        <input type="number" id="monthlySalary" name="monthlySalary" required />
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn btn-submit">Calculate</button>
-                        <button type="reset" class="btn btn-reset">Clear</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Results Section -->
-            <section id="results" class="hidden">
-                <h3>Results</h3>
-                <p><strong>Length of Service:</strong> <span id="lengthOfService"></span></p>
-                <p><strong>Annual Salary:</strong> <span id="annualSalary"></span></p>
-                <p><strong>Expected Gratuity:</strong> <span id="expectedGratuity"></span></p>
-                <p><strong>Expected Monthly Pension:</strong> <span id="expectedMonthlyPension"></span></p>
-                <p><strong>Expected Full Pension:</strong> <span id="expectedFullPension"></span></p>
-            </section>
-
-            <!-- Track Application Status Section -->
-            <section class="calculator-section track-section">
-                <h2>Track Application Status</h2>
-                <form id="trackForm">
-                    <div class="form-group">
-                        <label for="trackingId">Enter Application ID</label>
-                        <input type="text" id="trackingId" name="trackingId" placeholder="e.g., APP12345678" required />
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn btn-submit">Check Status</button>
-                    </div>
-                </form>
-                <div id="trackingResult" class="tracking-result"></div>
-            </section>
-
+        <!-- Toggle Button -->
+        <div class="toggle-btn-wrapper">
+          <button id="toggleSectionBtn" class="toggle-btn">Show Benefits Calculator</button>
         </div>
-    </main>
+      </section>
 
-    <!-- Footer Section: populated by JS -->
-     
+      <!-- Benefits Calculator Section (Initially Hidden) -->
+      <section class="calculator-section hidden" id="calculatorSection">
+        <h2>Benefits Calculator</h2>
+        <form id="benefitsForm">
+          <div class="form-group">
+            <label for="enlistmentDate">Date of Enlistment</label>
+            <input type="date" id="enlistmentDate" name="enlistmentDate" required />
+          </div>
+          <div class="form-group">
+            <label for="retirementDate">Date of Retirement</label>
+            <input type="date" id="retirementDate" name="retirementDate" required />
+          </div>
+          <div class="form-group">
+            <label for="monthlySalary">Monthly Salary (UGX)</label>
+            <input type="number" id="monthlySalary" name="monthlySalary" required />
+          </div>
+          <div class="button-group">
+            <button type="submit" class="btn btn-submit">Calculate</button>
+            <button type="reset" class="btn btn-reset">Clear</button>
+          </div>
+        </form>
+
+        <section id="results" class="hidden">
+          <h3>Results</h3>
+          <p><strong>Length of Service:</strong> <span id="lengthOfService"></span></p>
+          <p><strong>Annual Salary:</strong> <span id="annualSalary"></span></p>
+          <p><strong>Expected Gratuity:</strong> <span id="expectedGratuity"></span></p>
+          <p><strong>Expected Monthly Pension:</strong> <span id="expectedMonthlyPension"></span></p>
+          <p><strong>Expected Full Pension:</strong> <span id="expectedFullPension"></span></p>
+        </section>
+      </section>
+
+      <!-- Track Application Status Section (Initially Hidden) -->
+      <section class="calculator-section hidden" id="trackSection">
+        <h2>Track Application Status</h2>
+        <form id="trackForm">
+          <div class="form-group">
+            <label for="trackingId">Enter Application ID</label>
+            <input type="text" id="trackingId" name="trackingId" placeholder="e.g., APP12345678" required />
+          </div>
+          <div class="button-group">
+            <button type="submit" class="btn btn-submit">Check Status</button>
+          </div>
+        </form>
+        <div id="trackingResult" class="tracking-result"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer injected dynamically -->
 </body>
-
 </html>
