@@ -92,4 +92,21 @@ function highlightActivePage() {
 document.addEventListener('DOMContentLoaded', () => {
   loadAppropriateHeader();
   loadFooter();
+
+  // Run entry animations only on first page load
+  const hasAnimated = sessionStorage.getItem('hasAnimated');
+  if (!hasAnimated) {
+    document.body.classList.add('run-animations');
+    sessionStorage.setItem('hasAnimated', 'true');
+  }
+
+  // Reset animation trigger if user logs out or session ends
+  window.addEventListener('beforeunload', () => {
+    const isLoggingOut = sessionStorage.getItem('isLoggingOut') === 'true';
+    if (isLoggingOut) {
+      sessionStorage.removeItem('hasAnimated');
+      sessionStorage.removeItem('isLoggingOut');
+    }
+  });
+
 });

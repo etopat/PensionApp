@@ -488,7 +488,7 @@ header {
 }
 
 /* ============================================================
-   12. MAIN CONTENT FADE-IN AFTER HEADER LOAD
+   12. MAIN CONTENT FADE-IN AFTER HEADER LOAD (FIRST LOAD ONLY)
 =============================================================== */
 
 /* Keyframes for smooth upward fade-in */
@@ -503,13 +503,18 @@ header {
   }
 }
 
+/* Apply animation to header content */
+.run-animations header {
+  animation: slideDown 0.8s ease-in-out both;
+}
+
 /* Apply animation to main content */
-.main-wrapper {
+.run-animations .main-wrapper {
   animation: contentFadeIn 0.9s ease-out 0.4s both;
 }
 
 /* Small fade-in for footer too */
-footer {
+.run-animations footer {
   animation: contentFadeIn 1s ease-out 0.6s both;
 }
 
