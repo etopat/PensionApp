@@ -1,8 +1,11 @@
 // ============================================================
-// Pension Benefits Calculator Logic (Enhanced Visual Version)
+// Pension Benefits Calculator Logic (Enhanced Visual + Alert Box)
 // ============================================================
-// Includes: Mandatory retirement age verification, formatted date output,
-// paragraph separation, and red eligibility messages.
+// Features:
+// ✅ Handles different retirement types and eligibility conditions
+// ✅ Verifies mandatory retirement age (60 years)
+// ✅ Formats dates as DD-MMM-YYYY
+// ✅ Displays eligibility notes in a styled red alert box
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dobGroup = document.getElementById('dobGroup');
   const birthDateInput = document.getElementById('birthDate');
 
-  // Output elements
+  // Output fields
   const lengthOfServiceEl = document.getElementById('lengthOfService');
   const annualSalaryEl = document.getElementById('annualSalary');
   const expectedGratuityEl = document.getElementById('expectedGratuity');
@@ -24,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const eligibilityNote = document.getElementById('eligibilityNote');
 
   // -------------------------
-  // Dynamic Visibility Logic
+  // Show/Hide Date of Birth Field
   // -------------------------
   retirementTypeSelect.addEventListener('change', () => {
     const selectedType = retirementTypeSelect.value;
@@ -70,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return age;
   };
 
-  // Add 60 years to birth date → returns ISO date
   const calculateSixtiethBirthday = (birthDate) => {
     const dob = new Date(birthDate);
     const sixtyDate = new Date(dob);
@@ -100,9 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let note = '';
 
     // -------------------------
-    // Retirement Type Logic
+    // Logic per Retirement Type
     // -------------------------
     switch (type) {
+      // === Mandatory Retirement (60 years) ===
       case 'mandatory': {
         if (!birthDate) {
           alert('Please enter your Date of Birth for Mandatory Retirement.');
@@ -120,18 +123,21 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (ageAtRetirement < 60) {
           const formattedRetire = formatDate(retireDate);
           const formattedMandatory = formatDate(mandatoryDate);
-          note = `<p>You don't qualify to retire mandatorily at <strong>${ageAtRetirement}</strong>.</p>
-                  <p>You will retire mandatorily on <strong>${formattedMandatory}</strong>.</p>
-                  <p>If you want to retire before then, apply for <strong>Early Retirement</strong> instead.</p>`;
+          note = `
+            <p>You don't qualify to retire mandatorily at <strong>${formattedRetire}</strong>.</p>
+            <p>You will retire mandatorily on <strong>${formattedMandatory}</strong>.</p>
+            <p>If you want to retire before then, apply for <strong>Early Retirement</strong> instead.</p>
+          `;
         } else {
           gratuity = gratuityFormula;
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
-          note = `<p>Retirement beyond 60 years — benefits still computed, but retirement should have occurred earlier.</p>`;
+          note = `<p>Retirement beyond 60 years — benefits computed, but retirement should have occurred earlier.</p>`;
         }
         break;
       }
 
+      // === Early or AOR Retirement ===
       case 'early':
       case 'aor': {
         if (!birthDate) {
@@ -150,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
+      // === Death or Medical Grounds ===
       case 'death':
       case 'medical': {
         const deathGratuity = 3 * annual;
@@ -164,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
+      // === Other Types (Discharge, Contract, etc.) ===
       default: {
         if (months >= 120) {
           gratuity = gratuityFormula;
@@ -187,8 +195,19 @@ document.addEventListener('DOMContentLoaded', () => {
     expectedMonthlyPensionEl.textContent = `UGX ${monthlyPension.toLocaleString()}`;
     expectedFullPensionEl.textContent = `UGX ${fullPension.toLocaleString()}`;
 
-    // Display red eligibility note with proper formatting
-    eligibilityNote.innerHTML = `<div style="color: red;">${note}</div>`;
+    // Styled alert box for eligibility note
+    eligibilityNote.innerHTML = `
+      <div style="
+        background-color: #ffe5e5;
+        color: #b30000;
+        border: 1px solid #ff9999;
+        border-radius: 6px;
+        padding: 0.8rem 1rem;
+        margin-top: 1rem;
+        line-height: 1.5;
+      ">
+        ${note}
+      </div>`;
     resultsSection.classList.remove('hidden');
   };
 
