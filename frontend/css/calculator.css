@@ -122,22 +122,38 @@
 }
 
 /* ============================================================
-   Eligibility Message Styles + Fade-In Animation
+   Eligibility Alert Box Styles (Color-Coded + Fade-In)
    ============================================================ */
 .eligibility-alert {
-  background-color: #ffe5e5;
-  color: #b30000;
-  border: 1px solid #ff9999;
+  padding: 1em;
   border-radius: 6px;
-  padding: 0.8rem 1rem;
-  margin-top: 1rem;
-  line-height: 1.6;
+  margin-top: 1em;
   font-weight: 500;
   opacity: 0;
-  animation: fadeIn 0.8s ease-in forwards;
+  animation: fade-in 0.8s ease-in-out forwards; /* Keep visible after fade */
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
+/* ---- Color Variations ---- */
+.eligibility-alert.red {
+  color: #b30000;
+  background-color: #ffe5e5;
+  border: 1px solid #ff9999;
+}
+
+.eligibility-alert.yellow {
+  color: #856404;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+}
+
+.eligibility-alert.blue {
+  color: #004085;
+  background-color: #cce5ff;
+  border: 1px solid #99ccff;
+}
+
+/* ---- Fade-In Animation ---- */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }

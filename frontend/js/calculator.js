@@ -1,12 +1,15 @@
 // ============================================================
-// Pension Benefits Calculator Logic (Enhanced with Fade Animation)
+// Pension Benefits Calculator Logic (Enhanced with Color Alerts)
 // ============================================================
 // Features:
 // ✅ Handles all retirement types and eligibility conditions
 // ✅ Validates mandatory retirement age (60 years)
 // ✅ Formats dates as DD-MMM-YYYY
-// ✅ Displays eligibility message in a red alert box
-// ✅ Includes a fade-in animation for message display
+// ✅ Displays eligibility messages in color-coded alert boxes
+//    🔴 Red   → Not eligible
+//    🟡 Yellow → Eligible for gratuity/death gratuity only
+//    🔵 Blue  → Eligible for full benefits (gratuity + pension)
+// ✅ Includes fade-in animation for smooth UX
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -58,10 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const yearDiff = end.getFullYear() - start.getFullYear();
     const monthDiff = end.getMonth() - start.getMonth();
     let months = yearDiff * 12 + monthDiff;
-
     if (enlistmentMonthIsFull(start)) months += 1;
     if (!retirementMonthIsFull(end)) months -= 1;
-
     return Math.max(0, months);
   };
 
@@ -81,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return sixtyDate;
   };
 
-  // Format date as DD-MMM-YYYY
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fullPensionFormula = ((cappedMonths * annual) / 500) / 12;
 
     let gratuity = 0, monthlyPension = 0, fullPension = 0;
-    let note = '';
+    let note = '', colorClass = 'red'; // default red (not eligible)
 
     // -------------------------
     // Logic per Retirement Type
@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Please enter your Date of Birth for Mandatory Retirement.');
           return;
         }
-
         const ageAtRetirement = calculateAgeAtRetirement(birthDate, retireDate);
         const mandatoryDate = calculateSixtiethBirthday(birthDate);
 
@@ -121,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
           note = `<p><strong>Eligible for full benefits</strong> (Mandatory Retirement at 60 years).</p>`;
+          colorClass = 'blue';
         } else if (ageAtRetirement < 60) {
           const formattedRetire = formatDate(retireDate);
           const formattedMandatory = formatDate(mandatoryDate);
@@ -129,11 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>You will retire mandatorily on <strong>${formattedMandatory}</strong>.</p>
             <p>If you want to retire before then, apply for <strong>Early Retirement</strong> instead.</p>
           `;
+          colorClass = 'red';
         } else {
           gratuity = gratuityFormula;
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
           note = `<p>Retirement beyond 60 years — benefits computed, but retirement should have occurred earlier.</p>`;
+          colorClass = 'blue';
         }
         break;
       }
@@ -151,8 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
           note = `<p>Eligible for full benefits (Early/AOR Retirement).</p>`;
+          colorClass = 'blue';
         } else {
-          note = `<p>Not eligible: Must have at least 10 years of service and age ≥ 45, or 20 years of service.</p>`;
+          note = `<p>Not eligible: Must have at least 10 years of service and at least 45 years of age or above, or 20 years of service.</p>`;
+          colorClass = 'red';
         }
         break;
       }
@@ -166,8 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
           note = `<p>Eligible for monthly pension and death gratuity.</p>`;
+          colorClass = 'blue';
         } else {
           note = `<p>Eligible for death gratuity only (less than 10 years of service).</p>`;
+          colorClass = 'yellow';
         }
         break;
       }
@@ -181,18 +187,19 @@ document.addEventListener('DOMContentLoaded', () => {
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
           note = `<p>Eligible for gratuity, monthly pension, and full pension (Discharge/Contract/Marriage Grounds).</p>`;
+          colorClass = 'blue';
         } else {
           gratuity = gratuityFormula * 0.5;
           note = `<p>Eligible for short service gratuity only (less than 10 years of service under Discharge/Contract/Marriage Grounds).</p>`;
+          colorClass = 'yellow';
         }
         break;
       }
 
-      // === Fallback (Any Other Undefined Type) ===
-      default: {
+      // === Fallback ===
+      default:
         note = `<p>Invalid or unsupported retirement type selected.</p>`;
-        break;
-      }
+        colorClass = 'red';
     }
 
     // -------------------------
@@ -204,9 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     expectedMonthlyPensionEl.textContent = `UGX ${monthlyPension.toLocaleString()}`;
     expectedFullPensionEl.textContent = `UGX ${fullPension.toLocaleString()}`;
 
-    // Styled alert box with fade-in animation
+    // Color-coded alert box
     eligibilityNote.innerHTML = `
-      <div class="eligibility-alert fade-in">
+      <div class="eligibility-alert fade-in ${colorClass}">
         ${note}
       </div>`;
 
@@ -218,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-
     const enlistDate = document.getElementById('enlistmentDate').value;
     const retireDate = document.getElementById('retirementDate').value;
     const salary = parseFloat(document.getElementById('monthlySalary').value);
