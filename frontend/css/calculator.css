@@ -120,3 +120,24 @@
 .hidden {
     display: none;
 }
+
+/* ============================================================
+   Eligibility Message Styles + Fade-In Animation
+   ============================================================ */
+.eligibility-alert {
+  background-color: #ffe5e5;
+  color: #b30000;
+  border: 1px solid #ff9999;
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin-top: 1rem;
+  line-height: 1.6;
+  font-weight: 500;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,11 +1,12 @@
 // ============================================================
-// Pension Benefits Calculator Logic (Enhanced Visual + Alert Box)
+// Pension Benefits Calculator Logic (Enhanced with Fade Animation)
 // ============================================================
 // Features:
-// ✅ Handles different retirement types and eligibility conditions
-// ✅ Verifies mandatory retirement age (60 years)
+// ✅ Handles all retirement types and eligibility conditions
+// ✅ Validates mandatory retirement age (60 years)
 // ✅ Formats dates as DD-MMM-YYYY
-// ✅ Displays eligibility notes in a styled red alert box
+// ✅ Displays eligibility message in a red alert box
+// ✅ Includes a fade-in animation for message display
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -195,19 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
     expectedMonthlyPensionEl.textContent = `UGX ${monthlyPension.toLocaleString()}`;
     expectedFullPensionEl.textContent = `UGX ${fullPension.toLocaleString()}`;
 
-    // Styled alert box for eligibility note
+    // Styled alert box with fade-in animation
     eligibilityNote.innerHTML = `
-      <div style="
-        background-color: #ffe5e5;
-        color: #b30000;
-        border: 1px solid #ff9999;
-        border-radius: 6px;
-        padding: 0.8rem 1rem;
-        margin-top: 1rem;
-        line-height: 1.5;
-      ">
+      <div class="eligibility-alert fade-in">
         ${note}
       </div>`;
+
     resultsSection.classList.remove('hidden');
   };
 
