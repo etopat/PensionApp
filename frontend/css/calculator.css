@@ -52,6 +52,13 @@
     margin-bottom: 0.5rem;
 }
 
+.result-note {
+  margin-top: 1rem;
+  font-style: italic;
+  color: var(--accent-color);
+}
+
+
 /* ================= Form Groups ================= */
 .form-group {
     margin-bottom: 1rem;

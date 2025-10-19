@@ -1,26 +1,46 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>PensionsGo – Uganda Prisons Pension Portal</title>
 
-  <!-- SEO Metadata -->
-  <meta name="description" content="PensionsGo is a web-based platform that streamlines pension processing, benefits estimation, and application tracking for the Uganda Prisons Service." />
-  <meta name="keywords" content="PensionsGo, Uganda Prisons Service, pension calculator, retirement, workflow automation" />
+  <!-- ============================================================
+       PAGE TITLE & SEO METADATA
+       ------------------------------------------------------------
+       Purpose: Provide search engines and social media with metadata.
+       ============================================================ -->
+  <title>PensionsGo – Uganda Prisons Pension Portal</title>
+  <meta name="description"
+    content="PensionsGo is a web-based platform that streamlines pension processing, benefits estimation, and application tracking for the Uganda Prisons Service." />
+  <meta name="keywords"
+    content="PensionsGo, Uganda Prisons Service, pension calculator, retirement, workflow automation, Uganda pension system" />
   <meta name="author" content="Uganda Prisons ICT Unit" />
 
-  <!-- Favicon -->
+  <!-- Favicon for browser tab -->
   <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
 
-  <!-- Stylesheets -->
+  <!-- ============================================================
+       STYLESHEETS
+       ------------------------------------------------------------
+       These define the layout, calculator, and tracking page styling.
+       ============================================================ -->
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/forms.css" />
   <link rel="stylesheet" href="css/calculator.css" />
   <link rel="stylesheet" href="css/track-status.css" />
+  <link rel="stylesheet" href="css/index.css" /> <!-- Page-specific styling -->
 
-  <!-- JS Scripts -->
+  <!-- ============================================================
+       JAVASCRIPT FILES
+       ------------------------------------------------------------
+       calculator.js  → Pension benefits calculation logic
+       track-status.js → Track application form logic
+       main.js         → Loads dynamic header/footer
+       menu_toggle.js  → Mobile menu toggle interactions
+       toggle-sections.js → Switch between calculator and tracker sections
+       ============================================================ -->
   <script defer src="js/calculator.js"></script>
   <script defer src="js/track-status.js"></script>
   <script type="module" src="js/main.js"></script>
@@ -29,43 +49,94 @@
 </head>
 
 <body>
-  <!-- Header injected dynamically -->
+  <!-- ============================================================
+       HEADER SECTION
+       ------------------------------------------------------------
+       The header (navbar) is dynamically loaded by main.js.
+       Appears on every page; changes depending on login status.
+       ============================================================ -->
+
+  <!-- =================== MAIN CONTENT =================== -->
   <main>
     <div class="main-wrapper">
-      <!-- Welcome Section -->
+
+      <!-- ======================================================
+           WELCOME SECTION
+           ------------------------------------------------------
+           Purpose: Brief introduction to the system and 
+           action button to toggle between calculator & tracking.
+           ====================================================== -->
       <section class="main-info">
         <h2>Welcome to PensionsGo</h2>
         <p>The Pension Workflow Automation System for Uganda Prisons Service.</p>
         <p>This portal helps you estimate retirement benefits and access pension information.</p>
 
-        <!-- Toggle Button -->
+        <!-- Action button: toggles visibility of calculator/track sections -->
         <div class="toggle-btn-wrapper">
-          <button id="toggleSectionBtn" class="toggle-btn">Calcualte Benefits or Track Application</button>
+          <button id="toggleSectionBtn" class="toggle-btn">
+            Calculate Benefits or Track Application
+          </button>
         </div>
       </section>
 
-      <!-- Benefits Calculator Section (Initially Hidden) -->
+      <!-- ======================================================
+           BENEFITS CALCULATOR SECTION
+           ------------------------------------------------------
+           Hidden by default. Shown when user clicks toggle button.
+           Calculates pension benefits based on entered details.
+           ====================================================== -->
       <section class="calculator-section hidden" id="calculatorSection">
         <h2>Benefits Calculator</h2>
+
         <form id="benefitsForm">
+
+          <!-- Dynamic retirement type selection (added for future logic) -->
+            <div class="form-group">
+                <label for="retirementType">Type of Retirement</label>
+                <select id="retirementType" name="retirementType" required>
+                    <option value="" disabled selected>-- Select Type --</option>
+                    <option value="mandatory">Mandatory Retirement</option>
+                    <option value="early">Early Retirement</option>
+                    <option value="aor">AOR (At Own Request)</option>
+                    <option value="death">Death</option>
+                    <option value="medical">Medical Grounds</option>
+                    <option value="discharge">Discharge (CBE, UBE)</option>
+                    <option value="contract">End of Contract</option>
+                </select>
+            </div>
+
+            <!-- Hidden date of birth (visible only for AOR or Early) -->
+            <div class="form-group hidden" id="dobGroup">
+            <label for="birthDate">Date of Birth</label>
+            <input type="date" id="birthDate" name="birthDate" />
+            </div>   
+
+          <!-- Enlistment date input -->
           <div class="form-group">
             <label for="enlistmentDate">Date of Enlistment</label>
             <input type="date" id="enlistmentDate" name="enlistmentDate" required />
           </div>
+
+          <!-- Retirement date input -->
           <div class="form-group">
             <label for="retirementDate">Date of Retirement</label>
             <input type="date" id="retirementDate" name="retirementDate" required />
           </div>
+
+          <!-- Monthly salary input -->
           <div class="form-group">
             <label for="monthlySalary">Monthly Salary (UGX)</label>
             <input type="number" id="monthlySalary" name="monthlySalary" required />
           </div>
+
+          <!-- Submit and Reset Buttons -->
           <div class="button-group">
             <button type="submit" class="btn btn-submit">Calculate</button>
             <button type="reset" class="btn btn-reset">Clear</button>
           </div>
         </form>
 
+        <!-- Results display area -->
         <section id="results" class="hidden">
           <h3>Results</h3>
           <p><strong>Length of Service:</strong> <span id="lengthOfService"></span></p>
@@ -73,26 +144,45 @@
           <p><strong>Expected Gratuity:</strong> <span id="expectedGratuity"></span></p>
           <p><strong>Expected Monthly Pension:</strong> <span id="expectedMonthlyPension"></span></p>
           <p><strong>Expected Full Pension:</strong> <span id="expectedFullPension"></span></p>
+          <p id="eligibilityNote"></p> <!-- Optional eligibility message -->
         </section>
       </section>
 
-      <!-- Track Application Status Section (Initially Hidden) -->
+      <!-- ======================================================
+           TRACK APPLICATION STATUS SECTION
+           ------------------------------------------------------
+           Hidden by default. Displays application progress 
+           based on application ID entered by the pensioner.
+           ====================================================== -->
       <section class="calculator-section hidden" id="trackSection">
         <h2>Track Application Status</h2>
+
         <form id="trackForm">
+          <!-- Application ID input -->
           <div class="form-group">
             <label for="trackingId">Enter Application ID</label>
-            <input type="text" id="trackingId" name="trackingId" placeholder="e.g., APP12345678" required />
+            <input type="text" id="trackingId" name="trackingId"
+              placeholder="e.g., APP12345678" required />
           </div>
+
+          <!-- Submit button -->
           <div class="button-group">
             <button type="submit" class="btn btn-submit">Check Status</button>
           </div>
         </form>
+
+        <!-- Dynamic results area (populated by JS) -->
         <div id="trackingResult" class="tracking-result"></div>
       </section>
+
     </div>
   </main>
 
-  <!-- Footer injected dynamically -->
+  <!-- ============================================================
+       FOOTER SECTION
+       ------------------------------------------------------------
+       Automatically injected by main.js for consistency across pages.
+       ============================================================ -->
 </body>
+
 </html>
