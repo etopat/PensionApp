@@ -177,14 +177,14 @@ hr {
 
   .header-links {
     display: none;
-    flex-direction: column;
+    flex-direction: row;
     position: absolute;
     top: 55px;
     right: 0;
     background-color: var(--primary-color);
     width: 100%;
-    padding: 1rem 0;
-    text-align: center;
+    padding: 1rem;
+    justify-content: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
