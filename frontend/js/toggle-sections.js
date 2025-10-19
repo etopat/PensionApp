@@ -6,14 +6,25 @@ document.addEventListener("DOMContentLoaded", () => {
   let showingCalculator = false;
 
   const showSection = (sectionToShow, sectionToHide) => {
+    // Fade out current section
     sectionToHide.classList.remove("fade-in");
     sectionToHide.classList.add("fade-out");
+
     setTimeout(() => {
+      // Hide old section
       sectionToHide.classList.add("hidden");
       sectionToHide.classList.remove("fade-out");
+
+      // Show new section
       sectionToShow.classList.remove("hidden");
       requestAnimationFrame(() => {
         sectionToShow.classList.add("fade-in");
+      });
+
+      // Smooth scroll new section into view
+      sectionToShow.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
       });
     }, 300);
   };
@@ -23,10 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (showingCalculator) {
       showSection(calculator, tracker);
-      toggleBtn.textContent = "Show Application Tracker";
+      toggleBtn.textContent = "Track Application status";
     } else {
       showSection(tracker, calculator);
-      toggleBtn.textContent = "Show Benefits Calculator";
+      toggleBtn.textContent = "Calculate Benefits Estimates";
     }
   });
 });
