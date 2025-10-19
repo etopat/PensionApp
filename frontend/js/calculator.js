@@ -172,17 +172,25 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
-      // === Other Types (Discharge, Contract, etc.) ===
-      default: {
+      // === Discharge, Contract, or Marriage Grounds ===
+      case 'discharge':
+      case 'contract':
+      case 'marriage': {
         if (months >= 120) {
           gratuity = gratuityFormula;
           monthlyPension = monthlyPensionFormula;
           fullPension = fullPensionFormula;
-          note = `<p>Eligible for gratuity, monthly pension, and full pension.</p>`;
+          note = `<p>Eligible for gratuity, monthly pension, and full pension (Discharge/Contract/Marriage Grounds).</p>`;
         } else {
           gratuity = gratuityFormula * 0.5;
-          note = `<p>Eligible for short service gratuity only (less than 10 years of service).</p>`;
+          note = `<p>Eligible for short service gratuity only (less than 10 years of service under Discharge/Contract/Marriage Grounds).</p>`;
         }
+        break;
+      }
+
+      // === Fallback (Any Other Undefined Type) ===
+      default: {
+        note = `<p>Invalid or unsupported retirement type selected.</p>`;
         break;
       }
     }
