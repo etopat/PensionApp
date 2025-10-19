@@ -465,3 +465,25 @@ body.fade-theme {
   color: var(--accent-color);
   font-weight: 600;
 }
+
+/* ============================================================
+   11. HEADER ENTRANCE ANIMATION ON PAGE LOAD
+=============================================================== */
+
+/* Keyframes for sliding down + fade-in */
+@keyframes slideFadeIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Apply animation once the page loads */
+header {
+  animation: slideFadeIn 0.8s ease-out forwards;
+}
+
