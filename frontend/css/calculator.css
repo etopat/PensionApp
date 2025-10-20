@@ -159,36 +159,18 @@
 }
 
 /* ============================================================
-   ENHANCED ALERT ANIMATIONS — RED WARNING STYLE
+   ENHANCED ELIGIBILITY ALERT STYLES WITH ANIMATIONS
    ============================================================ */
-.eligibility-alert.red {
-  color: #b30000;
-  background-color: #ffe5e5;
-  border: 1.5px solid #ff6666;
-  box-shadow: 0 0 8px rgba(255, 0, 0, 0.15);
-  animation: fade-in 0.8s ease-in-out, pulse-border 2s infinite;
-}
 
-/* Soft pulsating border animation for attention */
-@keyframes pulse-border {
-  0% {
-    box-shadow: 0 0 0 rgba(255, 0, 0, 0.3);
-    border-color: #ff6666;
-  }
-  50% {
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
-    border-color: #ff0000;
-  }
-  100% {
-    box-shadow: 0 0 0 rgba(255, 0, 0, 0.3);
-    border-color: #ff6666;
-  }
-}
-
-/* Optional: Slight fade and upward motion for all alerts */
+/* Common fade-in for all alerts */
 .eligibility-alert {
   opacity: 0;
   transform: translateY(5px);
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-top: 1rem;
   animation: fadeInAlert 0.6s ease-out forwards;
 }
 
@@ -200,5 +182,71 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   1️⃣ RED ALERT — NOT ELIGIBLE (PULSATING)
+   ============================================================ */
+.eligibility-alert.red {
+  color: #b30000;
+  background-color: #ffe5e5;
+  border: 1.5px solid #ff6666;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.15);
+  animation: fadeInAlert 0.8s ease-in-out forwards, pulseBorder 2s infinite;
+}
+
+@keyframes pulseBorder {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 0, 0, 0.2);
+    border-color: #ff9999;
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
+    border-color: #ff0000;
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 0, 0, 0.2);
+    border-color: #ff9999;
+  }
+}
+
+/* ============================================================
+   2️⃣ YELLOW ALERT — PARTIAL BENEFITS (SOFT GLOW)
+   ============================================================ */
+.eligibility-alert.yellow {
+  color: #856404;
+  background-color: #fff3cd;
+  border: 1.5px solid #ffe58f;
+  box-shadow: 0 0 6px rgba(255, 213, 79, 0.4);
+  animation: fadeInAlert 0.8s ease-in-out forwards, softGlowYellow 3s ease-in-out;
+}
+
+@keyframes softGlowYellow {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(255, 213, 79, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(255, 213, 79, 0.6);
+  }
+}
+
+/* ============================================================
+   3️⃣ BLUE ALERT — FULL BENEFITS (SUBTLE GLOW)
+   ============================================================ */
+.eligibility-alert.blue {
+  color: #004085;
+  background-color: #cce5ff;
+  border: 1.5px solid #99ccff;
+  box-shadow: 0 0 6px rgba(100, 181, 246, 0.3);
+  animation: fadeInAlert 0.8s ease-in-out forwards, softGlowBlue 3s ease-in-out;
+}
+
+@keyframes softGlowBlue {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(100, 181, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(100, 181, 246, 0.6);
   }
 }
