@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const formattedRetire = formatDate(retireDate);
           const formattedMandatory = formatDate(mandatoryDate);
           note = `
-            <p>You don't qualify to retire mandatorily at <strong>${age}</strong>.</p>
+            <p>You don't qualify to retire mandatorily at <strong>${ageAtRetirement} on ${formattedRetire}</strong>.</p>
             <p>You will retire mandatorily on <strong>${formattedMandatory}</strong>.</p>
             <p>If you want to retire before then, apply for <strong>Early Retirement</strong> instead.</p>
           `;
