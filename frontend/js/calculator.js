@@ -231,7 +231,17 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
+    // Reveal results
     resultsSection.classList.remove('hidden');
+
+    // Smoothly scroll the entire results section into view
+    // Delay scrolling slightly to allow fade-in animation
+    setTimeout(() => {
+      resultsSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'   // centers the results section in the viewport
+      });
+    }, 400);
   };
 
   // -------------------------
