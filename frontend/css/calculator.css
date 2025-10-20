@@ -157,3 +157,48 @@
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ============================================================
+   ENHANCED ALERT ANIMATIONS — RED WARNING STYLE
+   ============================================================ */
+.eligibility-alert.red {
+  color: #b30000;
+  background-color: #ffe5e5;
+  border: 1.5px solid #ff6666;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.15);
+  animation: fade-in 0.8s ease-in-out, pulse-border 2s infinite;
+}
+
+/* Soft pulsating border animation for attention */
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 0, 0, 0.3);
+    border-color: #ff6666;
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
+    border-color: #ff0000;
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 0, 0, 0.3);
+    border-color: #ff6666;
+  }
+}
+
+/* Optional: Slight fade and upward motion for all alerts */
+.eligibility-alert {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: fadeInAlert 0.6s ease-out forwards;
+}
+
+@keyframes fadeInAlert {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
