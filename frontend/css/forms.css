@@ -93,49 +93,7 @@
     background: var(--muted-dark);
 }
 
-/* ===== Toggle Button Styles ===== */
-.toggle-btn-wrapper {
-  text-align: center;
-  margin: 1.5rem 0;
-}
 
-.toggle-btn {
-  background-color: var(--accent-color);
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  animation: pulseGlow 2.5s infinite ease-in-out;
-}
-
-.toggle-btn:hover {
-  background-color: var(--accent-color);
-  color: var(--primary-color);
-  animation: none;
-  transform: scale(1.05);
-}
-
-@keyframes pulseGlow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 15px 4px rgba(255, 255, 255, 0.15);
-    transform: scale(1.03);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3);
-    transform: scale(1);
-  }
-}
-
-.hidden {
-  display: none !important;
-}
 
 /* ===== Fade Transition Styles ===== */
 .calculator-section {
