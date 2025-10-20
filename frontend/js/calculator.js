@@ -1,14 +1,11 @@
 // ============================================================
-// Pension Benefits Calculator Logic (Enhanced with Visual Alerts)
+// Pension Benefits Calculator Logic (Stable UGX Prefix + Thousands Separator + Input Fix)
 // ============================================================
 // Features:
+// ✅ Stable "UGX" prefix (visual only, not typed)
+// ✅ Live thousands separator (works smoothly even after 4+ digits)
 // ✅ Handles all retirement types (including Marriage & Contract)
-// ✅ Enforces 60 years for Mandatory Retirement
-// ✅ Formats all dates as DD-MMM-YYYY
-// ✅ Displays eligibility messages in color-coded alert boxes
-//    🔴 Red = Not eligible
-//    🟡 Yellow = Partial benefits (gratuity only)
-//    🔵 Blue = Full benefits (gratuity + pension)
+// ✅ Auto-scrolls results into view
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const retirementTypeSelect = document.getElementById('retirementType');
   const dobGroup = document.getElementById('dobGroup');
   const birthDateInput = document.getElementById('birthDate');
+  const salaryInput = document.getElementById('monthlySalary');
+
+  // Ensure salary input behaves as text (so commas are allowed)
+  salaryInput.setAttribute('type', 'text');
+  salaryInput.setAttribute('inputmode', 'numeric');
+  salaryInput.setAttribute('autocomplete', 'off');
 
   // Output elements
   const lengthOfServiceEl = document.getElementById('lengthOfService');
@@ -28,6 +31,50 @@ document.addEventListener('DOMContentLoaded', () => {
   const expectedMonthlyPensionEl = document.getElementById('expectedMonthlyPension');
   const expectedFullPensionEl = document.getElementById('expectedFullPension');
   const eligibilityNote = document.getElementById('eligibilityNote');
+
+  // -------------------------
+  // UGX Prefix (Gray Label)
+  // -------------------------
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("salary-wrapper");
+  wrapper.style.position = "relative";
+  wrapper.style.display = "inline-block";
+  wrapper.style.width = "100%";
+
+  const prefix = document.createElement("span");
+  prefix.textContent = "UGX";
+  prefix.classList.add("salary-prefix");
+  prefix.style.position = "absolute";
+  prefix.style.left = "10px";
+  prefix.style.top = "50%";
+  prefix.style.transform = "translateY(-50%)";
+  prefix.style.color = "gray";
+  prefix.style.pointerEvents = "none";
+  prefix.style.fontWeight = "500";
+
+  salaryInput.parentNode.insertBefore(wrapper, salaryInput);
+  wrapper.appendChild(salaryInput);
+  wrapper.appendChild(prefix);
+  salaryInput.style.paddingLeft = "45px";
+
+  // -------------------------
+  // Salary Input: Thousands Separator Logic
+  // -------------------------
+  const formatWithCommas = (numStr) => {
+    return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  salaryInput.addEventListener("input", (e) => {
+    const rawValue = e.target.value.replace(/[^0-9]/g, ""); // digits only
+    if (rawValue === "") {
+      e.target.value = "";
+      return;
+    }
+    const formatted = formatWithCommas(rawValue);
+    e.target.value = formatted;
+  });
+
+  const getRawSalary = () => parseFloat(salaryInput.value.replace(/,/g, "")) || 0;
 
   // -------------------------
   // Show or Hide Date of Birth field
@@ -63,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (enlistmentMonthIsFull(start)) months += 1;
     if (!retirementMonthIsFull(end)) months -= 1;
-
     return Math.max(0, months);
   };
 
@@ -97,27 +143,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const annual = salary * 12;
     const cappedMonths = Math.min(months, 900);
 
-    // Pension formulas
     const gratuityFormula = ((cappedMonths * annual) / 500) * (1 / 3) * 15;
     const monthlyPensionFormula = (((cappedMonths * annual) / 500) * (2 / 3)) / 12;
     const fullPensionFormula = ((cappedMonths * annual) / 500) / 12;
 
-    // Defaults
     let gratuity = 0, monthlyPension = 0, fullPension = 0;
     let note = '';
-    let colorClass = 'red'; // default = not eligible
+    let colorClass = 'red';
 
-    // -------------------------
-    // Apply Logic by Retirement Type
-    // -------------------------
     switch (type) {
-      // === Mandatory Retirement (60 years) ===
       case 'mandatory': {
-        if (!birthDate) {
-          alert('Please enter your Date of Birth for Mandatory Retirement.');
-          return;
-        }
-
+        if (!birthDate) return alert('Please enter your Date of Birth for Mandatory Retirement.');
         const ageAtRetirement = calculateAgeAtRetirement(birthDate, retireDate);
         const mandatoryDate = calculateSixtiethBirthday(birthDate);
 
@@ -146,13 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
-      // === Early or AOR Retirement ===
       case 'early':
       case 'aor': {
-        if (!birthDate) {
-          alert('Please enter your Date of Birth for Early or AOR Retirement.');
-          return;
-        }
+        if (!birthDate) return alert('Please enter your Date of Birth for Early or AOR Retirement.');
         const age = calculateAgeAtRetirement(birthDate, retireDate);
         if ((months >= 120 && age >= 45) || months >= 240) {
           gratuity = gratuityFormula;
@@ -167,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
-      // === Death or Medical Grounds ===
       case 'death':
       case 'medical': {
         const deathGratuity = 3 * annual;
@@ -184,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
-      // === Marriage, Discharge, or Contract ===
       case 'marriage':
       case 'discharge':
       case 'contract': {
@@ -199,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
-      // === Default (Other unexpected types) ===
       default: {
         if (months >= 120) {
           gratuity = gratuityFormula;
@@ -224,24 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
     expectedGratuityEl.textContent = `UGX ${gratuity.toLocaleString()}`;
     expectedMonthlyPensionEl.textContent = `UGX ${monthlyPension.toLocaleString()}`;
     expectedFullPensionEl.textContent = `UGX ${fullPension.toLocaleString()}`;
+    eligibilityNote.innerHTML = `<div class="eligibility-alert ${colorClass}">${note}</div>`;
 
-    eligibilityNote.innerHTML = `
-      <div class="eligibility-alert ${colorClass}">
-        ${note}
-      </div>
-    `;
-
-    // Reveal results
     resultsSection.classList.remove('hidden');
-
-    // Smoothly scroll the entire results section into view
-    // Delay scrolling slightly to allow fade-in animation
-    setTimeout(() => {
-      resultsSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'   // centers the results section in the viewport
-      });
-    }, 400);
+    setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'center' }), 400);
   };
 
   // -------------------------
@@ -249,19 +264,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-
     const enlistDate = document.getElementById('enlistmentDate').value;
     const retireDate = document.getElementById('retirementDate').value;
-    const salary = parseFloat(document.getElementById('monthlySalary').value);
+    const salary = getRawSalary();
     const type = retirementTypeSelect.value;
     const birthDate = birthDateInput.value;
-
     if (!type) return alert('Please select the type of retirement.');
     if (!enlistDate || !retireDate || isNaN(salary) || salary <= 0)
       return alert('Please fill in all required fields correctly!');
     if (new Date(retireDate) <= new Date(enlistDate))
       return alert('Retirement date must be after enlistment date.');
-
     calculateBenefits(type, enlistDate, retireDate, salary, birthDate);
   });
 });

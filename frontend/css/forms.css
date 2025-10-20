@@ -193,3 +193,25 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* ======== Salary Input Prefix Styling ======== */
+.salary-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.salary-wrapper input {
+  padding-left: 3.8rem !important; /* ensures enough room for prefix */
+}
+
+.salary-prefix {
+  position: absolute;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: gray;
+  font-weight: 500;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
