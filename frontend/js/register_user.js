@@ -6,25 +6,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const titles = ['Mr.', 'Mrs.', 'Ms.', 'Dr.'];
   const roles = ['admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver'];
 
-  // Populate selects if they exist
-  const populateSelect = (selector, arr) => {
-    const el = document.getElementById(selector);
+  // Populate selects dynamically
+  const populateSelect = (id, items) => {
+    const el = document.getElementById(id);
     if (!el) return;
-    arr.forEach(v => {
+    el.innerHTML = '<option value="" disabled selected>-- Select --</option>';
+    items.forEach(item => {
       const opt = document.createElement('option');
-      opt.value = v;
-      opt.textContent = v;
+      opt.value = item;
+      opt.textContent = item;
       el.appendChild(opt);
     });
   };
   populateSelect('userTitle', titles);
   populateSelect('userRole', roles);
 
-  // Helper validators
-  const passwordValid = (pwd) => {
-    return /[a-z]/.test(pwd) && /[A-Z]/.test(pwd) && /\d/.test(pwd) && pwd.length >= 6;
-  };
-
+  // Helper for showing messages
   const showMessage = (msg, type = 'info') => {
     let box = document.getElementById('registerMessageBox');
     if (!box) {
@@ -33,11 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
       form.parentElement.insertBefore(box, form);
     }
     box.innerHTML = `<div class="message ${type}">${msg}</div>`;
+
+    setTimeout(() => {
+      if (box) box.innerHTML = "";
+    }, 10500); // Remove after fade-out completes
+
+  };
+
+  // Password validator
+  const passwordValid = (pwd) => {
+    return /[a-z]/.test(pwd) && /[A-Z]/.test(pwd) && /\d/.test(pwd) && pwd.length >= 6;
   };
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     submitBtn.disabled = true;
     showMessage('Processing... please wait', 'info');
 
@@ -45,38 +51,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const pwd = formData.get('userPassword');
 
     if (!passwordValid(pwd)) {
-      showMessage('Password must be at least 6 characters and include lowercase, uppercase and a number.', 'error');
+      showMessage('❌ Password must include uppercase, lowercase, and a number (min 6 chars).', 'error');
       submitBtn.disabled = false;
       return;
     }
 
-    // Client-side email simple check
     const email = formData.get('userEmail') || '';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showMessage('Please enter a valid email address.', 'error');
+      showMessage('❌ Please enter a valid email address.', 'error');
       submitBtn.disabled = false;
       return;
     }
 
     try {
-      const resp = await fetch('../backend/api/register_user.php', {
+      const response = await fetch('../backend/api/register_user.php', {
         method: 'POST',
         body: formData,
-        credentials: 'same-origin',
       });
 
-      const json = await resp.json();
+      const data = await response.json();
 
-      if (resp.ok && json.success) {
-        showMessage(`Success: ${json.message}`, 'success');
-        // Optionally reset form
+      if (response.ok && data.success) {
+        showMessage(`✅ ${data.message} <br> Reference Code: <strong>${data.referenceCode}</strong>`, 'success');
         form.reset();
       } else {
-        showMessage(`Error: ${json.message || 'Unknown server error'}`, 'error');
+        showMessage(`❌ ${data.message || 'Server error occurred.'}`, 'error');
       }
-    } catch (err) {
-      console.error('Register fetch error', err);
-      showMessage('Network error. Could not reach server.', 'error');
+    } catch (error) {
+      console.error('Register error:', error);
+      showMessage('⚠️ Network error: Could not connect to server.', 'error');
     } finally {
       submitBtn.disabled = false;
     }
