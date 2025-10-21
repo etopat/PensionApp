@@ -84,9 +84,6 @@ header.show {
   color: #fff;
 }
 
-.header-links .login-mobile {
-  display: none;
-}
 
 /* ----- Centered Header Title ----- */
 .header-text {
@@ -179,7 +176,100 @@ hr {
 }
 
 /* ============================================================
-   3. RESPONSIVE HEADER NAVIGATION
+   3. ACTIVE PAGE HIGHLIGHTING
+=============================================================== */
+.nav-link.active {
+  border-bottom: 2px solid var(--accent-color);
+  font-weight: 600;
+  opacity: 1;
+  transition: all 0.3s ease-in-out;
+}
+
+.header-links .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+/* ============================================================
+   4. THEME TOGGLE ANIMATION & PAGE FADE
+=============================================================== */
+html,
+body,
+header,
+footer,
+.main-wrapper,
+.button,
+.theme-toggle {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+body.fade-theme {
+  animation: fadeTheme 0.5s ease;
+}
+
+@keyframes fadeTheme {
+  from { opacity: 0.85; }
+  to { opacity: 1; }
+}
+
+.theme-toggle.theme-toggled {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+/* ============================================================
+   5. SLIDING UNDERLINE ANIMATION FOR NAV LINKS
+=============================================================== */
+.header-links .nav-link {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.3rem;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.header-links .nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background-color: var(--accent-color);
+  transition: left 0.5s ease-in-out;
+}
+
+.header-links .nav-link:hover::after {
+  left: 0;
+}
+
+.header-links .nav-link.active::after {
+  left: 0;
+}
+
+.header-links .nav-link.active {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.header-links .login-mobile {
+  display: none;
+}
+/* ============================================================
+   6. HEADER ENTRANCE ANIMATION ON PAGE LOAD
+=============================================================== */
+@keyframes slideFadeIn {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+header {
+  animation: slideFadeIn 0.5s ease-out forwards;
+}
+
+/* ============================================================
+   7. RESPONSIVE HEADER NAVIGATION
 =============================================================== */
 @media (max-width: 768px) {
   header {
@@ -232,7 +322,7 @@ hr {
 }
 
 /* ============================================================
-   4. MAIN CONTENT STYLES
+   8. MAIN CONTENT STYLES
 =============================================================== */
 main {
   flex: 1;
@@ -254,12 +344,12 @@ main {
 }
 
 .main-info {
-  padding-top: 2rem;
-  text-align: center;
+  padding-top: 1rem;
   line-height: 2rem;
 }
-.main-info h2 {
-  margin-bottom: 2rem;
+.main-info h2, .info {
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 /* ===== Toggle Button Styles ===== */
@@ -325,7 +415,7 @@ h2 {
 }
 
 /* ============================================================
-   5. FOOTER STYLES — Sticky Bottom Logic
+   9. FOOTER STYLES — Sticky Bottom Logic
 =============================================================== */
 footer {
   margin-top: auto;
@@ -363,7 +453,7 @@ footer .social-links a:hover {
 }
 
 /* ============================================================
-   6. CONTACT INFO SECTION
+   10. CONTACT INFO SECTION
 =============================================================== */
 .contact-info {
   display: flex;
@@ -433,7 +523,7 @@ footer .social-links a:hover {
 }
 
 /* ============================================================
-   7. THEME STYLES
+   11. THEME STYLES
 =============================================================== */
 [data-theme="light"] {
   background-color: #fff;
@@ -445,95 +535,7 @@ footer .social-links a:hover {
   color: #fff;
 }
 
-/* ============================================================
-   8. ACTIVE PAGE HIGHLIGHTING
-=============================================================== */
-.nav-link.active {
-  border-bottom: 2px solid var(--accent-color);
-  font-weight: 600;
-  opacity: 1;
-  transition: all 0.3s ease-in-out;
-}
 
-.header-links .nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-
-/* ============================================================
-   9. THEME TOGGLE ANIMATION & PAGE FADE
-=============================================================== */
-html,
-body,
-header,
-footer,
-.main-wrapper,
-.button,
-.theme-toggle {
-  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
-}
-
-body.fade-theme {
-  animation: fadeTheme 0.5s ease;
-}
-
-@keyframes fadeTheme {
-  from { opacity: 0.85; }
-  to { opacity: 1; }
-}
-
-.theme-toggle.theme-toggled {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
-}
-
-/* ============================================================
-   10. SLIDING UNDERLINE ANIMATION FOR NAV LINKS
-=============================================================== */
-.header-links .nav-link {
-  position: relative;
-  display: inline-block;
-  padding-bottom: 0.3rem;
-  overflow: hidden;
-  transition: color 0.3s ease;
-}
-
-.header-links .nav-link::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: -100%;
-  width: 100%;
-  height: 2px;
-  background-color: var(--accent-color);
-  transition: left 0.5s ease-in-out;
-}
-
-.header-links .nav-link:hover::after {
-  left: 0;
-}
-
-.header-links .nav-link.active::after {
-  left: 0;
-}
-
-.header-links .nav-link.active {
-  color: var(--accent-color);
-  font-weight: 600;
-}
-
-/* ============================================================
-   11. HEADER ENTRANCE ANIMATION ON PAGE LOAD
-=============================================================== */
-@keyframes slideFadeIn {
-  from { transform: translateY(-30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-header {
-  animation: slideFadeIn 0.5s ease-out forwards;
-}
 
 /* ============================================================
    12. MAIN CONTENT FADE-IN AFTER HEADER LOAD
