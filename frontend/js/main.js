@@ -44,13 +44,49 @@ async function loadAppropriateHeader() {
   }
 
   // load logout module
-  try {
+try {
     const logoutMod = await import('./logout.js');
     if (logoutMod && typeof logoutMod.initLogout === 'function') {
-      logoutMod.initLogout();
+        console.log("🔄 Initializing logout module...");
+        logoutMod.initLogout();
+    } else {
+        console.error("❌ Logout module not properly exported");
+        // Fallback logout handler
+        setupFallbackLogout();
     }
-  } catch (err) {
-    console.warn('Could not load logout module:', err);
+} catch (err) {
+    console.warn('⚠️ Could not load logout module:', err);
+    // Fallback logout handler
+    setupFallbackLogout();
+}
+
+  // Fallback logout handler
+  function setupFallbackLogout() {
+      console.log("🔄 Setting up fallback logout handler...");
+      setTimeout(() => {
+          const logoutBtn = document.getElementById('logoutBtn');
+          if (logoutBtn) {
+              // Remove any existing listeners by cloning
+              const newLogoutBtn = logoutBtn.cloneNode(true);
+              logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+              
+              newLogoutBtn.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  if (confirm('Are you sure you want to logout?')) {
+                      // Clear all user data
+                      localStorage.removeItem('loggedInUser');
+                      localStorage.removeItem('userRole');
+                      sessionStorage.clear();
+                      
+                      // Redirect to login
+                      window.location.href = 'login.html';
+                  }
+              });
+              console.log("✅ Fallback logout handler attached");
+          }
+      }, 300);
   }
 }
 

@@ -2,21 +2,35 @@
 // ES module — exports initLogout() so header injection + dynamic import works reliably.
 
 export function initLogout(options = {}) {
+  console.log("✅ Logout module initializing...");
+  
   // options.logoutUrl can be provided; default tries a sensible path relative to frontend.
   const logoutUrl = options.logoutUrl || computeLogoutUrl();
 
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (!logoutBtn) return;
+  // Wait for header to be fully loaded
+  setTimeout(() => {
+    const logoutBtn = document.getElementById('logoutBtn');
+    console.log("🔍 Looking for logout button:", logoutBtn);
+    
+    if (!logoutBtn) {
+      console.warn("❌ Logout button not found");
+      return;
+    }
 
-  // Prevent default href (in case header link uses href="#")
-  // Remove any existing event listeners by cloning
-  const newLogoutBtn = logoutBtn.cloneNode(true);
-  logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+    // Remove any existing event listeners by cloning
+    const newLogoutBtn = logoutBtn.cloneNode(true);
+    logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
 
-  newLogoutBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    showLogoutModal(logoutUrl);
-  });
+    newLogoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("🖱️ Logout button clicked");
+      showLogoutModal(logoutUrl);
+    });
+
+    console.log("✅ Logout button event listener attached");
+
+  }, 200);
 
   // Also fix the Edit Profile menu item
   fixEditProfileMenuItem();
@@ -42,6 +56,8 @@ function computeLogoutUrl() {
 }
 
 function showLogoutModal(logoutUrl) {
+  console.log("🔄 Showing logout modal");
+  
   // Remove existing modal if present
   const existing = document.getElementById('logoutModal');
   if (existing) existing.remove();
@@ -55,31 +71,48 @@ function showLogoutModal(logoutUrl) {
         <h3>Confirm Logout</h3>
       </div>
       <div class="auth-modal-body">
-        <p>Are you sure you want to log out?</p>
+        <p>Are you sure you want to log out of PensionsGo?</p>
       </div>
       <div class="auth-modal-footer">
-        <button id="confirmLogout" class="auth-btn auth-btn-danger">Logout</button>
+        <button id="confirmLogout" class="auth-btn auth-btn-danger">Yes, Logout</button>
         <button id="cancelLogout" class="auth-btn auth-btn-secondary">Cancel</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
 
-  document.getElementById('cancelLogout').addEventListener('click', () => modal.remove());
-  document.getElementById('confirmLogout').addEventListener('click', () => {
+  // Add event listeners to modal buttons
+  document.getElementById('cancelLogout').addEventListener('click', function(e) {
+    e.stopPropagation();
+    modal.remove();
+  });
+
+  document.getElementById('confirmLogout').addEventListener('click', function(e) {
+    e.stopPropagation();
     modal.remove();
     executeLogout(logoutUrl);
   });
 
   // Close modal when clicking outside
-  modal.addEventListener('click', (e) => {
+  modal.addEventListener('click', function(e) {
     if (e.target === modal) {
       modal.remove();
     }
   });
+
+  // Close modal on escape key
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
 }
 
 async function executeLogout(logoutUrl) {
+  console.log("🚪 Executing logout...");
+  
   // Show overlay while request executes
   const overlay = document.createElement('div');
   overlay.className = 'auth-overlay';
@@ -94,6 +127,7 @@ async function executeLogout(logoutUrl) {
     clearAllUserData();
     
     // Then call server-side logout
+    console.log("📡 Calling logout URL:", logoutUrl);
     const response = await fetch(logoutUrl, {
       method: 'POST',
       headers: {
@@ -103,9 +137,10 @@ async function executeLogout(logoutUrl) {
     });
 
     const result = await response.json();
+    console.log("📨 Logout response:", result);
     
     if (result.success) {
-      console.log('Logout successful:', result.message);
+      console.log('✅ Logout successful:', result.message);
       
       // Clear any remaining client-side data
       clearAllUserData();
@@ -120,7 +155,7 @@ async function executeLogout(logoutUrl) {
     }
 
   } catch (err) {
-    console.error('Logout error:', err);
+    console.error('❌ Logout error:', err);
     
     // Even if server fails, clear client data and redirect
     clearAllUserData();
@@ -143,6 +178,8 @@ async function executeLogout(logoutUrl) {
 // Function to clear all user data consistently
 function clearAllUserData() {
   try {
+    console.log("🧹 Clearing all user data...");
+    
     // Clear user-specific localStorage
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('userRole');
@@ -158,10 +195,10 @@ function clearAllUserData() {
     // Dispatch event for other modules to clean up
     window.dispatchEvent(new CustomEvent('userLoggedOut'));
     
-    console.log('All user data cleared from client storage');
+    console.log('✅ All user data cleared from client storage');
     
   } catch (error) {
-    console.error('Error clearing user data:', error);
+    console.error('❌ Error clearing user data:', error);
   }
 }
 
@@ -175,32 +212,7 @@ function fixEditProfileMenuItem() {
     
     newLink.addEventListener('click', function(e) {
       e.preventDefault();
-      
-      // Get current logged-in user ID
-      const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
-      const currentUserId = currentUser.id;
-      
-      if (currentUserId) {
-        // Redirect to edit user page with current user's ID
-        window.location.href = `edit_user.html?user_id=${currentUserId}`;
-      } else {
-        alert('Unable to determine user ID. Please login again.');
-        window.location.href = 'login.html';
-      }
-    });
-  }
-}
-
-// Ensure Edit Profile fix:
-function fixEditProfileMenuItem() {
-  const editProfileLink = document.querySelector('a[href="edit_user.html"]');
-  if (editProfileLink) {
-    // Remove any existing event listeners by cloning
-    const newLink = editProfileLink.cloneNode(true);
-    editProfileLink.parentNode.replaceChild(newLink, editProfileLink);
-    
-    newLink.addEventListener('click', function(e) {
-      e.preventDefault();
+      e.stopPropagation();
       
       // Get current logged-in user ID
       const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
@@ -222,10 +234,10 @@ if (typeof window !== 'undefined') {
   window.clearAllUserData = clearAllUserData;
 }
 
-// Add event listener for other modules to react to logout
+// Optional: Add event listener for other modules to react to logout
 if (typeof window !== 'undefined') {
   window.addEventListener('userLoggedOut', () => {
-    console.log('User logged out event received');
+    console.log('📢 User logged out event received');
     // Other modules can listen for this event to perform cleanup
   });
 }
