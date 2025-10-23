@@ -1,0 +1,128 @@
+/* ============================================================
+   LOGOUT MODAL & OVERLAY STYLING
+   ============================================================ */
+
+/* Dimmed background overlay */
+.logout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 10, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s ease;
+}
+
+/* Modal container */
+.logout-modal {
+  background: var(--card-bg, #fff);
+  color: var(--text-color, #222);
+  border-radius: 10px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease;
+}
+
+/* Modal header text */
+.logout-modal h3 {
+  color: var(--heading-color, #333);
+  margin-bottom: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* Modal message */
+.logout-modal p {
+  font-size: 1rem;
+  color: var(--muted-color, #555);
+  margin-bottom: 1.5rem;
+}
+
+/* Action buttons */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn-confirm,
+.btn-cancel {
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-confirm {
+  background: var(--primary-color, #007bff);
+  color: #fff;
+}
+
+.btn-confirm:hover {
+  background: var(--primary-dark, #0056b3);
+  transform: translateY(-2px);
+}
+
+.btn-cancel {
+  background: var(--muted-color, #ccc);
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #bbb;
+  transform: translateY(-2px);
+}
+
+/* Logout overlay spinner (after confirmation) */
+.logout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 15, 15, 0.8);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  text-align: center;
+  font-size: 1.2rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.logout-overlay .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

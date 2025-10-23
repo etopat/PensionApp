@@ -1,7 +1,16 @@
-// (ES module) - loads correct header, footer and initializes header interactions + theme + nav highlight
+// ====================================================================
+// main.js
+// Dynamically loads correct header & footer, initializes theme toggles,
+// navigation highlighting, and header interactions.
+// ====================================================================
 
 import { loadFooter } from './modules/footer.js';
 
+/**
+ * Load appropriate header based on login status.
+ * header2.html → for logged-in users
+ * header1.html → for public pages
+ */
 async function loadAppropriateHeader() {
   try {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
@@ -11,26 +20,42 @@ async function loadAppropriateHeader() {
     if (!res.ok) throw new Error(`Failed to fetch ${headerPath}: ${res.status}`);
     const headerHTML = await res.text();
 
-    // Insert header at top of body
+    // Insert header at top of the body
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
-    // Initialize theme toggle and highlight active page
+    // Initialize theme toggle & highlight active page FIRST
     initializeThemeToggle();
     highlightActivePage();
 
-    // After header is in DOM, dynamically import and initialize header interactions
-    const mod = await import('./modules/header_interactions.js');
-    if (mod && typeof mod.initHeaderInteractions === 'function') {
-      mod.initHeaderInteractions();
-    }
+    // Then initialize header interactions with a small delay
+    setTimeout(async () => {
+      try {
+        const mod = await import('./modules/header_interactions.js');
+        if (mod && typeof mod.initHeaderInteractions === 'function') {
+          mod.initHeaderInteractions();
+        }
+      } catch (err) {
+        console.error('Failed to initialize header interactions:', err);
+      }
+    }, 50);
 
   } catch (err) {
     console.error('Failed to load header:', err);
   }
+
+  // load logout module
+  try {
+    const logoutMod = await import('./logout.js');
+    if (logoutMod && typeof logoutMod.initLogout === 'function') {
+      logoutMod.initLogout();
+    }
+  } catch (err) {
+    console.warn('Could not load logout module:', err);
+  }
 }
 
 /**
- * Applies stored theme and animates transitions smoothly.
+ * Initialize theme toggle and smooth animated transitions.
  */
 function initializeThemeToggle() {
   const html = document.documentElement;
@@ -40,20 +65,18 @@ function initializeThemeToggle() {
   const storedTheme = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', storedTheme);
 
-  // Smooth fade transition for color change
+  // Smooth transition for color changes
   document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
   html.style.transition = 'background-color 0.5s ease, color 0.5s ease';
 
   const main = document.querySelector('.main-wrapper');
   const header = document.querySelector('header');
   const footer = document.querySelector('footer');
-
   [main, header, footer].forEach(el => {
     if (el) el.style.transition = 'background-color 0.5s ease, color 0.5s ease';
   });
 
   if (toggleBtn) {
-    // Replace to prevent duplicate listeners
     const newBtn = toggleBtn.cloneNode(true);
     toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
 
@@ -61,20 +84,20 @@ function initializeThemeToggle() {
       const currentTheme = html.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       html.setAttribute('data-theme', newTheme);
-      document.body.classList.add('fade-theme');
-      setTimeout(() => document.body.classList.remove('fade-theme'), 500);
       localStorage.setItem('theme', newTheme);
 
-      // Add subtle feedback animation
+      // Add smooth feedback animation
+      document.body.classList.add('fade-theme');
+      setTimeout(() => document.body.classList.remove('fade-theme'), 500);
+
       newBtn.classList.add('theme-toggled');
       setTimeout(() => newBtn.classList.remove('theme-toggled'), 300);
     });
   }
 }
 
-
 /**
- * Highlights the active navigation link based on the current page.
+ * Highlight the current page in the navigation bar.
  */
 function highlightActivePage() {
   const links = document.querySelectorAll('.nav-link');
@@ -88,10 +111,10 @@ function highlightActivePage() {
   });
 }
 
+// ===============================================================
 // DOM Ready
+// ===============================================================
 document.addEventListener('DOMContentLoaded', () => {
   loadAppropriateHeader();
-  loadFooter();
-
-
+  loadFooter(); // automatically decides correct footer internally
 });

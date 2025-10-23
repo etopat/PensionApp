@@ -1,26 +1,409 @@
-/* ================= MENU.CSS (WITH VARIABLES) ================= */
-@import url("color-variables.css");
+/* ==========================================================
+   HEADER STYLES - Professional Design with Better Visibility
+   ========================================================== */
 
-/* Dropdown Menu */
-.dropdown-menu {
-  background-color: var(--card-bg);
-  position: absolute;
-  top: 3.5rem;
-  left: 1rem;
-  width: 200px;
+.header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--header-bg);
+  color: var(--header-text);
+  padding: 0.5rem 1.5rem;
+  box-shadow: 0 4px 20px var(--shadow-dark);
+  position: relative;
+  z-index: 1000;
+  border-bottom: 2px solid var(--header-border);
+}
+
+.menu-and-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  flex: 1;
+}
+
+.menu-and-title h1 {
+  font-size: 1.7rem;
+  margin: 0;
+  font-weight: 800;
+  color: var(--header-text);
+  text-shadow: var(--text-glow);
+  letter-spacing: 0.5px;
+  animation: gentleGlow 3s ease-in-out infinite;
+}
+
+.menu-icon {
+  font-size: 1.5rem;
+  width: 3rem;
+  
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--header-border);
+  color: var(--primary-gold);
+  cursor: pointer;
+  transition: all 0.3s ease;
   padding: 0.5rem;
-  display: none;
-  z-index: 999;
-  box-shadow: 0 4px 8px var(--shadow-light);
-  border-radius: 0 0 8px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.hidden {
+.menu-icon:hover {
+  background: var(--hover-bg-gold);
+  color: var(--primary-blue);
+  transform: scale(1.1);
+  border-color: var(--primary-gold);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+}
+
+/* ==========================================================
+   COMPACT MOBILE LAYOUT
+   ========================================================== */
+
+@media (max-width: 768px) {
+  .header-wrapper {
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    min-height: 60px;
+  }
+
+  .menu-and-title {
+    width: auto;
+    justify-content: flex-start;
+    margin-bottom: 0;
+    flex: 1;
+  }
+
+  .menu-and-title h1 {
+    font-size: 1.4rem;
+    text-align: center;
+    flex: 1;
+    margin: 0 auto;
+    padding: 0 0.5rem;
+  }
+
+  .header-right {
+    width: auto;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Remove background from user profile on mobile */
+  .user-profile {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Hide profile name and dropdown arrow on mobile */
+  .user-profile .profile-dropdown-toggle span {
+    display: none !important;
+  }
+
+  .user-profile .profile-dropdown-toggle {
+    gap: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  /* Larger profile picture on mobile */
+  .profile-picture {
+    width: 42px !important;
+    height: 42px !important;
+    margin-right: 0;
+    border: 3px solid var(--primary-gold) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  /* Remove hover effects that would show background */
+  .user-profile:hover {
+    background: transparent !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Keep picture hover effect */
+  .user-profile:hover .profile-picture {
+    border-color: var(--primary-blue) !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 12px rgba(0, 51, 102, 0.4) !important;
+  }
+
+  /* Smaller theme toggle on mobile */
+  .theme-toggle {
+    font-size: 1.1rem;
+    padding: 0.3rem;
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ensure all elements stay in one line */
+  .menu-icon {
+    font-size: 1.3rem;
+    padding: 0.4rem;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* COMPACT MOBILE DROPDOWN MENU */
+  .dropdown-menu {
+    position: fixed;
+    top: 60px;
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-width: calc(100vw - 1rem);
+    padding: 0.3rem 0 !important; /* Reduced vertical padding */
+  }
+
+  /* Ultra-compact dropdown list items */
+  .dropdown-menu li {
+    margin: 0.08rem 0.4rem !important; /* Reduced margin */
+    border-radius: 5px;
+  }
+
+  .dropdown-menu a {
+    padding: 8px 10px !important; /* Reduced padding */
+    font-size: 0.85rem !important; /* Slightly smaller font */
+    line-height: 1.2 !important; /* Tighter line height */
+    border-left-width: 2px !important; /* Thinner border */
+  }
+
+  .dropdown-menu hr {
+    margin: 0.25rem 0.6rem !important; /* Reduced margin */
+    height: 0.5px !important; /* Thinner divider */
+  }
+
+  /* COMPACT PROFILE DROPDOWN */
+  .profile-dropdown {
+    position: fixed;
+    top: 60px;
+    right: 0.5rem;
+    left: auto;
+    width: 150px; /* Slightly narrower */
+    padding: 0.3rem 0 !important; /* Reduced padding */
+  }
+
+  .profile-dropdown li {
+    margin: 0.08rem 0.4rem !important; /* Reduced margin */
+    border-radius: 5px;
+  }
+
+  .profile-dropdown a {
+    padding: 8px 10px !important; /* Reduced padding */
+    font-size: 0.8rem !important; /* Slightly smaller font */
+    line-height: 1.2 !important; /* Tighter line height */
+    border-right-width: 2px !important; /* Thinner border */
+  }
+}
+
+@media (max-width: 480px) {
+  .header-wrapper {
+    padding: 0.4rem 0.8rem;
+  }
+
+  .menu-and-title h1 {
+    font-size: 1.2rem;
+    padding: 0 0.3rem;
+  }
+
+  .menu-icon {
+    font-size: 1.2rem;
+    padding: 0.3rem;
+    min-width: 36px;
+    height: 36px;
+  }
+
+  .theme-toggle {
+    font-size: 1rem;
+    padding: 0.25rem;
+    min-width: 32px;
+    height: 32px;
+  }
+
+  /* Slightly smaller but still prominent profile picture on very small screens */
+  .profile-picture {
+    width: 38px !important;
+    height: 38px !important;
+    border: 2.5px solid var(--primary-gold) !important;
+  }
+
+  .user-profile {
+    padding: 0 !important;
+  }
+
+  /* EVEN MORE COMPACT ON SMALLER SCREENS */
+  .dropdown-menu {
+    left: 0.25rem;
+    right: 0.25rem;
+    max-width: calc(100vw - 0.5rem);
+    padding: 0.2rem 0 !important;
+  }
+
+  .dropdown-menu li {
+    margin: 0.06rem 0.3rem !important;
+  }
+
+  .dropdown-menu a {
+    padding: 7px 8px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .dropdown-menu hr {
+    margin: 0.2rem 0.5rem !important;
+  }
+
+  .profile-dropdown {
+    right: 0.25rem;
+    width: 140px;
+    padding: 0.2rem 0 !important;
+  }
+
+  .profile-dropdown li {
+    margin: 0.06rem 0.3rem !important;
+  }
+
+  .profile-dropdown a {
+    padding: 7px 8px !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .header-wrapper {
+    padding: 0.3rem 0.5rem;
+  }
+
+  .menu-and-title h1 {
+    font-size: 1.1rem;
+  }
+
+  .menu-icon {
+    font-size: 1.1rem;
+    padding: 0.25rem;
+    min-width: 32px;
+    height: 32px;
+  }
+
+  .theme-toggle {
+    font-size: 0.9rem;
+    padding: 0.2rem;
+    min-width: 28px;
+    height: 28px;
+  }
+
+  /* Maintain good size even on smallest screens */
+  .profile-picture {
+    width: 36px !important;
+    height: 36px !important;
+    border: 2px solid var(--primary-gold) !important;
+  }
+
+  /* ULTRA COMPACT ON SMALLEST SCREENS */
+  .dropdown-menu {
+    padding: 0.15rem 0 !important;
+  }
+
+  .dropdown-menu li {
+    margin: 0.05rem 0.25rem !important;
+  }
+
+  .dropdown-menu a {
+    padding: 6px 7px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .dropdown-menu hr {
+    margin: 0.15rem 0.4rem !important;
+  }
+
+  .profile-dropdown {
+    width: 135px;
+    padding: 0.15rem 0 !important;
+  }
+
+  .profile-dropdown li {
+    margin: 0.05rem 0.25rem !important;
+  }
+
+  .profile-dropdown a {
+    padding: 6px 7px !important;
+    font-size: 0.76rem !important;
+  }
+}
+
+/* ==========================================================
+   ENSURE SINGLE LINE LAYOUT
+   ========================================================== */
+
+/* Prevent wrapping on all screen sizes */
+.header-wrapper {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.menu-and-title,
+.header-right {
+  flex-shrink: 0;
+}
+
+.menu-and-title h1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Compact user profile dropdown toggle */
+.profile-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* ==========================================================
+   PROFESSIONAL DROPDOWN MENU (Desktop)
+   ========================================================== */
+
+.dropdown-menu {
+  background: var(--menu-bg);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 200px;
+  padding: 0.5rem 0;
+  z-index: 1001;
+  box-shadow: var(--menu-shadow);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
   display: none;
 }
 
-.visible {
+.dropdown-menu.visible {
   display: block;
+  animation: slideDown 0.2s ease-out;
+}
+
+.dropdown-menu.hidden {
+  display: none;
 }
 
 .dropdown-menu ul {
@@ -30,88 +413,142 @@
 }
 
 .dropdown-menu li {
-  margin: 0.2rem 0;
+  margin: 0.15rem 0.5rem;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  background: var(--menu-bg);
+}
+
+.dropdown-menu li:hover {
+  background: var(--menu-item-hover);
+  transform: translateX(3px);
 }
 
 .dropdown-menu a {
-  text-decoration: none;
-  color: var(--text-color);
   display: block;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 8px 12px;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  background: transparent;
+  line-height: 1.3;
+  border-left: 3px solid transparent;
+  border-radius: 6px;
 }
 
 .dropdown-menu a:hover {
-  background-color: var(--accent-color);
-  color: var(--primary-color);
+  color: var(--hover-text);
+  background: var(--menu-item-hover);
+  border-left-color: var(--primary-gold);
+  transform: translateX(3px);
 }
 
-.dropdown-menu a.active-link {
-  background-color: var(--primary-color);
-  color: #fff;
-  font-weight: bold;
-  box-shadow: 0 2px 4px var(--shadow-light);
-  border-radius: 4px;
+.dropdown-menu a.active {
+  background: var(--menu-item-active);
+  color: var(--hover-text);
+  border-left-color: var(--primary-gold);
+  font-weight: 600;
 }
 
-/* User Profile Section */
+.dropdown-menu hr {
+  border: none;
+  height: 1px;
+  background: var(--divider-color);
+  margin: 0.4rem 0.8rem;
+  border-radius: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--divider-color) 20%, 
+    var(--primary-gold) 50%, 
+    var(--divider-color) 80%, 
+    transparent 100%);
+}
+
+/* ==========================================================
+   PROFESSIONAL PROFILE DROPDOWN (Desktop)
+   ========================================================== */
+
 .user-profile {
   display: flex;
   align-items: center;
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-  border: none;
-  padding: 0 1rem;
-  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
   cursor: pointer;
-  border-radius: 5px;
-  position: absolute;
-  right: 1rem;
-  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  border: 1px solid var(--header-border);
 }
 
 .user-profile:hover {
-  background-color: var(--accent-color);
+  background: var(--hover-bg-gold);
+  color: var(--primary-blue);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
 }
 
-/* Profile Picture Styling */
 .profile-picture {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  margin-right: 10px;
-  cursor: pointer;
+  object-fit: cover;
+  margin-right: 6px;
+  border: 2px solid var(--primary-gold);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
 }
 
-/* Dropdown Trigger Styling */
+.user-profile:hover .profile-picture {
+  border-color: var(--primary-blue);
+  transform: scale(1.05);
+}
+
 .profile-dropdown-toggle {
   background: none;
   border: none;
-  color: var(--text-color);
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
+  color: var(--primary-gold);
+  font-size: 0.85rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
+  gap: 0.2rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
-/* Dropdown Menu */
+.user-profile:hover .profile-dropdown-toggle {
+  color: var(--primary-blue);
+}
+
 .profile-dropdown {
   position: absolute;
-  top: 50px;
+  top: 110%;
   right: 0;
-  background: var(--card-bg);
-  box-shadow: 0 2px 10px var(--shadow-light);
-  border-radius: 5px;
+  background: var(--menu-bg);
+  box-shadow: var(--menu-shadow);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
   overflow: hidden;
-  z-index: 1000;
-  min-width: 150px;
+  z-index: 1001;
+  min-width: 160px;
+  display: none;
 }
 
-/* Dropdown Menu Items */
+.profile-dropdown.visible {
+  display: block;
+  animation: slideDown 0.2s ease-out;
+}
+
+.profile-dropdown.hidden {
+  display: none;
+}
+
 .profile-dropdown ul {
   list-style: none;
   margin: 0;
@@ -119,34 +556,156 @@
 }
 
 .profile-dropdown li {
-  border-bottom: 1px solid var(--input-border);
+  margin: 0.15rem 0.5rem;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  background: var(--menu-bg);
 }
 
-.profile-dropdown li:last-child {
-  border-bottom: none;
+.profile-dropdown li:hover {
+  background: var(--menu-item-hover);
+  transform: translateX(-2px);
 }
 
 .profile-dropdown a {
   display: block;
-  padding: 10px 15px;
+  padding: 9px 12px;
   text-decoration: none;
   color: var(--text-color);
-  font-size: 14px;
-  transition: background-color 0.3s ease;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  background: transparent;
+  line-height: 1.3;
+  border-right: 3px solid transparent;
+  border-radius: 6px;
 }
 
 .profile-dropdown a:hover {
-  background-color: var(--hover-bg);
-  color: var(--hover-text);
+  color: var(--hover-text) !important;
+  background: var(--menu-item-hover);
+  border-right-color: var(--primary-gold);
+  transform: translateX(-2px);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .profile-dropdown {
-    top: 40px;
-  }
+.profile-dropdown a.active {
+  background: var(--menu-item-active);
+  color: var(--hover-text);
+  border-right-color: var(--primary-gold);
+  font-weight: 600;
+}
 
-  .profile-dropdown-toggle {
-    font-size: 14px;
+/* ==========================================================
+   THEME TOGGLE BUTTON
+   ========================================================== */
+
+.theme-toggle {
+  font-size: 1.3rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--header-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.4rem;
+  border-radius: 6px;
+  color: var(--primary-gold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:hover {
+  background: var(--hover-bg-gold);
+  color: var(--primary-blue);
+  transform: scale(1.1);
+  border-color: var(--primary-gold);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+}
+
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gentleGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.7), 0 0 20px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.8), 0 0 25px rgba(212, 175, 55, 0.6), 0 0 35px rgba(212, 175, 55, 0.4);
+  }
+}
+
+/* Focus styles for accessibility */
+.menu-icon:focus,
+.theme-toggle:focus,
+.profile-dropdown-toggle:focus,
+.dropdown-menu a:focus,
+.profile-dropdown a:focus {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* Message bubble styling */
+.messages-link {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.message-bubble {
+  background: var(--primary-maroon);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  min-width: 18px;
+  text-align: center;
+  margin-left: 8px;
+}
+
+.message-bubble.hidden {
+  display: none;
+}
+
+/* Mobile message bubble */
+@media (max-width: 768px) {
+  .message-bubble {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    min-width: 16px;
+  }
+}
+
+/* Ensure hidden class works properly */
+.hidden {
+  display: none !important;
+}
+
+/* Smooth transitions for showing/hiding menu items */
+.dropdown-menu li,
+.profile-dropdown li {
+  transition: all 0.3s ease;
+}
+
+/* When items are hidden, they should collapse smoothly */
+.dropdown-menu li.hidden,
+.profile-dropdown li.hidden {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border: none;
+  transform: scaleY(0);
 }

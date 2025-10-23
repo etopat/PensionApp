@@ -15,18 +15,25 @@ if ($email === '' || $password === '') {
   exit;
 }
 
-$stmt = $conn->prepare("SELECT userId, userName, userRole, userPassword FROM tb_users WHERE userEmail = ?");
+// Updated query to include userPhoto
+$stmt = $conn->prepare("SELECT userId, userName, userRole, userPassword, userPhoto FROM tb_users WHERE userEmail = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($row = $result->fetch_assoc()) {
   if (password_verify($password, $row['userPassword'])) {
+    
+    // Debug: Check what's actually in the database
+    error_log("User Photo from DB: " . $row['userPhoto']);
+    
     echo json_encode([
       'success' => true,
       'message' => 'Login successful',
+      'userId' => $row['userId'],
       'userName' => $row['userName'],
-      'userRole' => $row['userRole']
+      'userRole' => $row['userRole'],
+      'userPhoto' => $row['userPhoto'] ?: 'images/default-user.png'
     ]);
   } else {
     echo json_encode(['success' => false, 'message' => 'Incorrect password']);
@@ -37,3 +44,4 @@ if ($row = $result->fetch_assoc()) {
 
 $stmt->close();
 $conn->close();
+?>

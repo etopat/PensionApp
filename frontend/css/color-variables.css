@@ -1,66 +1,162 @@
 /* ================= COLOR VARIABLES ================= */
+/* Uganda Prisons Service Color Scheme - Pensions Management System */
 
 /* ==== Primary Brand Colors ==== */
 :root {
-    --primary-color: #800000;
-    /* Maroon */
+    /* Uganda Prisons Service Colors */
+    --primary-maroon: #8B0000;
+    --primary-maroon-dark: #5a0000;
+    --primary-maroon-light: #a52a2a;
+    
+    --primary-blue: #003366;
+    --primary-blue-dark: #001a33;
+    --primary-blue-light: #1e4a7a;
+    
+    --primary-gold: #D4AF37;
+    --primary-gold-dark: #a88529;
+    --primary-gold-light: #ffd700;
+    --primary-gold-darker: #b8941f;
+    
+    /* Legacy compatibility */
+    --primary-color: #8B0000;
     --primary-dark: #5a0000;
+    --primary-light: #a52a2a;
 
-    --secondary-color: #683c2a;
-    /* Blue */
-    --secondary-light: #6a8cc2;
-    --secondary-dark: #274075;
+    --secondary-color: #003366;
+    --secondary-light: #1e4a7a;
+    --secondary-dark: #001a33;
 
-    --accent-color: #af903c;
-    /* Yellow Accent */
-    --accent-light: #fff1a3;
-    --accent-dark: #d4b400;
+    --accent-color: #D4AF37;
+    --accent-light: #ffd700;
+    --accent-dark: #a88529;
 }
 
 /* ==== Light Theme Colors ==== */
 :root {
+    /* Background Colors */
     --bg-color: #f0f2f5;
-    --text-color: #333;
-    --heading-color: #4b002f;
-    --label-color: #444;
-
+    --header-bg: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 80%, var(--primary-gold) 200%);
+    --header-bg-solid: var(--primary-maroon);
     --card-bg: #ffffff;
     --form-bg: #faf9f9;
     --result-bg: #f9f9f9;
-    --result-border: #ccc;
-
+    --menu-bg: #ffffff; /* Solid white for menus */
+    --menu-bg-dark: #f8f9fa; /* Slightly darker for depth */
+    --menu-item-hover: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 100%);
+    --menu-item-active: var(--primary-blue);
+    
+    /* Text Colors */
+    --text-color: #333;
+    --heading-color: #2c3e50;
+    --label-color: #444;
+    --muted-color: #666;
+    --muted-dark: #888;
+    --header-text: #ffffff; /* White header text */
+    
+    /* UI Elements */
     --input-bg: #fff;
     --input-text: #000;
     --input-border: #bbb;
-
-    --muted-color: #aaa;
-    --muted-dark: #888;
+    --result-border: #ccc;
+    --border-color: #dee2e6;
+    --header-border: rgba(212, 175, 55, 0.3);
+    --divider-color: rgba(212, 175, 55, 0.2);
+    
+    /* Interactive States */
+    --hover-bg: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 100%);
+    --hover-bg-gold: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-light) 100%);
+    --hover-text: #ffffff;
+    --focus-color: var(--primary-gold);
+    
+    /* Shadows */
+    --shadow-light: rgba(139, 0, 0, 0.1);
+    --shadow-medium: rgba(139, 0, 0, 0.15);
+    --shadow-dark: rgba(139, 0, 0, 0.2);
+    --menu-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    
+    /* Semantic Colors */
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --error-color: #dc3545;
+    --info-color: #003366;
 }
 
 /* ==== Dark Theme Overrides ==== */
 [data-theme="dark"] {
-    --primary-color: #d18787;
-    --primary-dark: #a85757;
+    /* Uganda Prisons Service Colors - Dark Theme Variants */
+    --primary-maroon: #A52A2A;
+    --primary-maroon-dark: #8B0000;
+    --primary-maroon-light: #c45656;
+    
+    --primary-blue: #1e4a7a;
+    --primary-blue-dark: #003366;
+    --primary-blue-light: #2c5d95;
+    
+    --primary-gold: #FFD700;
+    --primary-gold-dark: #D4AF37;
+    --primary-gold-light: #ffdf4d;
+    --primary-gold-darker: #d4b400;
+    
+    /* Legacy compatibility */
+    --primary-color: #A52A2A;
+    --primary-dark: #8B0000;
+    --primary-light: #c45656;
 
-    --secondary-color: #74645d;
+    --secondary-color: #1e4a7a;
+    --secondary-light: #2c5d95;
+    --secondary-dark: #003366;
 
-    --accent-color: #ffd24d;
-    --accent-dark: #bfa321;
+    --accent-color: #FFD700;
+    --accent-light: #ffdf4d;
+    --accent-dark: #D4AF37;
 
-    --bg-color: #3b3b3b;
-    --text-color: #f5f5f5;
-    --heading-color: #af8f2f;
-    --label-color: #ccc;
-
-    --card-bg: #4b4848;
-    --form-bg: #353232;
-    --result-bg: #2a2a2a;
-    --result-border: #444;
-
-    --input-bg: #777676;
-    --input-text: #fff;
-    --input-border: #555;
-
-    --muted-color: #555;
-    --muted-dark: #444;
+    /* Background Colors */
+    --bg-color: #2c3e50;
+    --header-bg: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 80%, var(--primary-gold) 200%);
+    --header-bg-solid: var(--primary-maroon);
+    --card-bg: #34495e;
+    --form-bg: #3b4a5c;
+    --result-bg: #2a3a4d;
+    --menu-bg: #2c3e50; /* Solid dark for menus */
+    --menu-bg-dark: #253445; /* Slightly darker for depth */
+    --menu-item-hover: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 100%);
+    --menu-item-active: var(--primary-blue-light);
+    
+    /* Text Colors */
+    --text-color: #ecf0f1;
+    --heading-color: #ffffff;
+    --label-color: #bdc3c7;
+    --muted-color: #95a5a6;
+    --muted-dark: #7f8c8d;
+    --header-text: #ffffff;
+    
+    /* UI Elements */
+    --input-bg: #4a6572;
+    --input-text: #ffffff;
+    --input-border: #556573;
+    --result-border: #4a6572;
+    --border-color: #4a6572;
+    --header-border: rgba(255, 215, 0, 0.4);
+    --divider-color: rgba(255, 215, 0, 0.3);
+    
+    /* Interactive States */
+    --hover-bg: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 100%);
+    --hover-bg-gold: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-light) 100%);
+    --hover-text: #ffffff;
+    --focus-color: var(--primary-gold);
+    
+    /* Glow Effects */
+    --text-glow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
+    
+    /* Shadows */
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.4);
+    --shadow-dark: rgba(0, 0, 0, 0.5);
+    --menu-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    /* Semantic Colors */
+    --success-color: #00bc8c;
+    --warning-color: #f39c12;
+    --error-color: #e74c3c;
+    --info-color: #3498db;
 }

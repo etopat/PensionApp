@@ -1,52 +1,89 @@
 <!-- ================= HEADER FOR LOGGED-IN USERS ================= -->
 <header id="mainHeader" class="show">
   <div class="header-wrapper">
-    <!-- Title and Menu Toggle -->
+    <!-- Left Section: Logo and Menu Toggle -->
     <div class="menu-and-title">
-      <button id="menuToggle" class="menu-icon">&#9776;</button>
+      <button id="menuToggle" class="menu-icon" title="Menu">&#9776;</button>
       <h1>PensionsGo</h1>
     </div>
 
-    <!-- Right-side User Profile Section -->
+    <!-- Right Section: Theme Toggle and User Profile -->
     <div class="header-right">
-      <!-- Theme Toggle Button -->
-      <button id="themeToggle" class="theme-toggle" title="Toggle Theme">🌓</button>
-
-      <!-- User Profile Dropdown -->
-      <div class="user-profile">
-        <img src="" alt="User Profile Picture" id="profilePicture" class="profile-picture" />
+      <!-- User Profile Section -->
+      <div class="user-profile" id="userProfile">
+        <img src="images/default-user.png" alt="Profile Picture" id="profilePicture" class="profile-picture" />
         <button id="profileDropdownToggle" class="profile-dropdown-toggle">
-          <span id="profileName"></span>
+          <span id="profileName">User</span>
           <span>&#x25BC;</span>
         </button>
         <div id="profileDropdownMenu" class="profile-dropdown hidden">
           <ul>
             <li><a href="user_profile.html">View Profile</a></li>
             <li><a href="edit_user.html">Edit Profile</a></li>
-            <li id="settingsMenuItem" class="hidden"><a href="settings.html">Settings</a></li>
-            <li><a href="scripts/php/logout_user.php">Logout</a></li>
+            <!-- My Tasks with task count - visible to all except user/pensioner -->
+            <li id="myTasksMenuItem">
+              <a href="tasks.html" class="tasks-link">
+                My Tasks
+                <span class="task-bubble hidden">0</span>
+              </a>
+            </li>
+            <!-- Messages with unread count - visible to all except user/pensioner -->
+            <li id="messagesMenuItem">
+              <a href="messages.html" class="messages-link">
+                Messages
+                <span class="message-bubble hidden">0</span>
+              </a>
+            </li>
+            <!-- Settings - admin only -->
+            <li id="settingsMenuItem"><a href="settings.html">Settings</a></li>
+            <li><a href="#" id="logoutBtn">Logout</a></li>
           </ul>
         </div>
       </div>
+
+      <!-- Theme Toggle Button -->
+      <button id="themeToggle" class="theme-toggle" title="Toggle Theme">🌓</button>
     </div>
   </div>
 
   <!-- Dropdown Sidebar Menu -->
   <nav id="dropdownMenu" class="dropdown-menu hidden">
     <ul>
-      <li><a href="staff_due.html">Staff Due for Retirement</a></li>
-      <li><a href="pension_file_registry.html">Pension File Registry</a></li>
-      <li><a href="application_status.html">Application Status</a></li>
-      <li><a href="file_tracking.html">File Tracking</a></li>
+      <!-- Staff Due for Retirement - hidden for pensioners -->
+      <li id="staffDueMenuItem"><a href="staff_due.html">Staff Due for Retirement</a></li>
+      
+      <!-- Pension File Registry - hidden for pensioners -->
+      <li id="pensionRegistryMenuItem"><a href="pension_file_registry.html">Pension File Registry</a></li>
+      
+      <!-- Application Status - hidden for pensioners -->
+      <li id="applicationStatusMenuItem"><a href="application_status.html">Application Status</a></li>
+      
+      <!-- File Tracking - visible to admin, clerk, oc_pen, writeup_officer, file_creator, data_entry -->
+      <li id="fileTrackingMenuItem"><a href="file_tracking.html">File Tracking</a></li>
+      
+      <!-- Claim Form - visible to all -->
       <li><a href="claim_form.html">Claim Form</a></li>
-      <li><a href="claims.html">Claims</a></li>
+      
+      <!-- Claims - hidden for pensioners -->
+      <li id="claimsMenuItem"><a href="claims.html">Claims</a></li>
+      
       <hr />
+      
+      <!-- Calculate Benefits - visible to all -->
       <li><a href="benefits_calculator.html">Calculate Benefits</a></li>
-      <li><a href="user_profile.html">User Profile</a></li>
-      <li><a href="dashboard.html">Dashboard</a></li>
-      <li><a href="users.html">Users</a></li>
+      
+      <!-- Dashboard - hidden for pensioners -->
+      <li id="dashboardMenuItem"><a href="dashboard.html">Dashboard</a></li>
+      
+      <!-- Users - admin only -->
+      <li id="usersMenuItem"><a href="users.html">Users</a></li>
+      
       <hr />
+      
+      <!-- Feedback - visible to all -->
       <li><a href="feedback.html">Feedback</a></li>
+      
+      <!-- About - visible to all -->
       <li><a href="about.html">About</a></li>
     </ul>
   </nav>

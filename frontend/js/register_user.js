@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const submitBtn = form.querySelector('button[type="submit"]');
 
   const titles = ['Mr.', 'Mrs.', 'Ms.', 'Dr.'];
-  const roles = ['admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver'];
+  const roles = ['admin', 'clerk', 'oc_pen', 'writeup_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver', 'user', 'pensioner'];
 
   // Populate selects dynamically
   const populateSelect = (id, items) => {
