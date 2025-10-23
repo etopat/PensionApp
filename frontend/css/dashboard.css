@@ -19,9 +19,10 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-top: 0; /* Header will be positioned above */
+  margin-top: calc(var(--header-bg) + 4rem); /* Adjust margin-top to fit the height of the header */
   margin-bottom: 0; /* Footer will be positioned below */
   position: relative;
+  padding-top: 1rem;
   z-index: 1;
 }
 
@@ -40,12 +41,13 @@ body {
   background: var(--card-bg);
   border-right: 1px solid var(--border-color);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-  padding: 1rem 1rem;
+  padding: 4rem 1rem 0 1rem;
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
   overflow-y: auto; /* Allow sidebar to scroll if content is too tall */
   flex-shrink: 0; /* Prevent sidebar from shrinking */
+  height: calc(100vh - 60px); /* Make the sidebar take the full height minus the header */
 }
 
 .sidebar-header {
@@ -122,6 +124,7 @@ body {
   height: 100%; /* Take full height of parent */
   display: flex;
   flex-direction: column;
+  padding-top: 60px;  /* Adjust this value to your header's height */
 }
 
 /* Dashboard header that stays at top of content area */

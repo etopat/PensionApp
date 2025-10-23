@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Management - PensionsGo</title>
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/color_variables.css">
+    <link rel="stylesheet" href="css/users.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header will be dynamically inserted here by main.js -->
+
+    <div class="main-wrapper">
+        <div class="page-header">
+            <h1>Users Management</h1>
+            <p>View and manage all registered users in the system</p>
+        </div>
+
+        <div class="users-controls">
+            <div class="filter-section">
+                <label for="roleFilter">Filter by Role:</label>
+                <select id="roleFilter">
+                    <option value="">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="clerk">Clerk</option>
+                    <option value="oc_pen">OC Pen</option>
+                    <option value="writeup_officer">Writeup Officer</option>
+                    <option value="file_creator">File Creator</option>
+                    <option value="data_entry">Data Entry</option>
+                    <option value="assessor">Assessor</option>
+                    <option value="auditor">Auditor</option>
+                    <option value="approver">Approver</option>
+                    <option value="user">User</option>
+                    <option value="pensioner">Pensioner</option>
+                </select>
+                <button id="clearFilterButton" class="clear-filter-btn">Clear Filter</button>
+            </div>
+            
+            <!-- Add User Button -->
+            <div class="action-section">
+                <button id="addUserButton" class="add-user-btn">
+                    <span style="margin-right: 0.5rem;">+</span> Add User
+                </button>
+            </div>
+        </div>
+
+        <div class="users-table-container">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Profile</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- Users will be populated here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-header">
+                <h2>Confirm Deletion</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete user <span id="deleteUserName"></span>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel">Cancel</button>
+                <button class="modal-btn confirm" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer will be dynamically inserted here by main.js -->
+
+    <script type="module" src="js/main.js"></script>
+    <script src="js/users.js"></script>
+</body>
+</html>

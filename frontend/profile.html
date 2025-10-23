@@ -1,1 +1,78 @@
-<!-- profile.html HTML scaffold -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - PensionsGo</title>
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/color_variables.css">
+    <link rel="stylesheet" href="css/users.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header will be dynamically inserted here by main.js -->
+
+    <div class="profile-main-wrapper">
+        <div class="profile-container">
+            <div class="page-header">
+                <h1>My Profile</h1>
+                <p>View and manage your personal information</p>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <img id="profileAvatar" src="images/default-user.png" alt="Profile Picture" class="profile-avatar">
+                </div>
+                
+                <div class="profile-card-body">
+                    <div class="profile-info">
+                        <!-- Name and Role in same row -->
+                        <div class="profile-info-item name-role-row">
+                            <div class="info-icon">👤</div>
+                            <div class="info-content">
+                                <div class="name-role-container">
+                                    <div class="name-section">
+                                        <div class="info-label">Full Name</div>
+                                        <div id="profileName" class="info-value">Loading...</div>
+                                    </div>
+                                    <div class="role-section">
+                                        <div class="info-label">Role</div>
+                                        <div id="profileRole" class="info-value">
+                                            <span id="roleBadge" class="role-badge">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="profile-info-item">
+                            <div class="info-icon">📧</div>
+                            <div class="info-content">
+                                <div class="info-label">Email Address</div>
+                                <div id="profileEmail" class="info-value">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button id="editProfileBtn" class="profile-btn profile-btn-primary">
+                            <span>✏️</span> Edit Profile
+                        </button>
+                        <button id="backToDashboardBtn" class="profile-btn profile-btn-secondary">
+                            <span>←</span> Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer will be dynamically inserted here by main.js -->
+
+    <script type="module" src="js/main.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

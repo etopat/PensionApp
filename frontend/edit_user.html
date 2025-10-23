@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - PensionsGo</title>
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/color_variables.css">
+    <link rel="stylesheet" href="css/users.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header will be dynamically inserted here by main.js -->
+
+    <div class="main-wrapper">
+        <div class="page-header">
+            <h1>Edit User</h1>
+            <p>Update user information and permissions</p>
+        </div>
+
+        <form id="editUserForm" class="edit-user-form">
+            <!-- Hidden User ID field (completely hidden from users) -->
+            <input type="hidden" id="userId" name="userId">
+
+            <!-- Profile Picture Section -->
+            <div class="form-section">
+                <h2>Profile Picture</h2>
+                <div class="profile-picture-section">
+                    <img id="profilePreview" src="images/default-user.png" alt="Profile Preview" class="profile-preview">
+                    <div class="file-input-wrapper">
+                        <button type="button" class="file-input-button">Choose New Image</button>
+                        <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
+                    </div>
+                    <small style="display: block; margin-top: 0.5rem; color: var(--muted-color);">
+                        Recommended: Square image, max 2MB (JPG, PNG)
+                    </small>
+                </div>
+            </div>
+
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <h2>Personal Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userTitle">Title</label>
+                        <select id="userTitle" name="userTitle" required>
+                            <option value="">Select Title</option>
+                            <option value="Mr.">Mr.</option>
+                            <option value="Mrs.">Mrs.</option>
+                            <option value="Ms.">Ms.</option>
+                            <option value="Dr.">Dr.</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="userName">Full Name</label>
+                        <input type="text" id="userName" name="userName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email Address</label>
+                    <input type="email" id="userEmail" name="userEmail" required>
+                </div>
+            </div>
+
+            <!-- Role Information Section (Hidden for non-admin users) -->
+            <div class="form-section" id="roleSection">
+                <h2>Role & Permissions</h2>
+                <div class="form-group">
+                    <label for="userRole">User Role</label>
+                    <select id="userRole" name="userRole" required>
+                        <option value="">Select Role</option>
+                        <option value="admin">Admin</option>
+                        <option value="clerk">Clerk</option>
+                        <option value="oc_pen">OC Pen</option>
+                        <option value="writeup_officer">Writeup Officer</option>
+                        <option value="file_creator">File Creator</option>
+                        <option value="data_entry">Data Entry</option>
+                        <option value="assessor">Assessor</option>
+                        <option value="auditor">Auditor</option>
+                        <option value="approver">Approver</option>
+                        <option value="user">User</option>
+                        <option value="pensioner">Pensioner</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Password Section -->
+            <div class="form-section">
+                <h2>Password Management</h2>
+                <button type="button" id="passwordToggle" class="password-toggle">
+                    Change Password
+                </button>
+                <div id="passwordFields" class="password-fields">
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password">
+                        <small style="color: var(--muted-color); display: block; margin-top: 0.5rem;">
+                            Password must contain uppercase, lowercase, and numbers (min 6 characters)
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password">
+                        <div id="passwordMatch" class="password-match">✓ Passwords match</div>
+                        <div id="passwordMismatch" class="password-mismatch">✗ Passwords do not match</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                <button type="submit" id="saveBtn" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Password Confirmation Modal (for non-admin users) -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-header">
+                <h2>Confirm Changes</h2>
+            </div>
+            <div class="modal-body">
+                <p>Please enter your current password to confirm the changes:</p>
+                <form class="password-form">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel">Cancel</button>
+                <button class="modal-btn confirm" id="confirmWithPassword">Confirm Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Confirmation Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-header">
+                <h2>Confirm Changes</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to save these changes?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel">No, Cancel</button>
+                <button class="modal-btn confirm" id="confirmAdmin">Yes, Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer will be dynamically inserted here by main.js -->
+
+    <script type="module" src="js/main.js"></script>
+    <script src="js/edit_user.js"></script>
+</body>
+</html>

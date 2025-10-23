@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const userName = userData.name || sessionStorage.getItem('userName') || 'User';
       const userRole = userData.role || sessionStorage.getItem('userRole') || 'User';
       
-      welcomeUser.textContent = `Welcome back, ${userName} (${userRole})`;
+      welcomeUser.textContent = `Welcome, ${userName} (${userRole})`;
     } catch (error) {
       console.error('Error loading user info:', error);
       welcomeUser.textContent = 'Welcome to PensionsGo Dashboard';

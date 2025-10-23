@@ -1,6 +1,7 @@
 /* ==========================================================
    HEADER STYLES - Professional Design with Better Visibility
    ========================================================== */
+@import url("color-variables.css");
 
 .header-wrapper {
   display: flex;

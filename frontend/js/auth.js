@@ -4,17 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form) return;
 
-  const showMessage = (msg, type = "info") => {
-    let box = document.getElementById("loginMessageBox");
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "loginMessageBox";
-      form.parentElement.insertBefore(box, form);
-    }
-    box.innerHTML = `<div class="message ${type}">${msg}</div>`;
-    setTimeout(() => (box.innerHTML = ""), 10000);
-  };
-
+  // Remove the old showMessage function and replace with modal
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -22,11 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("password").value.trim();
 
     if (!email || !password) {
-      showMessage("Please fill in all fields.", "error");
+      showLoginModal('error', 'Please fill in all fields.');
       return;
     }
 
-    showMessage("Processing... please wait", "info");
+    // Show loading modal
+    showLoginModal('loading', 'Processing... please wait');
 
     try {
       const formData = new FormData();
@@ -41,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const json = await resp.json();
 
       if (json.success) {
-        showMessage("Login successful! Redirecting...", "success");
+        showLoginModal('success', 'Login successful! Redirecting...');
 
         // Store user data in sessionStorage and localStorage
         sessionStorage.setItem("isLoggedIn", "true");
@@ -66,16 +57,84 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setTimeout(() => {
           window.location.href = redirectUrl;
-        }, 1500);
+        }, 2000);
       } else {
-        showMessage(json.message || "Invalid login credentials", "error");
+        showLoginModal('error', json.message || "Invalid login credentials");
       }
     } catch (err) {
       console.error(err);
-      showMessage("Network error: could not connect to server.", "error");
+      showLoginModal('error', "Network error: could not connect to server.");
     }
   });
 });
+
+// New modal function for login
+function showLoginModal(type, message) {
+  // Remove existing modal if present
+  const existing = document.getElementById('loginModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'loginModal';
+  modal.className = `auth-modal-overlay login-${type}-modal`;
+  
+  let modalContent = '';
+  
+  if (type === 'loading') {
+    modalContent = `
+      <div class="auth-modal">
+        <div class="auth-modal-body">
+          <div class="auth-spinner"></div>
+          <p>${message}</p>
+        </div>
+      </div>
+    `;
+  } else if (type === 'success') {
+    modalContent = `
+      <div class="auth-modal">
+        <div class="auth-modal-header">
+          <h3>Success</h3>
+        </div>
+        <div class="auth-modal-body">
+          <div class="login-success-icon">✓</div>
+          <p>${message}</p>
+        </div>
+      </div>
+    `;
+  } else if (type === 'error') {
+    modalContent = `
+      <div class="auth-modal">
+        <div class="auth-modal-header">
+          <h3>Error</h3>
+        </div>
+        <div class="auth-modal-body">
+          <div class="login-error-icon">✗</div>
+          <p>${message}</p>
+        </div>
+        <div class="auth-modal-footer">
+          <button id="closeLoginModal" class="auth-btn auth-btn-secondary">Close</button>
+        </div>
+      </div>
+    `;
+  }
+  
+  modal.innerHTML = modalContent;
+  document.body.appendChild(modal);
+
+  // Add close button for error modal
+  if (type === 'error') {
+    document.getElementById('closeLoginModal').addEventListener('click', () => {
+      modal.remove();
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
+}
 
 // Function to determine redirect URL based on user role
 function getRedirectUrlByRole(userRole) {

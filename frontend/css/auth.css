@@ -1,0 +1,362 @@
+/* ==========================================================
+   AUTHENTICATION MODAL STYLES
+   For login, logout, and other authentication-related modals
+   ========================================================== */
+
+/* Auth Modal Overlay */
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+/* Compact Auth Modal Container */
+.auth-modal {
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 320px;
+  width: 90%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  animation: authModalSlideIn 0.2s ease-out;
+}
+
+@keyframes authModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Compact Auth Modal Header */
+.auth-modal-header {
+  background: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 100%);
+  color: white;
+  padding: 1rem 1.25rem;
+  text-align: center;
+  border-bottom: 2px solid var(--primary-gold);
+}
+
+.auth-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Compact Auth Modal Body */
+.auth-modal-body {
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.auth-modal-body p {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Compact Auth Modal Footer */
+.auth-modal-footer {
+  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* Compact Auth Buttons */
+.auth-btn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.auth-btn-primary {
+  background: var(--primary-gold);
+  color: var(--primary-blue);
+}
+
+.auth-btn-primary:hover {
+  background: var(--primary-gold-light);
+}
+
+.auth-btn-danger {
+  background: var(--primary-maroon);
+  color: white;
+}
+
+.auth-btn-danger:hover {
+  background: var(--primary-maroon-dark);
+}
+
+.auth-btn-secondary {
+  background: var(--border-color);
+  color: var(--text-color);
+}
+
+.auth-btn-secondary:hover {
+  background: var(--muted-color);
+  color: white;
+}
+
+/* Auth Overlay (Loading) */
+.auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+  color: white;
+  backdrop-filter: blur(8px);
+}
+
+.auth-overlay p {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Auth Spinner */
+.auth-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary-gold);
+  animation: authSpin 1s ease-in-out infinite;
+}
+
+@keyframes authSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Login Success Modal */
+.login-success-modal .auth-modal-header {
+  background: linear-gradient(135deg, var(--success-color) 0%, var(--primary-blue) 100%);
+}
+
+.login-success-modal .auth-modal-body {
+  padding: 1.5rem 1.25rem;
+}
+
+.login-success-icon {
+  font-size: 2.5rem;
+  color: var(--success-color);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* Login Error Modal */
+.login-error-modal .auth-modal-header {
+  background: linear-gradient(135deg, var(--error-color) 0%, var(--primary-maroon) 100%);
+}
+
+.login-error-modal .auth-modal-body {
+  padding: 1.5rem 1.25rem;
+}
+
+.login-error-icon {
+  font-size: 2.5rem;
+  color: var(--error-color);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* Compact No Changes Modal */
+.no-changes-modal .auth-modal-body {
+  padding: 1.5rem 1.25rem;
+}
+
+.no-changes-icon {
+  font-size: 2.5rem;
+  color: var(--muted-color);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* Login Form Styles */
+.login-form-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px var(--shadow-medium);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.login-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.login-form-group label {
+  font-weight: 600;
+  color: var(--label-color);
+  font-size: 0.95rem;
+}
+
+.login-form-group input {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.login-form-group input:focus {
+  outline: none;
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.login-submit-btn {
+  background: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.login-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.3);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Auth Styles */
+@media (max-width: 768px) {
+  .auth-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .auth-modal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .auth-modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .auth-modal-body {
+    padding: 1.25rem;
+  }
+
+  .auth-modal-footer {
+    padding: 0 1.25rem 1.25rem;
+    flex-direction: column;
+  }
+
+  .auth-btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .login-form-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-modal {
+    max-width: 280px;
+  }
+
+  .auth-modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .auth-modal-header h3 {
+    font-size: 1rem;
+  }
+
+  .auth-modal-body {
+    padding: 1rem;
+  }
+
+  .auth-modal-body p {
+    font-size: 0.85rem;
+  }
+
+  .login-success-icon,
+  .login-error-icon,
+  .no-changes-icon {
+    font-size: 2rem;
+  }
+}
+
+/* Message Box Styles (for backward compatibility) */
+.message {
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+  font-weight: 600;
+  border-left: 4px solid transparent;
+}
+
+.message.success {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--success-color);
+  border-left-color: var(--success-color);
+}
+
+.message.error {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--error-color);
+  border-left-color: var(--error-color);
+}
+
+.message.info {
+  background: rgba(0, 51, 102, 0.1);
+  color: var(--primary-blue);
+  border-left-color: var(--primary-blue);
+}
+
+.message.warning {
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--warning-color);
+  border-left-color: var(--warning-color);
+}

@@ -9,10 +9,17 @@ export function initLogout(options = {}) {
   if (!logoutBtn) return;
 
   // Prevent default href (in case header link uses href="#")
-  logoutBtn.addEventListener('click', (e) => {
+  // Remove any existing event listeners by cloning
+  const newLogoutBtn = logoutBtn.cloneNode(true);
+  logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+
+  newLogoutBtn.addEventListener('click', (e) => {
     e.preventDefault();
     showLogoutModal(logoutUrl);
   });
+
+  // Also fix the Edit Profile menu item
+  fixEditProfileMenuItem();
 }
 
 /* ----- Helpers ----- */
@@ -41,14 +48,18 @@ function showLogoutModal(logoutUrl) {
 
   const modal = document.createElement('div');
   modal.id = 'logoutModal';
-  modal.className = 'logout-modal-overlay';
+  modal.className = 'auth-modal-overlay';
   modal.innerHTML = `
-    <div class="logout-modal">
-      <h3>Confirm Logout</h3>
-      <p>Are you sure you want to log out of PensionsGo?</p>
-      <div class="modal-actions">
-        <button id="confirmLogout" class="btn-confirm">Yes, Logout</button>
-        <button id="cancelLogout" class="btn-cancel">Cancel</button>
+    <div class="auth-modal">
+      <div class="auth-modal-header">
+        <h3>Confirm Logout</h3>
+      </div>
+      <div class="auth-modal-body">
+        <p>Are you sure you want to log out?</p>
+      </div>
+      <div class="auth-modal-footer">
+        <button id="confirmLogout" class="auth-btn auth-btn-danger">Logout</button>
+        <button id="cancelLogout" class="auth-btn auth-btn-secondary">Cancel</button>
       </div>
     </div>
   `;
@@ -59,13 +70,23 @@ function showLogoutModal(logoutUrl) {
     modal.remove();
     executeLogout(logoutUrl);
   });
+
+  // Close modal when clicking outside
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 }
 
 async function executeLogout(logoutUrl) {
   // Show overlay while request executes
   const overlay = document.createElement('div');
-  overlay.className = 'logout-overlay';
-  overlay.innerHTML = `<div class="spinner"></div><p>Logging out...</p>`;
+  overlay.className = 'auth-overlay';
+  overlay.innerHTML = `
+    <div class="auth-spinner"></div>
+    <p>Logging out...</p>
+  `;
   document.body.appendChild(overlay);
 
   try {
@@ -144,12 +165,64 @@ function clearAllUserData() {
   }
 }
 
+// Fix Edit Profile menu item
+function fixEditProfileMenuItem() {
+  const editProfileLink = document.querySelector('a[href="edit_user.html"]');
+  if (editProfileLink) {
+    // Remove any existing event listeners by cloning
+    const newLink = editProfileLink.cloneNode(true);
+    editProfileLink.parentNode.replaceChild(newLink, editProfileLink);
+    
+    newLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Get current logged-in user ID
+      const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+      const currentUserId = currentUser.id;
+      
+      if (currentUserId) {
+        // Redirect to edit user page with current user's ID
+        window.location.href = `edit_user.html?user_id=${currentUserId}`;
+      } else {
+        alert('Unable to determine user ID. Please login again.');
+        window.location.href = 'login.html';
+      }
+    });
+  }
+}
+
+// Ensure Edit Profile fix:
+function fixEditProfileMenuItem() {
+  const editProfileLink = document.querySelector('a[href="edit_user.html"]');
+  if (editProfileLink) {
+    // Remove any existing event listeners by cloning
+    const newLink = editProfileLink.cloneNode(true);
+    editProfileLink.parentNode.replaceChild(newLink, editProfileLink);
+    
+    newLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Get current logged-in user ID
+      const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+      const currentUserId = currentUser.id;
+      
+      if (currentUserId) {
+        // Redirect to edit user page with current user's ID
+        window.location.href = `edit_user.html?user_id=${currentUserId}`;
+      } else {
+        alert('Unable to determine user ID. Please login again.');
+        window.location.href = 'login.html';
+      }
+    });
+  }
+}
+
 // Make clearAllUserData available globally for other modules
 if (typeof window !== 'undefined') {
   window.clearAllUserData = clearAllUserData;
 }
 
-// Optional: Add event listener for other modules to react to logout
+// Add event listener for other modules to react to logout
 if (typeof window !== 'undefined') {
   window.addEventListener('userLoggedOut', () => {
     console.log('User logged out event received');

@@ -1,0 +1,43 @@
+<?php
+header('Content-Type: application/json');
+require_once __DIR__ . '/../config.php';
+
+$userId = $_GET['userId'] ?? '';
+
+if (empty($userId)) {
+    echo json_encode(['success' => false, 'message' => 'User ID is required']);
+    exit;
+}
+
+try {
+    $stmt = $conn->prepare("SELECT userId, userTitle, userName, userEmail, userRole, userPhoto FROM tb_users WHERE userId = ?");
+    $stmt->bind_param("s", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($row = $result->fetch_assoc()) {
+        echo json_encode([
+            'success' => true,
+            'user' => [
+                'userId' => $row['userId'],
+                'userTitle' => $row['userTitle'],
+                'userName' => $row['userName'],
+                'userEmail' => $row['userEmail'],
+                'userRole' => $row['userRole'],
+                'userPhoto' => $row['userPhoto'] ?: 'images/default-user.png'
+            ]
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'User not found']);
+    }
+    
+} catch (Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error fetching user: ' . $e->getMessage()
+    ]);
+}
+
+$stmt->close();
+$conn->close();
+?>

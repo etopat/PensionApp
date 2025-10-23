@@ -1,9 +1,17 @@
 <?php
 // backend/api/get_image.php
-header('Content-Type: image/png');
 
 $file = $_GET['file'] ?? '';
 $type = $_GET['type'] ?? '';
+
+// Set appropriate content type
+if (strpos($file, '.png') !== false) {
+    header('Content-Type: image/png');
+} elseif (strpos($file, '.jpg') !== false || strpos($file, '.jpeg') !== false) {
+    header('Content-Type: image/jpeg');
+} else {
+    header('Content-Type: image/png'); // default
+}
 
 if (empty($file)) {
     // Serve default image
@@ -11,9 +19,13 @@ if (empty($file)) {
     if (file_exists($defaultPath)) {
         readfile($defaultPath);
     } else {
-        // Create a simple default image
-        header('Content-Type: image/svg+xml');
-        echo '<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#D4AF37"/><text x="50" y="50" font-family="Arial" font-size="40" fill="white" text-anchor="middle" dominant-baseline="middle">?</text></svg>';
+        // Create a simple default image as fallback
+        $im = imagecreate(100, 100);
+        $bgColor = imagecolorallocate($im, 212, 175, 55); // Gold color
+        $textColor = imagecolorallocate($im, 255, 255, 255);
+        imagestring($im, 5, 30, 45, '?', $textColor);
+        imagepng($im);
+        imagedestroy($im);
     }
     exit;
 }
@@ -31,19 +43,32 @@ if (strpos($file, '..') !== false || strpos($file, '/') !== false) {
     exit;
 }
 
+// Define upload directory
 $uploadDir = __DIR__ . '/../uploads/profiles/';
 $filePath = $uploadDir . $file;
 
+// Check if file exists in uploads directory
 if (file_exists($filePath)) {
     readfile($filePath);
 } else {
-    // File not found, serve default
-    $defaultPath = __DIR__ . '/../../frontend/images/default-user.png';
-    if (file_exists($defaultPath)) {
-        readfile($defaultPath);
+    // File not found in uploads, check if it's in the old path format
+    $oldPath = __DIR__ . '/../' . $file;
+    if (file_exists($oldPath)) {
+        readfile($oldPath);
     } else {
-        header('Content-Type: image/svg+xml');
-        echo '<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#D4AF37"/><text x="50" y="50" font-family="Arial" font-size="40" fill="white" text-anchor="middle" dominant-baseline="middle">?</text></svg>';
+        // File not found, serve default
+        $defaultPath = __DIR__ . '/../../frontend/images/default-user.png';
+        if (file_exists($defaultPath)) {
+            readfile($defaultPath);
+        } else {
+            // Ultimate fallback - create a default image
+            $im = imagecreate(100, 100);
+            $bgColor = imagecolorallocate($im, 212, 175, 55); // Gold color
+            $textColor = imagecolorallocate($im, 255, 255, 255);
+            imagestring($im, 5, 30, 45, '?', $textColor);
+            imagepng($im);
+            imagedestroy($im);
+        }
     }
 }
 ?>

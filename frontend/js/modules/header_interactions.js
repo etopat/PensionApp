@@ -126,8 +126,51 @@ function initializeHeaderInteractions() {
   loadUnreadMessageCount();
   loadTaskCount();
 
-  // 6️⃣ Listen for logout events to update UI immediately
+  // 6️⃣ Fix View Profile and Edit Profile menu items
+  fixProfileMenuItems();
+
+  // 7️⃣ Listen for logout events to update UI immediately
   window.addEventListener('userLoggedOut', handleUserLoggedOut);
+}
+
+// Function to fix View Profile and Edit Profile menu items
+function fixProfileMenuItems() {
+  // Fix View Profile link
+  const viewProfileLink = document.querySelector('a[href="user_profile.html"]');
+  if (viewProfileLink) {
+    // Remove any existing event listeners by cloning
+    const newLink = viewProfileLink.cloneNode(true);
+    viewProfileLink.parentNode.replaceChild(newLink, viewProfileLink);
+    
+    newLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.location.href = 'profile.html';
+    });
+  }
+
+  // Fix Edit Profile link (already in logout.js, but added here for redundancy)
+  const editProfileLink = document.querySelector('a[href="edit_user.html"]');
+  if (editProfileLink) {
+    // Remove any existing event listeners by cloning
+    const newLink = editProfileLink.cloneNode(true);
+    editProfileLink.parentNode.replaceChild(newLink, editProfileLink);
+    
+    newLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Get current logged-in user ID
+      const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+      const currentUserId = currentUser.id;
+      
+      if (currentUserId) {
+        // Redirect to edit user page with current user's ID
+        window.location.href = `edit_user.html?user_id=${currentUserId}`;
+      } else {
+        alert('Unable to determine user ID. Please login again.');
+        window.location.href = 'login.html';
+      }
+    });
+  }
 }
 
 // Function to handle user logout event

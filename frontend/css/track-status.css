@@ -1,4 +1,5 @@
 /* css/track-status.css */
+@import url("color-variables.css");
 
 .track-section {
     background-color: var(--card-bg);
