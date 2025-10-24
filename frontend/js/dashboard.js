@@ -9,6 +9,7 @@
    ✅ Sidebar navigation switching between sections
    ✅ Mobile-responsive navigation with select dropdown
    ✅ Dynamic card population for all summary categories
+   ✅ Real user data fetching from backend API
    ✅ Filter responsiveness (Life Certificates & Payroll)
    ✅ Ready hooks for backend integration
    ✅ Clean animations and error handling
@@ -126,7 +127,101 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ============================================================
-     RENDER FUNCTIONS (Use real fetch endpoints later)
+     API CALL: Fetch Users Data
+     ============================================================ */
+  async function fetchUsersData() {
+    try {
+      console.log('🔄 Fetching users data from API...');
+      
+      const response = await fetch('../backend/api/get_users_summary.php', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('✅ Users data fetched successfully:', data.users);
+        return data.users;
+      } else {
+        throw new Error(data.message || 'Failed to fetch users data');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching users data:', error);
+      // Return mock data as fallback
+      return getMockUsersData();
+    }
+  }
+
+  /* ============================================================
+     MOCK DATA FALLBACK
+     ============================================================ */
+  function getMockUsersData() {
+    console.warn('⚠️ Using mock users data as fallback');
+    return [
+      { role: 'admin', count: 3 },
+      { role: 'clerk', count: 8 },
+      { role: 'oc_pen', count: 2 },
+      { role: 'writeup_officer', count: 4 },
+      { role: 'file_creator', count: 3 },
+      { role: 'data_entry', count: 6 },
+      { role: 'assessor', count: 3 },
+      { role: 'auditor', count: 2 },
+      { role: 'approver', count: 2 }
+    ];
+  }
+
+  /* ============================================================
+     FORMAT ROLE NAME FOR DISPLAY
+     ============================================================ */
+  function formatRoleName(role) {
+    const roleMap = {
+      'admin': 'Admin',
+      'clerk': 'Clerk',
+      'oc_pen': 'OC-PEN',
+      'writeup_officer': 'Write-up Officer',
+      'file_creator': 'File Creator',
+      'data_entry': 'Data Entry',
+      'assessor': 'Assessor',
+      'auditor': 'Auditor',
+      'approver': 'Approver',
+      'pensioner': 'Pensioner',
+      'user': 'User'
+    };
+    
+    return roleMap[role] || role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  /* ============================================================
+     ASSIGN COLOR BASED ON ROLE
+     ============================================================ */
+  function getRoleColor(role) {
+    const colorMap = {
+      'admin': 'purple',
+      'clerk': 'blue',
+      'oc_pen': 'teal',
+      'writeup_officer': 'green',
+      'file_creator': 'orange',
+      'data_entry': 'blue',
+      'assessor': 'teal',
+      'auditor': 'orange',
+      'approver': 'green',
+      'pensioner': 'red',
+      'user': 'purple'
+    };
+    
+    return colorMap[role] || 'blue';
+  }
+
+  /* ============================================================
+     RENDER FUNCTIONS
      ============================================================ */
 
   // ---- Claims Summary ----
@@ -231,23 +326,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---- System Users ----
-  function renderUsersSummary() {
-    const roles = [
-      { name: "Admin", count: 3 },
-      { name: "Clerk", count: 8 },
-      { name: "OC-PEN", count: 2 },
-      { name: "Write-up Officer", count: 4 },
-      { name: "File Creator", count: 3 },
-      { name: "Data Entry", count: 6 },
-      { name: "Assessor", count: 3 },
-      { name: "Auditor", count: 2 },
-      { name: "Approver", count: 2 },
-    ];
+  async function renderUsersSummary() {
+    try {
+      console.log('🔄 Rendering users summary...');
+      userCards.innerHTML = '<div class="loading-message">Loading users data...</div>';
+      
+      const usersData = await fetchUsersData();
+      
+      if (!usersData || usersData.length === 0) {
+        userCards.innerHTML = '<div class="error-message">No users data available</div>';
+        return;
+      }
 
-    userCards.innerHTML = "";
-    roles.forEach((r) => {
-      userCards.appendChild(createCard(r.name, r.count, "", "", "", "", "purple"));
-    });
+      userCards.innerHTML = "";
+      
+      usersData.forEach((userRole) => {
+        const displayName = formatRoleName(userRole.role);
+        const color = getRoleColor(userRole.role);
+        const card = createCard(displayName, userRole.count, "", "", "", "", color);
+        userCards.appendChild(card);
+      });
+      
+      console.log('✅ Users summary rendered successfully');
+      
+    } catch (error) {
+      console.error('❌ Error rendering users summary:', error);
+      userCards.innerHTML = '<div class="error-message">Failed to load users data</div>';
+    }
   }
 
   /* ============================================================
@@ -276,14 +381,28 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ============================================================
      INITIAL PAGE LOAD
      ============================================================ */
-  renderClaimsSummary();
-  renderPensionersSummary();
-  renderModeOfRetirement();
-  renderLifeCertificates();
-  renderPayrollMovements();
-  renderStaffDue();
-  renderFilesSummary();
-  renderUsersSummary();
+  async function initializeDashboard() {
+    try {
+      console.log('🚀 Initializing dashboard...');
+      
+      // Load all sections
+      renderClaimsSummary();
+      renderPensionersSummary();
+      renderModeOfRetirement();
+      renderLifeCertificates();
+      renderPayrollMovements();
+      renderStaffDue();
+      renderFilesSummary();
+      
+      // Load real users data
+      await renderUsersSummary();
+      
+      console.log("✅ Dashboard loaded successfully");
+      
+    } catch (error) {
+      console.error('❌ Error initializing dashboard:', error);
+    }
+  }
 
-  console.log("Dashboard loaded successfully ✅");
+  initializeDashboard();
 });

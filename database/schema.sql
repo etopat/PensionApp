@@ -6,7 +6,7 @@ CREATE TABLE tb_users (
     userId VARCHAR(100) UNIQUE,
     userTitle VARCHAR(20),
     userName VARCHAR(100),
-    userRole ENUM('admin', 'clerk', 'oc_pen', 'write_up_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver'),
+    userRole ENUM('admin', 'clerk', 'oc_pen', 'writeup_officer', 'file_creator', 'data_entry', 'assessor', 'auditor', 'approver', 'user','pensioner'),
     userEmail VARCHAR(100) UNIQUE,
     userPassword VARCHAR(100),
     userPhoto VARCHAR(255),
