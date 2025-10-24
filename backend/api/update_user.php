@@ -1,4 +1,12 @@
 <?php
+/**
+ * ============================================================
+ * UPDATE USER API
+ * ============================================================
+ * Updates user information and replaces old profile images.
+ * ============================================================
+ */
+
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config.php';
 
@@ -20,84 +28,70 @@ if (empty($userId)) {
 }
 
 try {
-    // Start building the update query
+    // Fetch current photo
+    $stmt = $conn->prepare("SELECT userPhoto FROM tb_users WHERE userId = ?");
+    $stmt->bind_param("s", $userId);
+    $stmt->execute();
+    $current = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
     $updateFields = [];
     $params = [];
     $types = '';
-    
-    // Basic fields
+
     $updateFields[] = "userTitle = ?";
-    $params[] = $userTitle;
-    $types .= 's';
-    
+    $params[] = $userTitle; $types .= 's';
+
     $updateFields[] = "userName = ?";
-    $params[] = $userName;
-    $types .= 's';
-    
+    $params[] = $userName; $types .= 's';
+
     $updateFields[] = "userEmail = ?";
-    $params[] = $userEmail;
-    $types .= 's';
-    
-    // Role (only update if provided)
+    $params[] = $userEmail; $types .= 's';
+
     if (!empty($userRole)) {
         $updateFields[] = "userRole = ?";
-        $params[] = $userRole;
-        $types .= 's';
+        $params[] = $userRole; $types .= 's';
     }
-    
-    // Password (only update if provided)
+
     if (!empty($newPassword)) {
-        $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
         $updateFields[] = "userPassword = ?";
-        $params[] = $passwordHash;
+        $params[] = password_hash($newPassword, PASSWORD_DEFAULT);
         $types .= 's';
     }
-    
-    // Profile picture (handle file upload)
+
+    // Handle profile image replacement
     if (isset($_FILES['profilePicture']) && $_FILES['profilePicture']['error'] === UPLOAD_ERR_OK) {
         $uploadDir = __DIR__ . '/../uploads/profiles/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+        // Delete old image
+        if (!empty($current['userPhoto']) && $current['userPhoto'] !== '../uploads/profiles/default-user.png') {
+            $oldPath = __DIR__ . '/../' . str_replace('../', '', $current['userPhoto']);
+            if (file_exists($oldPath)) unlink($oldPath);
         }
-        
-        $file = $_FILES['profilePicture'];
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        // Upload new
+        $ext = strtolower(pathinfo($_FILES['profilePicture']['name'], PATHINFO_EXTENSION));
         $allowed = ['jpg', 'jpeg', 'png'];
-        
         if (in_array($ext, $allowed)) {
-            // Generate unique filename
-            $newFilename = uniqid() . '.' . $ext;
+            $newFilename = uniqid('profile_', true) . '.' . $ext;
             $targetPath = $uploadDir . $newFilename;
-            
-            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-                $photoPath = '../uploads/profiles/' . $newFilename;
-                $updateFields[] = "userPhoto = ?";
-                $params[] = $photoPath;
-                $types .= 's';
-            }
+            move_uploaded_file($_FILES['profilePicture']['tmp_name'], $targetPath);
+            $photoPath = '../uploads/profiles/' . $newFilename;
+            $updateFields[] = "userPhoto = ?";
+            $params[] = $photoPath; $types .= 's';
         }
     }
-    
-    // Add userId to params
-    $params[] = $userId;
-    $types .= 's';
-    
-    // Build and execute query
+
+    $params[] = $userId; $types .= 's';
     $sql = "UPDATE tb_users SET " . implode(', ', $updateFields) . " WHERE userId = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param($types, ...$params);
-    
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'User updated successfully']);
-    } else {
-        throw new Exception('Failed to update user');
-    }
-    
+    $stmt->execute();
+
+    echo json_encode(['success' => true, 'message' => 'User updated successfully']);
 } catch (Exception $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error updating user: ' . $e->getMessage()
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
 
 if (isset($stmt)) $stmt->close();
