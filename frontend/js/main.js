@@ -38,7 +38,7 @@ import { loadFooter } from './modules/footer.js';
 })();
 
 /* ============================================================
-   SESSION VALIDATION & ROLE PROTECTION
+   SESSION VALIDATION & AUTO REDIRECT ON EXPIRY
    ============================================================ */
 async function verifyActiveSession() {
   try {
@@ -54,10 +54,16 @@ async function verifyActiveSession() {
       window.location.pathname.endsWith("/");
 
     if (isLoggedInPage && !isLoginPage && !data.active) {
+      // Save current page before redirect
+      localStorage.setItem("lastVisitedPage", window.location.pathname);
+
+      // Clear session data
       sessionStorage.clear();
-      localStorage.clear();
-      alert("Your session has expired due to inactivity. Please log in again.");
-      window.location.href = "login.html";
+      localStorage.removeItem("loggedInUser");
+      localStorage.removeItem("userRole");
+
+      // Show overlay instead of alert
+      showSessionExpiredOverlay();
       return false;
     }
 
@@ -67,8 +73,7 @@ async function verifyActiveSession() {
     const currentPage = window.location.pathname.split("/").pop();
 
     if (restrictedPages.includes(currentPage) && userRole !== "admin") {
-      alert("Access denied. Administrator privileges required.");
-      window.location.href = "dashboard.html";
+      showAccessDeniedOverlay();
       return false;
     }
 
@@ -79,11 +84,73 @@ async function verifyActiveSession() {
   }
 }
 
-// Perform immediate session check, then every 2 minutes
-document.addEventListener("DOMContentLoaded", () => {
-  verifyActiveSession();
-  setInterval(verifyActiveSession, 120000); // 2 minutes
-});
+/* ============================================================
+   SESSION EXPIRED OVERLAY
+   ============================================================ */
+function showSessionExpiredOverlay() {
+  const existing = document.getElementById("sessionExpiredOverlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "sessionExpiredOverlay";
+  overlay.className = "overlay active";
+
+  overlay.innerHTML = `
+    <div class="overlay-content">
+      <h2>Session Expired</h2>
+      <p>Log in to access the app</p>
+      <button id="overlayOkBtn">OK</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.body.classList.add("blurred");
+
+  const okBtn = overlay.querySelector("#overlayOkBtn");
+  const redirect = () => {
+    overlay.classList.remove("active");
+    document.body.classList.remove("blurred");
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 600); // fade-out effect
+  };
+
+  okBtn.addEventListener("click", redirect);
+  overlay.addEventListener("click", redirect);
+}
+
+/* ============================================================
+   ACCESS DENIED OVERLAY (for non-admin users)
+   ============================================================ */
+function showAccessDeniedOverlay() {
+  const existing = document.getElementById("accessDeniedOverlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "accessDeniedOverlay";
+  overlay.className = "overlay active";
+
+  overlay.innerHTML = `
+    <div class="overlay-content">
+      <h2>Access Denied</h2>
+      <p>Administrator privileges required.</p>
+      <button id="overlayOkBtn">OK</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.body.classList.add("blurred");
+
+  const okBtn = overlay.querySelector("#overlayOkBtn");
+  const redirect = () => {
+    overlay.classList.remove("active");
+    document.body.classList.remove("blurred");
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 600);
+  };
+
+  okBtn.addEventListener("click", redirect);
+  overlay.addEventListener("click", redirect);
+}
 
 /* ============================================================
    HEADER LOADING & LOGOUT MANAGEMENT
@@ -171,34 +238,34 @@ async function loadAppropriateHeader() {
 /* ============================================================
    PUBLIC HEADER MENU TOGGLE (for header1.html)
    ============================================================ */
-  function initPublicHeaderMenuToggle() {
-    const menuToggle = document.getElementById('menuToggle');
-    const navMenu = document.getElementById('navLinks');
+function initPublicHeaderMenuToggle() {
+  const menuToggle = document.getElementById('menuToggle');
+  const navMenu = document.getElementById('navLinks');
 
-    if (menuToggle && navMenu) {
-      console.log('📱 Initializing public header menu toggle');
-      
-      menuToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        navMenu.classList.toggle('show');
-        menuToggle.classList.toggle('open');
-        console.log('Mobile menu toggled');
-      });
+  if (menuToggle && navMenu) {
+    console.log('📱 Initializing public header menu toggle');
 
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!menuToggle.contains(e.target) && !navMenu.contains(e.target)) {
-          navMenu.classList.remove('show');
-          menuToggle.classList.remove('open');
-        }
-      });
-    } else {
-      console.log('❌ Menu toggle elements not found:', { 
-        menuToggle: !!menuToggle, 
-        navMenu: !!navMenu 
-      });
-    }
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      navMenu.classList.toggle('show');
+      menuToggle.classList.toggle('open');
+      console.log('Mobile menu toggled');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!menuToggle.contains(e.target) && !navMenu.contains(e.target)) {
+        navMenu.classList.remove('show');
+        menuToggle.classList.remove('open');
+      }
+    });
+  } else {
+    console.log('❌ Menu toggle elements not found:', {
+      menuToggle: !!menuToggle,
+      navMenu: !!navMenu
+    });
   }
+}
 
 /* ============================================================
    THEME TOGGLE HANDLING
@@ -261,6 +328,8 @@ function highlightActivePage() {
    DOM READY
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
+  verifyActiveSession();
+  setInterval(verifyActiveSession, 120000); // Recheck every 2 minutes
   loadAppropriateHeader();
   loadFooter(); // auto-detects footer
 });
