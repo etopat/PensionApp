@@ -4,7 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form) return;
 
-  // Remove the old showMessage function and replace with modal
+  // Check for return URL parameter from session expiry
+  const urlParams = new URLSearchParams(window.location.search);
+  const returnUrl = urlParams.get('return');
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -50,8 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("loggedInUser", JSON.stringify(userData));
         localStorage.setItem("userRole", json.userRole || "");
 
-        // Enhanced Role-based redirection
-        let redirectUrl = getRedirectUrlByRole(json.userRole);
+        // Enhanced Role-based redirection with return URL handling
+        let redirectUrl = getSafeRedirectUrl(json.userRole, returnUrl);
         
         console.log(`🔄 Redirecting ${json.userRole} to: ${redirectUrl}`);
 
@@ -136,36 +139,119 @@ function showLoginModal(type, message) {
   }
 }
 
-// Function to determine redirect URL based on user role
-function getRedirectUrlByRole(userRole) {
+/* ============================================================
+   ENHANCED ROLE-BASED REDIRECTION WITH SAFETY CHECKS
+   ============================================================ */
+function getSafeRedirectUrl(userRole, requestedUrl = '') {
   const role = (userRole || '').toLowerCase();
   
-  switch (role) {
-    case 'admin':
-      return 'dashboard.html';
-    
-    case 'clerk':
-      return 'file_registry.html';
-    
-    case 'user':
-      return 'dashboard.html';
-    
-    case 'pensioner':
-      return 'pensioner_board.html';
-    
+  // Define safe landing pages for each role
+  const roleLandingPages = {
+    'admin': 'dashboard.html',
+    'clerk': 'file_registry.html',
+    'pensioner': 'pensioner_board.html',
+    'user': 'dashboard.html',
     // All these roles go to taskboard
-    case 'oc_pen':
-    case 'writeup_officer':
-    case 'file_creator':
-    case 'data_entry':
-    case 'assessor':
-    case 'auditor':
-    case 'approver':
-      return 'taskboard.html';
-    
-    // Default fallback
-    default:
-      console.warn(`⚠️ Unknown role "${role}", redirecting to dashboard`);
-      return 'dashboard.html';
+    'oc_pen': 'taskboard.html',
+    'writeup_officer': 'taskboard.html',
+    'file_creator': 'taskboard.html',
+    'data_entry': 'taskboard.html',
+    'assessor': 'taskboard.html',
+    'auditor': 'taskboard.html',
+    'approver': 'taskboard.html'
+  };
+  
+  // Default safe page if role not found
+  const defaultLandingPage = 'dashboard.html';
+  
+  // Get the safe landing page for the user's role
+  const safeLandingPage = roleLandingPages[role] || defaultLandingPage;
+  
+  // If no requested URL, use the safe landing page
+  if (!requestedUrl) {
+    return safeLandingPage;
   }
+  
+  // Extract page name from URL for validation
+  const pageName = requestedUrl.split('/').pop().split('?')[0];
+  
+  // Validate the requested URL to ensure it's safe and accessible for the user's role
+  if (isUrlAccessibleForRole(pageName, role)) {
+    return requestedUrl;
+  }
+  
+  // If requested URL is not accessible, use the safe landing page
+  console.warn(`⚠️ Redirect URL ${requestedUrl} not accessible for role ${role}, using ${safeLandingPage}`);
+  return safeLandingPage;
+}
+
+/* ============================================================
+   URL ACCESSIBILITY VALIDATION
+   ============================================================ */
+function isUrlAccessibleForRole(pageName, userRole) {
+  // Define role-based access rules
+  const roleAccessRules = {
+    // Admin can access everything
+    'admin': () => true,
+    
+    // Clerk access rules
+    'clerk': (page) => [
+      'file_registry.html', 'tasks.html', 'file_tracking.html', 'profile.html', 
+      'messages.html', 'reports.html', 'dashboard.html'
+    ].includes(page),
+    
+    // OC Pension access rules  
+    'oc_pen': (page) => [
+      'taskboard.html', 'file_tracking.html', 'pension_registry.html', 'profile.html',
+      'reports.html', 'dashboard.html'
+    ].includes(page),
+    
+    // Writeup Officer access rules
+    'writeup_officer': (page) => [
+      'taskboard.html', 'file_tracking.html', 'profile.html', 'reports.html', 'dashboard.html'
+    ].includes(page),
+    
+    // File Creator access rules
+    'file_creator': (page) => [
+      'taskboard.html', 'file_tracking.html', 'profile.html', 'dashboard.html'
+    ].includes(page),
+    
+    // Data Entry access rules
+    'data_entry': (page) => [
+      'taskboard.html', 'data_entry.html', 'profile.html', 'dashboard.html'
+    ].includes(page),
+    
+    // Assessor access rules
+    'assessor': (page) => [
+      'taskboard.html', 'profile.html', 'dashboard.html'
+    ].includes(page),
+    
+    // Auditor access rules
+    'auditor': (page) => [
+      'taskboard.html', 'profile.html', 'dashboard.html'
+    ].includes(page),
+    
+    // Approver access rules
+    'approver': (page) => [
+      'taskboard.html', 'profile.html', 'dashboard.html'
+    ].includes(page),
+    
+    // Pensioner access rules
+    'pensioner': (page) => [
+      'pensioner_board.html', 'pension_status.html', 'profile.html', 'faq.html', 'dashboard.html'
+    ].includes(page),
+    
+    // Regular user access rules
+    'user': (page) => [
+      'dashboard.html', 'profile.html', 'faq.html', 'about.html'
+    ].includes(page)
+  };
+  
+  const accessRule = roleAccessRules[userRole] || (() => false);
+  return accessRule(pageName);
+}
+
+// Keep the original function for backward compatibility
+function getRedirectUrlByRole(userRole) {
+  return getSafeRedirectUrl(userRole);
 }

@@ -7,6 +7,7 @@
 
    Features:
    ✅ Sidebar navigation switching between sections
+   ✅ Mobile-responsive navigation with select dropdown
    ✅ Dynamic card population for all summary categories
    ✅ Filter responsiveness (Life Certificates & Payroll)
    ✅ Ready hooks for backend integration
@@ -22,7 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------
   // Element References
   // -----------------------------
-  const sidebarLinks = document.querySelectorAll(".sidebar-nav a");
+  const desktopNavLinks = document.querySelectorAll(".desktop-nav a");
+  const mobileNavSelect = document.getElementById("mobileNavSelect");
   const dashboardSections = document.querySelectorAll(".dashboard-section");
   const welcomeUser = document.getElementById("welcomeUser");
 
@@ -46,28 +48,49 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ============================================================
      SECTION NAVIGATION LOGIC
      ============================================================ */
-  sidebarLinks.forEach((link) => {
+  function switchSection(targetSectionId) {
+    // Remove active class from all desktop links
+    desktopNavLinks.forEach((link) => link.classList.remove("active"));
+    
+    // Add active class to the corresponding desktop link
+    const correspondingLink = document.querySelector(`.desktop-nav a[data-target="${targetSectionId}"]`);
+    if (correspondingLink) {
+      correspondingLink.classList.add("active");
+    }
+    
+    // Update mobile select value
+    if (mobileNavSelect) {
+      mobileNavSelect.value = targetSectionId;
+    }
+    
+    // Hide all sections
+    dashboardSections.forEach((section) => section.classList.remove("active"));
+    
+    // Show targeted section
+    const targetSection = document.getElementById(targetSectionId);
+    if (targetSection) {
+      targetSection.classList.add("active");
+      // Scroll to top of the content area when switching sections
+      document.querySelector('.dashboard-content').scrollTop = 0;
+    }
+  }
+
+  // Desktop navigation event listeners
+  desktopNavLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-
-      // Remove active class from all links
-      sidebarLinks.forEach((l) => l.classList.remove("active"));
-
-      // Add active class to clicked link
-      link.classList.add("active");
-
-      // Hide all sections
-      dashboardSections.forEach((section) => section.classList.remove("active"));
-
-      // Show targeted section
-      const target = document.getElementById(link.dataset.target);
-      if (target) {
-        target.classList.add("active");
-        // Scroll to top of the content area when switching sections
-        document.querySelector('.dashboard-content').scrollTop = 0;
-      }
+      const targetSectionId = link.dataset.target;
+      switchSection(targetSectionId);
     });
   });
+
+  // Mobile navigation event listener
+  if (mobileNavSelect) {
+    mobileNavSelect.addEventListener("change", (e) => {
+      const targetSectionId = e.target.value;
+      switchSection(targetSectionId);
+    });
+  }
 
   /* ============================================================
      LOAD USER INFO

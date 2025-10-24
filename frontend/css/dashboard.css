@@ -63,30 +63,106 @@ body {
   padding-bottom: 0.3rem;
 }
 
-.sidebar-nav ul {
+/* ============================================================
+   DESKTOP NAVIGATION STYLING (Visible only on desktop)
+   ============================================================ */
+.desktop-nav {
+  display: block; /* Visible on desktop by default */
+}
+
+.desktop-nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.sidebar-nav li {
-  margin-bottom: 0.5rem;
+.desktop-nav li {
+  margin-bottom: 0.2rem;
 }
 
-.sidebar-nav a {
+.desktop-nav a {
   display: block;
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   color: var(--text-color);
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: none;
-  transition: background 0.3s, color 0.3s;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
 }
 
-.sidebar-nav a:hover,
-.sidebar-nav a.active {
+.desktop-nav a:hover {
+  background: var(--hover-bg);
+  color: var(--accent-color);
+  border-left-color: var(--accent-color);
+  transform: translateX(5px);
+}
+
+.desktop-nav a.active {
   background: var(--accent-color);
   color: #fff;
+  border-left-color: var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 204, 0, 0.3);
+}
+
+/* ============================================================
+   MOBILE NAVIGATION SELECT STYLING (Hidden on desktop)
+   ============================================================ */
+.mobile-nav-select {
+  display: none; /* Hidden on desktop by default */
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.mobile-nav-select select {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px;
+}
+
+.mobile-nav-select select:hover {
+  border-color: var(--accent-color);
+  background-color: var(--hover-bg);
+}
+
+.mobile-nav-select select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.1);
+  background-color: var(--input-bg);
+}
+
+/* Custom styling for select options */
+.mobile-nav-select select option {
+  padding: 0.8rem 1rem;
+  background: var(--card-bg);
+  color: var(--text-color);
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-nav-select select option:hover {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.mobile-nav-select select option:checked {
+  background: var(--accent-color);
+  color: #fff;
+  font-weight: 600;
 }
 
 .sidebar-actions {
@@ -273,6 +349,7 @@ body {
     box-shadow: none;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
   }
 
   .dashboard-content {
@@ -289,6 +366,36 @@ body {
   .btn-action {
     flex: 1;
     margin: 0.3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Hide desktop navigation on mobile */
+  .desktop-nav {
+    display: none !important;
+  }
+
+  /* Show mobile navigation select on mobile */
+  .mobile-nav-select {
+    display: block !important;
+  }
+
+  .sidebar {
+    padding: 1rem;
+    max-height: 180px;
+  }
+
+  .sidebar-header {
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .mobile-nav-select select {
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
   }
 }
 
@@ -310,6 +417,39 @@ body {
 
   .dashboard-header h1 {
     font-size: 1.5rem;
+  }
+
+  .dashboard-content {
+    padding: 0.5rem;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .filter-group select {
+    width: 100%;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .btn-action {
+    width: 100%;
+    margin: 0.2rem 0;
+  }
+
+  .sidebar {
+    max-height: 160px;
+    padding: 0.8rem;
+  }
+
+  .mobile-nav-select select {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
   }
 }
 

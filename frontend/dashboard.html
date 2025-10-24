@@ -20,7 +20,6 @@
   <!-- ================== SCRIPTS ================== -->
   <!-- main.js handles header/footer loading -->
   <script type="module" src="js/main.js"></script>
-  <script defer src="js/menu_toggle.js"></script>
   <script defer src="js/dashboard.js"></script>
 
 </head>
@@ -39,7 +38,8 @@
           <h2>Summary</h2>
         </div>
 
-        <nav class="sidebar-nav">
+        <!-- Desktop Navigation -->
+        <nav class="sidebar-nav desktop-nav">
           <ul>
             <li><a href="#" class="active" data-target="claimsSection">Claims Summary</a></li>
             <li><a href="#" data-target="pensionersSection">Pensioners Summary</a></li>
@@ -52,6 +52,21 @@
             <li><a href="#" data-target="dataSection">Data Management</a></li>
           </ul>
         </nav>
+
+        <!-- Mobile Navigation Dropdown -->
+        <div class="mobile-nav-select">
+          <select id="mobileNavSelect">
+            <option value="claimsSection" selected>Claims Summary</option>
+            <option value="pensionersSection">Pensioners Summary</option>
+            <option value="categoriesSection">By Mode of Retirement</option>
+            <option value="lifeCertSection">Life Certificate Status</option>
+            <option value="payrollSection">Payroll Movements</option>
+            <option value="staffDueSection">Staff Due for Retirement</option>
+            <option value="filesSection">File Registry</option>
+            <option value="usersSection">System Users</option>
+            <option value="dataSection">Data Management</option>
+          </select>
+        </div>
       </aside>
 
       <!-- ======================================================
