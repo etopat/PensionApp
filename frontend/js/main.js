@@ -1,10 +1,69 @@
 // ====================================================================
 // main.js
 // Dynamically loads correct header & footer, initializes theme toggles,
-// navigation highlighting, and header interactions.
+// navigation highlighting, header interactions, and session protection.
 // ====================================================================
 
 import { loadFooter } from './modules/footer.js';
+
+/* ============================================================
+   GLOBAL SESSION & CACHE PROTECTION
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Prevent cached back navigation
+  if (window.history && window.history.pushState) {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function () {
+      window.history.go(1);
+    };
+  }
+
+  // Add meta tags to prevent caching sensitive pages
+  const metaTags = `
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  `;
+  document.head.insertAdjacentHTML("beforeend", metaTags);
+
+  // Perform session check immediately, then every 2 minutes
+  verifyActiveSession();
+  setInterval(verifyActiveSession, 120000); // 2 minutes
+});
+
+
+
+/**
+ * Verify user session status from backend.
+ * Redirects to login.html if session expired or invalid.
+ */
+async function verifyActiveSession() {
+  try {
+    const response = await fetch("../backend/api/check_session.php", {
+      credentials: "include"
+    });
+    const data = await response.json();
+
+    // Only check session for logged-in pages
+    const isLoggedInPage = sessionStorage.getItem('isLoggedIn') === 'true';
+    const isLoginPage = window.location.pathname.includes("login.html") || window.location.pathname.endsWith("/");
+
+    if (isLoggedInPage && !isLoginPage && !data.active) {
+      sessionStorage.clear();
+      localStorage.clear();
+      alert("Your session has expired due to inactivity. Please log in again.");
+      window.location.href = "login.html";
+    }
+  } catch (err) {
+    console.error("⚠️ Error verifying session:", err);
+  }
+}
+
+/* ============================================================
+   HEADER LOADING & LOGOUT MANAGEMENT
+   ============================================================ */
 
 /**
  * Load appropriate header based on login status.
@@ -43,56 +102,50 @@ async function loadAppropriateHeader() {
     console.error('Failed to load header:', err);
   }
 
-  // load logout module
-try {
+  // Load logout module
+  try {
     const logoutMod = await import('./logout.js');
     if (logoutMod && typeof logoutMod.initLogout === 'function') {
-        console.log("🔄 Initializing logout module...");
-        logoutMod.initLogout();
+      console.log("🔄 Initializing logout module...");
+      logoutMod.initLogout();
     } else {
-        console.error("❌ Logout module not properly exported");
-        // Fallback logout handler
-        setupFallbackLogout();
+      console.error("❌ Logout module not properly exported");
+      setupFallbackLogout();
     }
-} catch (err) {
+  } catch (err) {
     console.warn('⚠️ Could not load logout module:', err);
-    // Fallback logout handler
     setupFallbackLogout();
-}
+  }
 
   // Fallback logout handler
   function setupFallbackLogout() {
-      console.log("🔄 Setting up fallback logout handler...");
-      setTimeout(() => {
-          const logoutBtn = document.getElementById('logoutBtn');
-          if (logoutBtn) {
-              // Remove any existing listeners by cloning
-              const newLogoutBtn = logoutBtn.cloneNode(true);
-              logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-              
-              newLogoutBtn.addEventListener('click', function(e) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  
-                  if (confirm('Are you sure you want to logout?')) {
-                      // Clear all user data
-                      localStorage.removeItem('loggedInUser');
-                      localStorage.removeItem('userRole');
-                      sessionStorage.clear();
-                      
-                      // Redirect to login
-                      window.location.href = 'login.html';
-                  }
-              });
-              console.log("✅ Fallback logout handler attached");
+    console.log("🔄 Setting up fallback logout handler...");
+    setTimeout(() => {
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+
+        newLogoutBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('loggedInUser');
+            localStorage.removeItem('userRole');
+            sessionStorage.clear();
+            window.location.href = 'login.html';
           }
-      }, 300);
+        });
+        console.log("✅ Fallback logout handler attached");
+      }
+    }, 300);
   }
 }
 
-/**
- * Initialize theme toggle and smooth animated transitions.
- */
+/* ============================================================
+   THEME TOGGLE HANDLING
+   ============================================================ */
 function initializeThemeToggle() {
   const html = document.documentElement;
   const toggleBtn = document.getElementById('themeToggle');
@@ -132,9 +185,9 @@ function initializeThemeToggle() {
   }
 }
 
-/**
- * Highlight the current page in the navigation bar.
- */
+/* ============================================================
+   PAGE NAVIGATION HIGHLIGHT
+   ============================================================ */
 function highlightActivePage() {
   const links = document.querySelectorAll('.nav-link');
   const currentPage = window.location.pathname.split('/').pop();
@@ -147,9 +200,9 @@ function highlightActivePage() {
   });
 }
 
-// ===============================================================
-// DOM Ready
-// ===============================================================
+/* ============================================================
+   DOM READY
+   ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   loadAppropriateHeader();
   loadFooter(); // automatically decides correct footer internally

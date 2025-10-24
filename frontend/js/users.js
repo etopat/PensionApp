@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeUsersPage();
     }
 
+    // Redirect if not logged in
+    if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+    window.location.replace('login.html');
+    }
+
     function initializeUsersPage() {
         // Event listeners
         if (roleFilter) roleFilter.addEventListener('change', filterUsers);
