@@ -10,10 +10,10 @@
   background: var(--header-bg);
   color: var(--header-text);
   padding: 0.5rem 1.5rem;
-  box-shadow: 0 4px 20px var(--shadow-dark);
+  box-shadow: 0 6px 20px var(--shadow-dark);
   position: relative;
   z-index: 1000;
-  border-bottom: 2px solid var(--header-border);
+  border-bottom: 3.5px solid var(--header-border);
 }
 
 .menu-and-title {
@@ -493,8 +493,8 @@
 }
 
 .profile-picture {
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   object-fit: cover;
   margin-right: 6px;
