@@ -34,7 +34,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Session timeout in seconds (e.g. 30 minutes)
-$timeout_duration = 10;
+$timeout_duration = 1800;
 
 // ------------------------------------------------------------
 // 3️⃣ Session Expiration Handling
