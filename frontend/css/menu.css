@@ -210,7 +210,7 @@
 
   .profile-dropdown a {
     padding: 8px 10px !important; /* Reduced padding */
-    font-size: 2rem !important; /* Slightly smaller font */
+    font-size: 1rem !important; /* Slightly smaller font */
     line-height: 1.2 !important; /* Tighter line height */
     border-right-width: 2px !important; /* Thinner border */
   }

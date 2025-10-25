@@ -41,10 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
     const isAdmin = currentUser.role === 'admin';
 
-    // Hide role section for non-admin users
+    // Hide role section and prevent validation for non-admin users
     if (!isAdmin && roleSection) {
         roleSection.style.display = 'none';
+        const userRoleSelect = document.getElementById('userRole');
+        if (userRoleSelect) {
+            userRoleSelect.removeAttribute('required');
+            userRoleSelect.disabled = true;
+        }
     }
+
 
     // Initialize the form
     initializeForm();
@@ -88,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // If no user ID found, redirect to users page
                 alert('Unable to determine user ID. Please login again.');
-                window.location.href = 'users.html';
+                window.location.href = 'login.html';
                 return true;
             }
         }
@@ -99,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the form with user data
     async function initializeForm() {
         if (!userId) {
-            alert('No user ID provided. Redirecting to users page.');
-            window.location.href = 'users.html';
+            alert('No user ID provided. Redirecting to Profiles page.');
+            window.location.href = 'profile.html';
             return;
         }
 
@@ -121,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Check permissions - non-admin users can only edit their own profile
             if (!isAdmin && currentUserData.userId !== currentUser.id) {
                 alert('You can only edit your own profile.');
-                window.location.href = 'users.html';
+                window.location.href = 'profile.html';
                 return;
             }
 
@@ -140,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error initializing form:', error);
             alert('Error loading user data. Please try again.');
-            window.location.href = 'users.html';
+            window.location.href = 'profile.html';
         }
     }
 
@@ -515,7 +521,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('User information updated successfully!');
                 
                 // Redirect back to users page
+                if (isAdmin){
                 window.location.href = 'users.html';
+                }else{
+                    window.location.href = 'profile.html';
+                }
             } else {
                 throw new Error(result.message || 'Failed to update user');
             }
@@ -569,10 +579,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check if there are unsaved changes
         if (hasFormChanges()) {
             if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+                if (isAdmin){
                 window.location.href = 'users.html';
+                }else{
+                    window.location.href = 'profile.html';
+                }
             }
         } else {
-            window.location.href = 'users.html';
+            if (isAdmin){
+                window.location.href = 'users.html';
+                }else{
+                    window.location.href = 'profile.html';
+                }
         }
     }
 

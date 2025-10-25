@@ -333,7 +333,7 @@ main {
 
 .main-wrapper {
   position: relative;
-  top: 70px;
+  top: 30px;
   background: var(--main-bg);
   padding: 0.5rem 3rem;
   margin: 1.5rem auto 6rem auto;

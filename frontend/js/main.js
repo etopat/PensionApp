@@ -69,7 +69,7 @@ async function verifyActiveSession() {
 
     // Role-based access control (admin-only pages)
     const userRole = localStorage.getItem("userRole");
-    const restrictedPages = ["users.html", "edit_user.html"];
+    const restrictedPages = ["users.html", "settings.html"];
     const currentPage = window.location.pathname.split("/").pop();
 
     if (restrictedPages.includes(currentPage) && userRole !== "admin") {

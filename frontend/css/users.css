@@ -3,8 +3,9 @@
    ========================================================== */
 
 .main-wrapper {
+    align-self: center;
     padding: 1rem;
-    max-width: 80%;
+    max-width: 100%;
     margin: 0 0;
     min-height: calc(100vh - 120px);
 }
@@ -517,6 +518,7 @@
     .main-wrapper {
         padding: 0.3rem;
         max-width: 95%;
+
     }
 
     .users-controls {
@@ -618,5 +620,5 @@
 }
 
 .main-wrapper {
-    margin-top: 80px; /* Adjust based on your header height */
+    margin-top: 40px; /* Adjust based on your header height */
 }
