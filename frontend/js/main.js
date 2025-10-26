@@ -1,10 +1,58 @@
 // ====================================================================
-// main.js
-// Handles header/footer loading, theme toggles, session protection,
-// navigation highlighting, admin access control, and mobile menu toggle.
+// main.js - COORDINATED LOADING VERSION
+// Handles coordinated header/footer loading with proper sequencing
 // ====================================================================
 
 import { loadFooter } from './modules/footer.js';
+
+// Global loading state management
+const AppLoader = {
+  isHeaderLoaded: false,
+  isFooterLoaded: false,
+  isDOMReady: false,
+  initCallbacks: [],
+  
+  markHeaderLoaded() {
+    this.isHeaderLoaded = true;
+    this.checkAllLoaded();
+  },
+  
+  markFooterLoaded() {
+    this.isFooterLoaded = true;
+    this.checkAllLoaded();
+  },
+  
+  markDOMReady() {
+    this.isDOMReady = true;
+    this.checkAllLoaded();
+  },
+  
+  checkAllLoaded() {
+    if (this.isDOMReady && this.isHeaderLoaded && this.isFooterLoaded) {
+      this.executeCallbacks();
+    }
+  },
+  
+  onAllLoaded(callback) {
+    if (this.isDOMReady && this.isHeaderLoaded && this.isFooterLoaded) {
+      callback();
+    } else {
+      this.initCallbacks.push(callback);
+    }
+  },
+  
+  executeCallbacks() {
+    console.log('🎉 All components loaded - executing callbacks');
+    this.initCallbacks.forEach(callback => {
+      try {
+        callback();
+      } catch (error) {
+        console.error('Error in init callback:', error);
+      }
+    });
+    this.initCallbacks = [];
+  }
+};
 
 /* ============================================================
    GLOBAL SESSION, CACHE, AND HISTORY PROTECTION
@@ -295,88 +343,128 @@ function isUrlAccessibleForRole(pageName, userRole) {
 }
 
 /* ============================================================
-   HEADER LOADING & LOGOUT MANAGEMENT
+   COORDINATED HEADER LOADING
    ============================================================ */
 async function loadAppropriateHeader() {
   try {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
     const headerPath = isLoggedIn ? './header2.html' : './header1.html';
 
-    const res = await fetch(headerPath, { cache: "no-store" });
+    console.log('🔄 Loading header from:', headerPath);
+    
+    const res = await fetch(headerPath, { 
+      cache: "no-store",
+      // Add timeout to prevent hanging requests
+      signal: AbortSignal.timeout(5000)
+    });
+    
     if (!res.ok) throw new Error(`Failed to fetch ${headerPath}: ${res.status}`);
     const headerHTML = await res.text();
 
     // Insert header at top of body
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
+    console.log('✅ Header loaded and inserted');
 
-    // Initialize theme toggle & highlight active page FIRST
+    // Initialize theme toggle & highlight active page
     initializeThemeToggle();
     highlightActivePage();
 
     // Initialize header interactions for logged-in users
     if (isLoggedIn) {
-      setTimeout(async () => {
-        try {
-          const mod = await import('./modules/header_interactions.js');
-          if (mod && typeof mod.initHeaderInteractions === 'function') {
-            mod.initHeaderInteractions();
-          }
-        } catch (err) {
-          console.error('Failed to initialize header interactions:', err);
+      try {
+        const mod = await import('./modules/header_interactions.js');
+        if (mod && typeof mod.initHeaderInteractions === 'function') {
+          mod.initHeaderInteractions();
+          console.log('✅ Header interactions initialized');
         }
-      }, 50);
+      } catch (err) {
+        console.error('❌ Failed to initialize header interactions:', err);
+      }
     } else {
       // For non-logged-in state, activate mobile menu toggle manually
       setTimeout(() => {
         initPublicHeaderMenuToggle();
+        console.log('✅ Public header menu toggle initialized');
       }, 100);
     }
 
-  } catch (err) {
-    console.error('Failed to load header:', err);
-  }
+    // Mark header as loaded in the coordination system
+    AppLoader.markHeaderLoaded();
 
-  // Load logout module (only if logged in)
-  if (sessionStorage.getItem('isLoggedIn') === 'true') {
-    try {
-      const logoutMod = await import('./logout.js');
-      if (logoutMod && typeof logoutMod.initLogout === 'function') {
-        console.log("🔄 Initializing logout module...");
-        logoutMod.initLogout();
-      } else {
-        console.error("❌ Logout module not properly exported");
-        setupFallbackLogout();
-      }
-    } catch (err) {
-      console.warn('⚠️ Could not load logout module:', err);
+    // Load logout module (only if logged in)
+    if (isLoggedIn) {
+      initializeLogoutModule();
+    }
+
+  } catch (err) {
+    console.error('❌ Failed to load header:', err);
+    // Mark header as loaded anyway to prevent blocking the app
+    AppLoader.markHeaderLoaded();
+    
+    // Create a minimal fallback header
+    createFallbackHeader();
+  }
+}
+
+/* ============================================================
+   LOGOUT MODULE INITIALIZATION
+   ============================================================ */
+async function initializeLogoutModule() {
+  try {
+    const logoutMod = await import('./logout.js');
+    if (logoutMod && typeof logoutMod.initLogout === 'function') {
+      console.log("🔄 Initializing logout module...");
+      logoutMod.initLogout();
+    } else {
+      console.error("❌ Logout module not properly exported");
       setupFallbackLogout();
     }
+  } catch (err) {
+    console.warn('⚠️ Could not load logout module:', err);
+    setupFallbackLogout();
   }
+}
 
-  // Fallback logout handler
-  function setupFallbackLogout() {
-    console.log("🔄 Setting up fallback logout handler...");
-    setTimeout(() => {
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        const newLogoutBtn = logoutBtn.cloneNode(true);
-        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+/* ============================================================
+   FALLBACK LOGOUT HANDLER
+   ============================================================ */
+function setupFallbackLogout() {
+  console.log("🔄 Setting up fallback logout handler...");
+  setTimeout(() => {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      const newLogoutBtn = logoutBtn.cloneNode(true);
+      logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
 
-        newLogoutBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          e.stopPropagation();
+      newLogoutBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
 
-          if (confirm('Are you sure you want to logout?')) {
-            localStorage.removeItem('loggedInUser');
-            localStorage.removeItem('userRole');
-            sessionStorage.clear();
-            window.location.href = 'login.html';
-          }
-        });
-        console.log("✅ Fallback logout handler attached");
-      }
-    }, 300);
-  }
+        if (confirm('Are you sure you want to logout?')) {
+          localStorage.removeItem('loggedInUser');
+          localStorage.removeItem('userRole');
+          sessionStorage.clear();
+          window.location.href = 'login.html';
+        }
+      });
+      console.log("✅ Fallback logout handler attached");
+    }
+  }, 300);
+}
+
+/* ============================================================
+   FALLBACK HEADER (in case of loading failure)
+   ============================================================ */
+function createFallbackHeader() {
+  const fallbackHeader = `
+    <header style="background: #003366; color: white; padding: 1rem; text-align: center;">
+      <h1 style="margin: 0; font-size: 1.5rem;">PensionsGo</h1>
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.8;">
+        Navigation temporarily unavailable
+      </p>
+    </header>
+  `;
+  document.body.insertAdjacentHTML('afterbegin', fallbackHeader);
 }
 
 /* ============================================================
@@ -469,11 +557,62 @@ function highlightActivePage() {
 }
 
 /* ============================================================
-   DOM READY
+   COORDINATED FOOTER LOADING
    ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
+async function loadFooterWithCoordination() {
+  try {
+    console.log('🔄 Loading footer...');
+    await loadFooter();
+    console.log('✅ Footer loaded');
+    AppLoader.markFooterLoaded();
+  } catch (error) {
+    console.error('❌ Failed to load footer:', error);
+    // Mark footer as loaded anyway to prevent blocking
+    AppLoader.markFooterLoaded();
+  }
+}
+
+/* ============================================================
+   FINAL APP INITIALIZATION
+   ============================================================ */
+function initializeApplication() {
+  console.log('🚀 Initializing application...');
+  
+  // Start session verification
   verifyActiveSession();
   setInterval(verifyActiveSession, 120000); // Recheck every 2 minutes
+  
+  // Load header and footer in parallel but coordinate completion
   loadAppropriateHeader();
-  loadFooter(); // auto-detects footer
+  loadFooterWithCoordination();
+}
+
+/* ============================================================
+   DOM READY WITH COORDINATED LOADING
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('📄 DOM Content Loaded');
+  AppLoader.markDOMReady();
+  
+  // Start the application initialization
+  initializeApplication();
+  
+  // Set up final initialization when all components are loaded
+  AppLoader.onAllLoaded(() => {
+    console.log('🎊 All components loaded successfully!');
+    // Add any final initialization that requires both header and footer here
+    document.documentElement.classList.add('app-loaded');
+  });
 });
+
+// Fallback: If something takes too long, force completion after timeout
+setTimeout(() => {
+  if (!AppLoader.isHeaderLoaded) {
+    console.warn('⚠️ Header loading timeout - forcing completion');
+    AppLoader.markHeaderLoaded();
+  }
+  if (!AppLoader.isFooterLoaded) {
+    console.warn('⚠️ Footer loading timeout - forcing completion');
+    AppLoader.markFooterLoaded();
+  }
+}, 8000); // 8 second timeout
