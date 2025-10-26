@@ -19,7 +19,7 @@
 .menu-and-title {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 3rem;
   position: relative;
   flex: 1;
 }
@@ -31,7 +31,7 @@
   color: var(--header-text);
   text-shadow: var(--text-glow);
   letter-spacing: 0.5px;
-  animation: gentleGlow 3s ease-in-out infinite;
+  animation: gentleGlow 2s ease-in-out infinite;
 }
 
 .menu-icon {
@@ -163,6 +163,7 @@
     justify-content: center;
     flex-shrink: 0;
   }
+  
 
   /* COMPACT MOBILE DROPDOWN MENU */
   .dropdown-menu {

@@ -1,7 +1,14 @@
 // ====================================================================
-// modules/header_interactions.js
-// Handles all interactive behavior for header2.html
+// modules/header_interactions.js - OPTIMIZED VERSION
+// Handles all interactive behavior for header2.html with proper touch support
 // ====================================================================
+
+// Detect touch device to apply appropriate interaction patterns
+function isTouchDevice() {
+  return 'ontouchstart' in window || 
+         navigator.maxTouchPoints > 0 || 
+         navigator.msMaxTouchPoints > 0;
+}
 
 export function initHeaderInteractions() {
   console.log("✅ Header interactions initialized.");
@@ -13,7 +20,10 @@ export function initHeaderInteractions() {
 }
 
 function initializeHeaderInteractions() {
-  // 1️⃣ Menu Toggle (Hover or Click) 
+  const isTouch = isTouchDevice();
+  console.log(`📱 Device type: ${isTouch ? 'Touch device' : 'Desktop'}`);
+  
+  // 1️⃣ MAIN MENU TOGGLE (Hover for desktop, Click for mobile)
   const menuToggle = document.getElementById('menuToggle');
   const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -36,15 +46,7 @@ function initializeHeaderInteractions() {
       }, 150);
     };
 
-    // Hover for desktop
-    menuToggle.addEventListener('mouseenter', showMenu);
-    dropdownMenu.addEventListener('mouseenter', showMenu);
-    menuToggle.addEventListener('mouseleave', hideMenu);
-    dropdownMenu.addEventListener('mouseleave', hideMenu);
-
-    // Click for mobile
-    menuToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
+    const toggleMenu = () => {
       const isVisible = dropdownMenu.classList.contains('visible');
       if (isVisible) {
         dropdownMenu.classList.remove('visible');
@@ -53,18 +55,43 @@ function initializeHeaderInteractions() {
         dropdownMenu.classList.remove('hidden');
         dropdownMenu.classList.add('visible');
       }
+    };
+
+    if (!isTouch) {
+      // DESKTOP: Hover behavior with smooth transitions
+      menuToggle.addEventListener('mouseenter', showMenu);
+      dropdownMenu.addEventListener('mouseenter', showMenu);
+      menuToggle.addEventListener('mouseleave', hideMenu);
+      dropdownMenu.addEventListener('mouseleave', hideMenu);
+    } else {
+      // MOBILE: Remove hover behavior and ensure proper cursor
+      menuToggle.style.cursor = 'pointer';
+    }
+
+    // UNIVERSAL: Click behavior works on both desktop and mobile
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMenu();
     });
 
-    // Close dropdown when clicking outside
+    // Close dropdown when clicking outside (both desktop and mobile)
     document.addEventListener('click', (e) => {
       if (!dropdownMenu.contains(e.target) && !menuToggle.contains(e.target)) {
         dropdownMenu.classList.remove('visible');
         dropdownMenu.classList.add('hidden');
       }
     });
+
+    // Close dropdown when pressing Escape key (accessibility)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && dropdownMenu.classList.contains('visible')) {
+        dropdownMenu.classList.remove('visible');
+        dropdownMenu.classList.add('hidden');
+      }
+    });
   }
 
-  // 2️⃣ Profile Dropdown (Hover or Click)
+  // 2️⃣ PROFILE DROPDOWN TOGGLE (Hover for desktop, Click for mobile)
   const profileToggle = document.getElementById('profileDropdownToggle');
   const profileMenu = document.getElementById('profileDropdownMenu');
   const userProfile = document.getElementById('userProfile');
@@ -88,15 +115,7 @@ function initializeHeaderInteractions() {
       }, 150);
     };
 
-    // Hover for profile dropdown
-    userProfile.addEventListener('mouseenter', showProfileMenu);
-    profileMenu.addEventListener('mouseenter', showProfileMenu);
-    userProfile.addEventListener('mouseleave', hideProfileMenu);
-    profileMenu.addEventListener('mouseleave', hideProfileMenu);
-
-    // Click for mobile
-    profileToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
+    const toggleProfileMenu = () => {
       const isVisible = profileMenu.classList.contains('visible');
       if (isVisible) {
         profileMenu.classList.remove('visible');
@@ -105,6 +124,23 @@ function initializeHeaderInteractions() {
         profileMenu.classList.remove('hidden');
         profileMenu.classList.add('visible');
       }
+    };
+
+    if (!isTouch) {
+      // DESKTOP: Hover behavior
+      userProfile.addEventListener('mouseenter', showProfileMenu);
+      profileMenu.addEventListener('mouseenter', showProfileMenu);
+      userProfile.addEventListener('mouseleave', hideProfileMenu);
+      profileMenu.addEventListener('mouseleave', hideProfileMenu);
+    } else {
+      // MOBILE: Remove hover behavior
+      userProfile.style.cursor = 'pointer';
+    }
+
+    // UNIVERSAL: Click behavior
+    profileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleProfileMenu();
     });
 
     // Close when clicking outside
@@ -114,26 +150,41 @@ function initializeHeaderInteractions() {
         profileMenu.classList.add('hidden');
       }
     });
+
+    // Close when pressing Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && profileMenu.classList.contains('visible')) {
+        profileMenu.classList.remove('visible');
+        profileMenu.classList.add('hidden');
+      }
+    });
   }
 
-  // 3️⃣ Display User Information (Name & Picture)
+  // 3️⃣ DISPLAY USER INFORMATION (Name & Picture)
   updateUserProfile();
 
-  // 4️⃣ Show menu items based on user role
+  // 4️⃣ SHOW/HIDE MENU ITEMS BASED ON USER ROLE
   updateMenuVisibility();
   
-  // 5️⃣ Load unread message count and task count
+  // 5️⃣ LOAD DYNAMIC COUNTS (Unread messages and tasks)
   loadUnreadMessageCount();
   loadTaskCount();
 
-  // 6️⃣ Fix View Profile and Edit Profile menu items
+  // 6️⃣ FIX PROFILE MENU LINKS (Ensure proper navigation)
   fixProfileMenuItems();
 
-  // 7️⃣ Listen for logout events to update UI immediately
+  // 7️⃣ LISTEN FOR LOGOUT EVENTS TO UPDATE UI IMMEDIATELY
   window.addEventListener('userLoggedOut', handleUserLoggedOut);
 }
 
-// Function to fix View Profile and Edit Profile menu items
+// ====================================================================
+// PROFILE MENU FIXES
+// ====================================================================
+
+/**
+ * Fixes View Profile and Edit Profile menu items to ensure proper navigation
+ * and prevent default behavior issues
+ */
 function fixProfileMenuItems() {
   // Fix View Profile link
   const viewProfileLink = document.querySelector('a[href="user_profile.html"]');
@@ -148,7 +199,7 @@ function fixProfileMenuItems() {
     });
   }
 
-  // Fix Edit Profile link (already in logout.js, but added here for redundancy)
+  // Fix Edit Profile link
   const editProfileLink = document.querySelector('a[href="edit_user.html"]');
   if (editProfileLink) {
     // Remove any existing event listeners by cloning
@@ -173,7 +224,13 @@ function fixProfileMenuItems() {
   }
 }
 
-// Function to handle user logout event
+// ====================================================================
+// USER SESSION MANAGEMENT
+// ====================================================================
+
+/**
+ * Handles user logout event to reset UI and close dropdowns
+ */
 function handleUserLoggedOut() {
   console.log('User logged out event received in header interactions');
   
@@ -202,12 +259,16 @@ function handleUserLoggedOut() {
   }
 }
 
-// Function to get a reliable default profile image with correct path
+/**
+ * Returns a reliable default profile image with correct path
+ */
 function getDefaultProfileImage() {
   return 'images/default-user.png';
 }
 
-// Function to resolve image path
+/**
+ * Resolves image path for profile pictures, handling different path patterns
+ */
 function resolveImagePath(imagePath) {
   console.log("🔍 Resolving image path:", imagePath);
   
@@ -218,7 +279,7 @@ function resolveImagePath(imagePath) {
   
   // Handle different path patterns from database
   if (imagePath.startsWith('../uploads/')) {
-    // This is a backend path, we need to serve it through a PHP script
+    // Backend path - serve through PHP script
     const filename = imagePath.split('/').pop();
     return `../backend/api/get_image.php?file=${filename}&type=profile`;
   }
@@ -233,7 +294,13 @@ function resolveImagePath(imagePath) {
   return imagePath;
 }
 
-// Function to update user profile information
+// ====================================================================
+// USER PROFILE MANAGEMENT
+// ====================================================================
+
+/**
+ * Updates user profile information in the header (name and picture)
+ */
 export function updateUserProfile() {
   const userData = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
   const profileName = document.getElementById('profileName');
@@ -301,7 +368,13 @@ export function updateUserProfile() {
   }
 }
 
-// Function to update menu visibility based on user role
+// ====================================================================
+// ROLE-BASED MENU VISIBILITY
+// ====================================================================
+
+/**
+ * Shows/hides menu items based on user role for security and UX
+ */
 export function updateMenuVisibility() {
   const userData = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
   const userRole = userData.role || (localStorage.getItem('userRole') || '').toLowerCase();
@@ -374,7 +447,13 @@ export function updateMenuVisibility() {
   }
 }
 
-// Function to load unread message count
+// ====================================================================
+// DYNAMIC COUNTS (MESSAGES & TASKS)
+// ====================================================================
+
+/**
+ * Loads and displays unread message count in the message bubble
+ */
 function loadUnreadMessageCount() {
   const messageBubble = document.querySelector('.message-bubble');
   if (!messageBubble) return;
@@ -401,7 +480,9 @@ function loadUnreadMessageCount() {
     });
 }
 
-// Function to load task count
+/**
+ * Loads and displays task count in the task bubble
+ */
 function loadTaskCount() {
   const taskBubble = document.querySelector('.task-bubble');
   if (!taskBubble) return;
@@ -429,7 +510,13 @@ function loadTaskCount() {
     });
 }
 
-// Function to refresh header data (call this when user data changes)
+// ====================================================================
+// PUBLIC API FUNCTIONS
+// ====================================================================
+
+/**
+ * Refreshes all header data (call this when user data changes)
+ */
 export function refreshHeaderData() {
   updateUserProfile();
   updateMenuVisibility();
@@ -437,7 +524,9 @@ export function refreshHeaderData() {
   loadTaskCount();
 }
 
-// Function to clear user data on logout
+/**
+ * Clears user data on logout and updates UI immediately
+ */
 export function clearUserData() {
   if (typeof window.clearAllUserData === 'function') {
     window.clearAllUserData();

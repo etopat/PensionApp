@@ -146,7 +146,7 @@
     --focus-color: var(--primary-gold);
     
     /* Glow Effects */
-    --text-glow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
+    --text-glow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px var(--primary-maroon);
     
     /* Shadows */
     --shadow-light: rgba(0, 0, 0, 0.3);
