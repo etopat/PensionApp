@@ -617,30 +617,6 @@
 }
 
 /* ==========================================================
-   THEME TOGGLE BUTTON
-   ========================================================== */
-
-.theme-toggle {
-  font-size: 1.3rem;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid var(--header-border);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0.4rem;
-  border-radius: 6px;
-  color: var(--primary-gold);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.theme-toggle:hover {
-  background: var(--hover-bg-gold);
-  color: var(--primary-blue);
-  transform: scale(1.1);
-  border-color: var(--primary-gold);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
-}
-
-/* ==========================================================
    ANIMATIONS
    ========================================================== */
 
@@ -670,7 +646,7 @@
 
 /* Focus styles for accessibility */
 .menu-icon:focus,
-.theme-toggle:focus,
+/* .theme-toggle:focus, */
 .profile-dropdown-toggle:focus,
 .dropdown-menu a:focus,
 .profile-dropdown a:focus {
@@ -884,8 +860,7 @@ body.modal-open
     border-width: 2px;
   }
   
-  .menu-icon,
-  .theme-toggle {
+  .menu-icon {
     border-width: 2px;
   }
 }
