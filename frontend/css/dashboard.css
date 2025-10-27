@@ -16,12 +16,17 @@ body {
 header {
   position: fixed;
 }
+footer{
+  position: fixed;
+  bottom: 0;
+  z-index: 1000;
+}
 /* Main container that holds everything between header and footer */
 .dashboard-main {
   flex: 1;
   display: flex;
   position: relative;
-  flex-direction: column;
+  flex-direction: row;
   margin-top: 2.8rem; /*Adjust margin-top to fit the height of the header*/
   margin-bottom: 0; /* Footer will be positioned below */
   padding-top: 1rem;
@@ -39,6 +44,7 @@ header {
    SIDEBAR STYLING
    ============================================================ */
 .sidebar {
+  position: fixed;
   width: 15.5rem;
   background: var(--card-bg);
   border-right: 2px solid var(--border-color);
@@ -49,7 +55,7 @@ header {
   transition: width 0.3s ease;
   overflow-y: auto; /* Allow sidebar to scroll if content is too tall */
   flex-shrink: 0; /* Prevent sidebar from shrinking */
-  height: calc(100vh - 10px); /* Make the sidebar take the full height minus the footer and header*/
+  height: calc(100vh - 110px); /* Make the sidebar take the full height minus the footer and header*/
 }
 
 .sidebar-header {
@@ -69,6 +75,7 @@ header {
    DESKTOP NAVIGATION STYLING (Visible only on desktop)
    ============================================================ */
 .desktop-nav {
+  
   display: block; /* Visible on desktop by default */
 }
 
@@ -194,12 +201,15 @@ header {
    MAIN DASHBOARD CONTENT
    ============================================================ */
 .dashboard-content {
+  position: relative;
+  left: 15rem;
   flex: 1;
   padding: 1rem;
   background: var(--bg-color);
   transition: margin-left 0.3s ease;
   overflow-y: auto; /* Enable vertical scrolling for content */
-  height: 100%; /* Take full height of parent */
+  max-width: 80%;
+  height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   padding-top: 30px;  /* Adjust this value to your header's height */
@@ -354,8 +364,13 @@ header {
   }
 
   .dashboard-content {
+    left: auto;
+    right: auto;
+    width: 100%;
     margin-left: 0;
+    padding: 0;
     height: auto;
+    align-self: center;
   }
 
   .sidebar-actions {
