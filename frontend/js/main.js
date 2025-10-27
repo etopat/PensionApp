@@ -375,10 +375,12 @@ async function loadAppropriateHeader() {
         const mod = await import('./modules/header_interactions.js');
         if (mod && typeof mod.initHeaderInteractions === 'function') {
           mod.initHeaderInteractions();
-          console.log('✅ Header interactions initialized');
+          console.log('✅ Mobile-optimized header interactions initialized');
         }
       } catch (err) {
         console.error('❌ Failed to initialize header interactions:', err);
+        // Fallback: try to initialize basic mobile menu
+        initBasicMobileMenu();
       }
     } else {
       // For non-logged-in state, activate mobile menu toggle manually
@@ -403,6 +405,80 @@ async function loadAppropriateHeader() {
     
     // Create a minimal fallback header
     createFallbackHeader();
+  }
+}
+
+/* ============================================================
+   BASIC MOBILE MENU FALLBACK
+   ============================================================ */
+function initBasicMobileMenu() {
+  const menuToggle = document.getElementById('menuToggle');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const profileToggle = document.getElementById('userProfile');
+  const profileMenu = document.getElementById('profileDropdownMenu');
+  
+  // Main menu toggle
+  if (menuToggle && dropdownMenu) {
+    const newMenuToggle = menuToggle.cloneNode(true);
+    menuToggle.parentNode.replaceChild(newMenuToggle, menuToggle);
+    
+    newMenuToggle.addEventListener('click', () => {
+      dropdownMenu.classList.toggle('visible');
+      dropdownMenu.classList.toggle('hidden');
+      
+      // Close profile menu if open
+      if (profileMenu && profileMenu.classList.contains('visible')) {
+        profileMenu.classList.remove('visible');
+        profileMenu.classList.add('hidden');
+      }
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!dropdownMenu.contains(e.target) && !newMenuToggle.contains(e.target)) {
+        dropdownMenu.classList.remove('visible');
+        dropdownMenu.classList.add('hidden');
+      }
+    });
+    
+    // Mobile touch support
+    newMenuToggle.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      dropdownMenu.classList.toggle('visible');
+      dropdownMenu.classList.toggle('hidden');
+    });
+  }
+  
+  // Profile menu toggle
+  if (profileToggle && profileMenu) {
+    const newProfileToggle = profileToggle.cloneNode(true);
+    profileToggle.parentNode.replaceChild(newProfileToggle, profileToggle);
+    
+    newProfileToggle.addEventListener('click', () => {
+      profileMenu.classList.toggle('visible');
+      profileMenu.classList.toggle('hidden');
+      
+      // Close main menu if open
+      if (dropdownMenu && dropdownMenu.classList.contains('visible')) {
+        dropdownMenu.classList.remove('visible');
+        dropdownMenu.classList.add('hidden');
+      }
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!profileMenu.contains(e.target) && !newProfileToggle.contains(e.target)) {
+        profileMenu.classList.remove('visible');
+        profileMenu.classList.add('hidden');
+      }
+    });
+    
+    // Mobile touch support
+    newProfileToggle.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      profileMenu.classList.toggle('visible');
+      profileMenu.classList.toggle('hidden');
+    });
   }
 }
 
@@ -491,6 +567,13 @@ function initPublicHeaderMenuToggle() {
         menuToggle.classList.remove('open');
       }
     });
+    
+    // Mobile touch support
+    menuToggle.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      navMenu.classList.toggle('show');
+      menuToggle.classList.toggle('open');
+    });
   } else {
     console.log('❌ Menu toggle elements not found:', {
       menuToggle: !!menuToggle,
@@ -537,6 +620,15 @@ function initializeThemeToggle() {
 
       newBtn.classList.add('theme-toggled');
       setTimeout(() => newBtn.classList.remove('theme-toggled'), 300);
+    });
+    
+    // Mobile touch support
+    newBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
     });
   }
 }

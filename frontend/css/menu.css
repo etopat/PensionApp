@@ -1,6 +1,7 @@
 /* ==========================================================
    HEADER STYLES - Professional Design with Better Visibility
    ========================================================== */
+
 @import url("color-variables.css");
 
 .header-wrapper {
@@ -36,8 +37,8 @@
 
 .menu-icon {
   font-size: 1.5rem;
+  justify-content: center;
   width: 3rem;
-  
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid var(--header-border);
   color: var(--primary-gold);
@@ -120,8 +121,8 @@
 
   /* Larger profile picture on mobile */
   .profile-picture {
-    width: 42px !important;
-    height: 42px !important;
+    width: 50px !important;
+    height: 50px !important;
     margin-right: 0;
     border: 3px solid var(--primary-gold) !important;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
@@ -145,25 +146,23 @@
   .theme-toggle {
     font-size: 1.1rem;
     padding: 0.3rem;
-    min-width: 36px;
-    height: 36px;
+    min-width: 44px !important;
+    min-height: 44px !important;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  /* Ensure all elements stay in one line */
+  /* Ensure all elements stay in one line with proper touch targets */
   .menu-icon {
     font-size: 1.3rem;
     padding: 0.4rem;
-    min-width: 40px;
-    height: 40px;
+    min-width: 44px !important;
+    min-height: 44px !important;
     display: flex;
     align-items: center;
-    justify-content: center;
     flex-shrink: 0;
   }
-  
 
   /* COMPACT MOBILE DROPDOWN MENU */
   .dropdown-menu {
@@ -172,48 +171,54 @@
     left: 0.5rem;
     right: 0.5rem;
     width: auto;
-    max-width: calc(100vw - 1rem);
-    padding: 0.3rem 0 !important; /* Reduced vertical padding */
+    padding: 0.3rem 0 !important;
+    z-index: 1002 !important;
   }
 
   /* Ultra-compact dropdown list items */
   .dropdown-menu li {
-    margin: 0.08rem 0.4rem !important; /* Reduced margin */
+    margin: 0.08rem 0.4rem !important;
     border-radius: 5px;
+    justify-content: center;
   }
 
   .dropdown-menu a {
-    padding: 8px 10px !important; /* Reduced padding */
-    font-size: 1rem !important; /* Slightly smaller font */
-    line-height: 1.2 !important; /* Tighter line height */
-    border-left-width: 2px !important; /* Thinner border */
+    padding: 7px 10px !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+    border-left-width: 2px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   .dropdown-menu hr {
-    margin: 0.25rem 0.6rem !important; /* Reduced margin */
-    height: 0.5px !important; /* Thinner divider */
+    margin: 0.25rem 0.6rem !important;
+    height: 0.5px !important;
   }
 
   /* COMPACT PROFILE DROPDOWN */
   .profile-dropdown {
     position: fixed;
-    top: 60px;
+    top: 65px;
     right: 0.5rem;
     left: auto;
-    width: 150px; /* Slightly narrower */
-    padding: 0.3rem 0 !important; /* Reduced padding */
+    width: 130px;
+    padding: 0.3rem 0 !important;
+    z-index: 1002 !important;
   }
 
   .profile-dropdown li {
-    margin: 0.8rem 0.4rem !important; /* Reduced margin */
+    margin: 0.08rem 0.4rem !important;
     border-radius: 5px;
   }
 
   .profile-dropdown a {
-    padding: 8px 10px !important; /* Reduced padding */
-    font-size: 1rem !important; /* Slightly smaller font */
-    line-height: 1.2 !important; /* Tighter line height */
-    border-right-width: 2px !important; /* Thinner border */
+    padding: 8px 10px !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+    border-right-width: 2px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 }
 
@@ -230,21 +235,21 @@
   .menu-icon {
     font-size: 1.2rem;
     padding: 0.3rem;
-    min-width: 36px;
-    height: 36px;
+    min-width: 44px !important;
+    min-height: 44px !important;
   }
 
   .theme-toggle {
     font-size: 1rem;
     padding: 0.25rem;
-    min-width: 32px;
-    height: 32px;
+    min-width: 44px !important;
+    min-height: 44px !important;
   }
 
   /* Slightly smaller but still prominent profile picture on very small screens */
   .profile-picture {
-    width: 38px !important;
-    height: 38px !important;
+    width: 44px !important;
+    height: 44px !important;
     border: 2.5px solid var(--primary-gold) !important;
   }
 
@@ -265,8 +270,11 @@
   }
 
   .dropdown-menu a {
-    padding: 7px 8px !important;
+    padding: 12px 8px !important;
     font-size: 0.82rem !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   .dropdown-menu hr {
@@ -284,8 +292,11 @@
   }
 
   .profile-dropdown a {
-    padding: 7px 8px !important;
+    padding: 12px 8px !important;
     font-size: 0.78rem !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 }
 
@@ -302,21 +313,21 @@
   .menu-icon {
     font-size: 1.1rem;
     padding: 0.25rem;
-    min-width: 32px;
-    height: 32px;
+    min-width: 44px !important;
+    min-height: 44px !important;
   }
 
   .theme-toggle {
     font-size: 0.9rem;
     padding: 0.2rem;
-    min-width: 28px;
-    height: 28px;
+    min-width: 44px !important;
+    min-height: 44px !important;
   }
 
   /* Maintain good size even on smallest screens */
   .profile-picture {
-    width: 36px !important;
-    height: 36px !important;
+    width: 44px !important;
+    height: 44px !important;
     border: 2px solid var(--primary-gold) !important;
   }
 
@@ -330,8 +341,11 @@
   }
 
   .dropdown-menu a {
-    padding: 6px 7px !important;
+    padding: 12px 7px !important;
     font-size: 0.8rem !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   .dropdown-menu hr {
@@ -339,17 +353,20 @@
   }
 
   .profile-dropdown {
-    width: 135px;
-    padding: 0.15rem 0 !important;
+    width: 140px;
+    padding: 0.5rem 0 !important;
   }
 
   .profile-dropdown li {
-    margin: 0.05rem 0.25rem !important;
+    margin: 0.5rem 0.5rem !important;
   }
 
   .profile-dropdown a {
-    padding: 6px 7px !important;
-    font-size: 0.76rem !important;
+    padding: 12px 7px !important;
+    font-size: 0.8rem !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 }
 
@@ -647,6 +664,10 @@
   }
 }
 
+/* ==========================================================
+   ACCESSIBILITY AND FOCUS MANAGEMENT
+   ========================================================== */
+
 /* Focus styles for accessibility */
 .menu-icon:focus,
 .theme-toggle:focus,
@@ -657,7 +678,10 @@
   outline-offset: 2px;
 }
 
-/* Message bubble styling */
+/* ==========================================================
+   MESSAGE AND TASK BUBBLE STYLING
+   ========================================================== */
+
 .messages-link {
   position: relative;
   display: flex;
@@ -681,14 +705,35 @@
   display: none;
 }
 
-/* Mobile message bubble */
+.task-bubble {
+  background: var(--primary-blue);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  min-width: 18px;
+  text-align: center;
+  margin-left: 8px;
+}
+
+.task-bubble.hidden {
+  display: none;
+}
+
+/* Mobile message and task bubbles */
 @media (max-width: 768px) {
-  .message-bubble {
+  .message-bubble,
+  .task-bubble {
     font-size: 0.65rem;
     padding: 1px 5px;
     min-width: 16px;
   }
 }
+
+/* ==========================================================
+   UTILITY CLASSES
+   ========================================================== */
 
 /* Ensure hidden class works properly */
 .hidden {
@@ -711,4 +756,358 @@
   padding: 0;
   border: none;
   transform: scaleY(0);
+}
+
+/* ==========================================================
+   MOBILE DROPDOWN OVERLAY FOR BETTER UX - FIXED VERSION
+   ========================================================== */
+
+/* ==========================================================
+   MOBILE OVERLAY FIX - ENSURES MENU ITEMS ARE CLICKABLE
+   ========================================================== */
+
+/* Only make the overlay background clickable, not the entire area */
+.dropdown-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Only this pseudo-element is clickable, not the overlay itself */
+  pointer-events: auto;
+  /* Ensure it doesn't block menu interactions */
+  z-index: -1;
+}
+
+/* CRITICAL: Ensure menus are ABOVE the overlay and clickable */
+.dropdown-menu,
+.profile-dropdown {
+  z-index: 1002 !important;
+  pointer-events: auto !important;
+}
+
+/* CRITICAL: Ensure menu items are clickable */
+.dropdown-menu a,
+.profile-dropdown a,
+.dropdown-menu li,
+.profile-dropdown li {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Remove any blur effects that might interfere */
+body.dropdown-open main,
+body.dropdown-open header,
+body.dropdown-open footer,
+body.dropdown-open .main-wrapper {
+  filter: none !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open
+ {
+  overflow: hidden;
+}
+
+/* Mobile animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* High-contrast mode for better mobile visibility */
+@media (max-width: 768px) and (prefers-contrast: high) {
+  .dropdown-menu,
+  .profile-dropdown {
+    border-width: 2px;
+  }
+  
+  .dropdown-menu a,
+  .profile-dropdown a {
+    font-weight: 600;
+  }
+}
+
+/* ==========================================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ========================================================== */
+
+/* Improve touch feedback for all interactive elements */
+.menu-icon:active,
+.theme-toggle:active,
+.profile-picture:active,
+.dropdown-menu a:active,
+.profile-dropdown a:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Ensure proper cursor for all interactive elements */
+.menu-icon,
+.theme-toggle,
+.profile-picture,
+.dropdown-menu a,
+.profile-dropdown a,
+.profile-dropdown-toggle {
+  cursor: pointer;
+}
+
+/* ==========================================================
+   HIGH CONTRAST MODE SUPPORT
+   ========================================================== */
+
+@media (prefers-contrast: high) {
+  .header-wrapper {
+    border-bottom-width: 4px;
+  }
+  
+  .dropdown-menu,
+  .profile-dropdown {
+    border-width: 2px;
+  }
+  
+  .menu-icon,
+  .theme-toggle {
+    border-width: 2px;
+  }
+}
+
+/* ==========================================================
+   REDUCED MOTION SUPPORT
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-and-title h1 {
+    animation: none;
+  }
+  
+  .dropdown-menu.visible,
+  .profile-dropdown.visible {
+    animation: none;
+  }
+  
+  .menu-icon,
+  .theme-toggle,
+  .user-profile,
+  .dropdown-menu li,
+  .profile-dropdown li,
+  .dropdown-menu a,
+  .profile-dropdown a {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   CRITICAL FIXES FOR MENU FUNCTIONALITY
+   ========================================================== */
+
+/* Ensure visibility classes work properly */
+.dropdown-menu.visible,
+.profile-dropdown.visible {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.dropdown-menu.hidden,
+.profile-dropdown.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Force pointer events for interactive elements */
+.menu-icon,
+.theme-toggle,
+.user-profile,
+.profile-dropdown-toggle,
+.profile-picture {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure user profile area is clickable */
+.user-profile {
+  pointer-events: auto !important;
+}
+
+.user-profile * {
+  pointer-events: auto !important;
+}
+
+/* Prevent any interference from other styles */
+header * {
+  box-sizing: border-box;
+}
+
+/* Ensure no other styles are hiding our elements */
+#menuToggle,
+#userProfile,
+#profileDropdownToggle,
+#profilePicture {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* ==========================================================
+   DESKTOP HOVER BEHAVIOR FIXES
+   ========================================================== */
+
+@media (min-width: 769px) {
+  /* Ensure hover works for desktop */
+  .menu-and-title:hover .dropdown-menu:not(.hidden),
+  .header-right:hover .profile-dropdown:not(.hidden) {
+    display: block !important;
+  }
+  
+  /* Smooth hover transitions */
+  .dropdown-menu {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .profile-dropdown {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+}
+
+/* ==========================================================
+   TOUCH DEVICE FIXES FOR DESKTOP TOUCH SCREENS
+   ========================================================== */
+
+/* Ensure touch works on desktop touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .menu-icon:active,
+  .theme-toggle:active,
+  .user-profile:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Override hover effects for touch devices */
+  .dropdown-menu li:hover,
+  .profile-dropdown li:hover,
+  .dropdown-menu a:hover,
+  .profile-dropdown a:hover {
+    background: transparent;
+    transform: none;
+  }
+  
+  /* Active state for touch feedback */
+  .dropdown-menu li:active,
+  .profile-dropdown li:active,
+  .dropdown-menu a:active,
+  .profile-dropdown a:active {
+    background: var(--menu-item-hover);
+    transform: translateX(3px);
+  }
+}
+
+/* ==========================================================
+   Z-INDEX MANAGEMENT FOR PROPER STACKING
+   ========================================================== */
+
+.header-wrapper {
+  z-index: 1000;
+}
+
+.dropdown-menu {
+  z-index: 1001;
+}
+
+.profile-dropdown {
+  z-index: 1001;
+}
+
+.dropdown-overlay {
+  z-index: 1001;
+}
+
+/* Ensure modals are properly stacked */
+.logout-modal-overlay,
+.session-overlay {
+  z-index: 10000;
+}
+
+.logout-overlay {
+  z-index: 10001;
+}
+
+/* ==========================================================
+   FALLBACK STYLES FOR JAVASCRIPT FAILURE
+   ========================================================== */
+
+/* Ensure menus are accessible even if JavaScript fails */
+.no-js .dropdown-menu,
+.no-js .profile-dropdown {
+  display: none;
+}
+
+.no-js .menu-icon:hover + .dropdown-menu,
+.no-js .menu-icon:focus + .dropdown-menu,
+.no-js .user-profile:hover + .profile-dropdown,
+.no-js .user-profile:focus + .profile-dropdown {
+  display: block;
+}
+
+/* ==========================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ========================================================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .dropdown-menu,
+  .profile-dropdown {
+    border: 2px solid var(--border-color);
+  }
+  
+  .dropdown-menu a,
+  .profile-dropdown a {
+    font-weight: 600;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-menu.visible,
+  .profile-dropdown.visible {
+    animation: none;
+  }
+  
+  .menu-icon,
+  .theme-toggle,
+  .user-profile {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   PRINT STYLES
+   ========================================================== */
+
+@media print {
+  .dropdown-menu,
+  .profile-dropdown,
+  .dropdown-overlay {
+    display: none !important;
+  }
 }
