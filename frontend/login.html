@@ -2,59 +2,76 @@
 <html lang="en" data-theme="light">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PensionsGo - Login</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PensionsGo - Login</title>
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="css/overlay.css" />
-    <link rel="stylesheet" href="css/forms.css" />
-    <link rel="stylesheet" href="css/auth.css" />
-    
-    <!-- JS Scripts -->
-    <script defer src="js/auth.js"></script>
-    <script type="module" src="js/main.js"></script>
+  <!-- ================= CSS FILES ================= -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/overlay.css" />
+  <link rel="stylesheet" href="css/forms.css" />
+  <link rel="stylesheet" href="css/auth.css" />
 
+  <!-- ================= JS FILES ================= -->
+  <script defer src="js/auth.js"></script>
+  <script type="module" src="js/main.js"></script>
 </head>
 
 <body>
-    <!-- ================= HEADER ================= -->
+  <!-- ================= MAIN CONTENT ================= -->
+  <main>
+    <div class="main-wrapper">
+      
+      <!-- Information Section -->
+      <section class="main-info">
+        <h2>Portal Login</h2>
+        <p>
+          Please enter your login details below to access the PensionsGo portal.
+        </p>
+        <p>
+          <strong>Note:</strong> Staff can log in using their <b>email</b> or <b>registered phone number</b>
+          (formatted in international standard, e.g. <code>+256700123456</code>).
+        </p>
+      </section>
 
+      <!-- Login Form Section -->
+      <section class="form-section">
+        <h2>Login</h2>
 
-    <!-- ================= MAIN CONTENT (Injected by JS) ================= -->
-    <main>
-        <div class="main-wrapper">
-            <section class="main-info">
-                <h2>Staff Login Form</h2>
-                <p>Please enter your login details in the form below to access the portal.</p>
-                <p>Only registered staff can access this portal. If you are not registered, please contact your supervisor.</p>
-            </section>
+        <form id="loginForm" autocomplete="off">
+          
+          <!-- Username (Email or Phone) -->
+          <div class="form-group">
+            <label for="email">Email or Phone Number:</label>
+            <input
+              type="text"
+              id="email"
+              name="email"
+              placeholder="Enter your email or phone number (e.g. +256700123456)"
+              required
+            />
+          </div>
 
-            <section class="form-section">
-                <h2>Login </h2>
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
 
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="email">Enter your email:</label>
-                        <input type="email" id="email" name="email" required />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Enter your password:</label>
-                        <input type="password" id="password" name="password" required />
-                    </div>
-
-                    <div class="button-group">
-                        <button type="submit" class="btn btn-submit">Login</button>
-                        <button type="reset" class="btn btn-reset">Clear</button>
-                    </div>
-                </form>
-            </section>
-        </div>
-    </main>
-
-    <!-- ================= FOOTER (Injected by JS) ================= -->
+          <!-- Buttons -->
+          <div class="button-group">
+            <button type="submit" class="btn btn-submit">Login</button>
+            <button type="reset" class="btn btn-reset">Clear</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
 </body>
-
 </html>

@@ -1,7 +1,20 @@
-// frontend/js/users.js
+/**
+ * ============================================================
+ * USERS MANAGEMENT SCRIPT
+ * ============================================================
+ * Handles:
+ *  - Fetching and displaying user list
+ *  - Role-based access control
+ *  - Filtering users by role
+ *  - Adding, editing, and deleting users
+ *  - Includes phone number column display
+ * ============================================================
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     let isInitialized = false;
-    
+
+    // ====== DOM ELEMENTS ======
     const roleFilter = document.getElementById('roleFilter');
     const clearFilterButton = document.getElementById('clearFilterButton');
     const addUserButton = document.getElementById('addUserButton');
@@ -14,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentUserToDelete = null;
     let allUsers = [];
 
-    // Initialize only once
+    // ====== INITIALIZATION ======
     if (!isInitialized) {
         isInitialized = true;
         initializeUsersPage();
@@ -22,17 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Redirect if not logged in
     if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-    window.location.replace('login.html');
+        window.location.replace('login.html');
     }
 
+    /**
+     * ============================================================
+     * Initialize page and event listeners
+     * ============================================================
+     */
     function initializeUsersPage() {
-        // Event listeners
         if (roleFilter) roleFilter.addEventListener('change', filterUsers);
         if (clearFilterButton) clearFilterButton.addEventListener('click', clearFilter);
         if (addUserButton) addUserButton.addEventListener('click', () => {
             window.location.href = 'register_user.html';
         });
-        
+
         // Modal event listeners
         if (confirmDelete) confirmDelete.addEventListener('click', deleteUser);
         closeModalButtons.forEach(button => {
@@ -41,49 +58,52 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Close modal when clicking outside
+        // Close modal on click outside
         window.addEventListener('click', (e) => {
-            if (e.target === deleteModal) {
-                deleteModal.style.display = 'none';
-            }
+            if (e.target === deleteModal) deleteModal.style.display = 'none';
         });
 
-        // Load users
+        // Load user data
         populateUsersTable();
     }
 
-    // Function to populate users table
+    /**
+     * ============================================================
+     * Fetch and populate the users table
+     * ============================================================
+     */
     async function populateUsersTable() {
         try {
             if (!usersTableBody) return;
-            
-            usersTableBody.innerHTML = '<tr><td colspan="5" class="no-users">Loading users...</td></tr>';
-            
+            usersTableBody.innerHTML = '<tr><td colspan="6" class="no-users">Loading users...</td></tr>';
+
             // Fetch users from API
             allUsers = await fetchUsers();
-            
+
             if (allUsers && allUsers.length > 0) {
                 displayUsers(allUsers);
             } else {
-                usersTableBody.innerHTML = '<tr><td colspan="5" class="no-users">No users found in the system.</td></tr>';
+                usersTableBody.innerHTML = '<tr><td colspan="6" class="no-users">No users found in the system.</td></tr>';
             }
         } catch (error) {
             console.error('Error populating users table:', error);
             if (usersTableBody) {
-                usersTableBody.innerHTML = '<tr><td colspan="5" class="no-users">Error loading users. Please try again.</td></tr>';
+                usersTableBody.innerHTML = '<tr><td colspan="6" class="no-users">Error loading users. Please try again.</td></tr>';
             }
         }
     }
 
-    // Function to fetch users from API
+    /**
+     * ============================================================
+     * Fetch users from backend API
+     * ============================================================
+     */
     async function fetchUsers() {
         try {
             const response = await fetch('../backend/api/get_users.php');
-            if (!response.ok) {
-                throw new Error('Failed to fetch users');
-            }
+            if (!response.ok) throw new Error('Failed to fetch users');
+
             const data = await response.json();
-            
             if (data.success) {
                 return data.users;
             } else {
@@ -95,190 +115,181 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Function to display users in the table
+    /**
+     * ============================================================
+     * Display users in the table
+     * ============================================================
+     */
     function displayUsers(users) {
         if (!usersTableBody) return;
-        
+
         if (users.length === 0) {
-            usersTableBody.innerHTML = '<tr><td colspan="5" class="no-users">No users found.</td></tr>';
+            usersTableBody.innerHTML = '<tr><td colspan="6" class="no-users">No users found.</td></tr>';
             return;
         }
 
         usersTableBody.innerHTML = '';
-        
-        // Get current user info
+
         const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
         const currentUserRole = currentUser.role || '';
-        
+
         users.forEach(user => {
             const tr = document.createElement('tr');
-            
-            // Profile Picture
+
+            // === Profile ===
             const profileCell = document.createElement('td');
             const profileImg = document.createElement('img');
             const profileSrc = resolveImagePath(user.userPhoto || 'images/default-user.png');
             profileImg.src = profileSrc;
-            profileImg.alt = 'Profile Picture';
+            profileImg.alt = 'Profile';
             profileImg.className = 'profile-thumbnail';
-            profileImg.onerror = function() {
-                console.warn('Failed to load profile image:', profileSrc);
-                this.src = 'images/default-user.png';
-            };
-            profileImg.onload = function() {
-                console.log('Successfully loaded profile image:', profileSrc);
-            };
+            profileImg.onerror = () => profileImg.src = 'images/default-user.png';
             profileCell.appendChild(profileImg);
-            
-            // Name
+
+            // === Name ===
             const nameCell = document.createElement('td');
             nameCell.textContent = user.userName || 'N/A';
-            
-            // Email
+
+            // === Email ===
             const emailCell = document.createElement('td');
             emailCell.textContent = user.userEmail || 'N/A';
-            
-            // Role
+
+            // === Phone Number ===
+            const phoneCell = document.createElement('td');
+            phoneCell.textContent = user.phoneNo || 'N/A';
+
+            // === Role ===
             const roleCell = document.createElement('td');
             roleCell.textContent = user.userRole || 'N/A';
-            
-            // Actions
+
+            // === Actions ===
             const actionsCell = document.createElement('td');
             const actionButtons = document.createElement('div');
             actionButtons.className = 'action-buttons';
-            
-            // Edit button - always show for own profile, or if admin
+
+            // Edit button - available for admin or self
             const editButton = document.createElement('button');
             editButton.textContent = 'Edit';
             editButton.className = 'edit-button';
-            editButton.onclick = () => {
-                window.location.href = `edit_user.html?user_id=${user.userId}`;
-            };
-            
-            // Delete button (only for admin users and not self)
+            editButton.onclick = () => window.location.href = `edit_user.html?user_id=${user.userId}`;
+            actionButtons.appendChild(editButton);
+
+            // Delete button - only for admin (not self)
             if (currentUserRole === 'admin' && user.userId !== currentUser.id) {
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Delete';
                 deleteButton.className = 'delete-button';
-                deleteButton.onclick = () => {
-                    showDeleteConfirmation(user);
-                };
+                deleteButton.onclick = () => showDeleteConfirmation(user);
                 actionButtons.appendChild(deleteButton);
             }
-            
-            actionButtons.appendChild(editButton);
+
             actionsCell.appendChild(actionButtons);
-            
-            // Append all cells to the row
+
+            // Append all cells to row
             tr.appendChild(profileCell);
             tr.appendChild(nameCell);
             tr.appendChild(emailCell);
+            tr.appendChild(phoneCell);
             tr.appendChild(roleCell);
             tr.appendChild(actionsCell);
-            
+
             usersTableBody.appendChild(tr);
         });
     }
 
-    // Function to resolve image path
+    /**
+     * ============================================================
+     * Resolve image path for consistent loading
+     * ============================================================
+     */
     function resolveImagePath(imagePath) {
-        console.log('Resolving image path:', imagePath);
-        
         if (!imagePath || imagePath === 'images/default-user.png' || imagePath === 'default-user.png') {
             return 'images/default-user.png';
         }
-        
-        // If it's already a full URL or data URL, return as is
+
         if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('data:')) {
             return imagePath;
         }
-        
-        // Handle backend paths - check if it contains uploads
+
         if (imagePath.includes('uploads/') || imagePath.includes('backend/uploads/')) {
             const filename = imagePath.split('/').pop();
-            const resolvedPath = `../backend/api/get_image.php?file=${filename}&type=profile`;
-            console.log('Resolved backend path:', resolvedPath);
-            return resolvedPath;
+            return `../backend/api/get_image.php?file=${filename}&type=profile`;
         }
-        
-        // For frontend images, ensure correct path
-        if (imagePath.startsWith('images/')) {
-            return imagePath;
-        }
-        
-        // Default case - assume it's a backend upload
-        const resolvedPath = `../backend/api/get_image.php?file=${imagePath}&type=profile`;
-        console.log('Default resolved path:', resolvedPath);
-        return resolvedPath;
+
+        if (imagePath.startsWith('images/')) return imagePath;
+
+        return `../backend/api/get_image.php?file=${imagePath}&type=profile`;
     }
 
-    // Function to filter users by role
+    /**
+     * ============================================================
+     * Filter users by selected role
+     * ============================================================
+     */
     function filterUsers() {
         const selectedRole = roleFilter ? roleFilter.value : '';
-        
         if (!selectedRole) {
             displayUsers(allUsers);
             return;
         }
-        
-        const filteredUsers = allUsers.filter(user => user.userRole === selectedRole);
-        displayUsers(filteredUsers);
+        const filtered = allUsers.filter(user => user.userRole === selectedRole);
+        displayUsers(filtered);
     }
 
-    // Function to clear the filter
+    /**
+     * ============================================================
+     * Clear filter and reload all users
+     * ============================================================
+     */
     function clearFilter() {
         if (roleFilter) roleFilter.value = '';
         displayUsers(allUsers);
     }
 
-    // Function to show delete confirmation modal
+    /**
+     * ============================================================
+     * Show delete confirmation modal
+     * ============================================================
+     */
     function showDeleteConfirmation(user) {
         currentUserToDelete = user;
         if (deleteUserName) deleteUserName.textContent = user.userName || 'Unknown User';
         if (deleteModal) deleteModal.style.display = 'flex';
     }
 
-    // Function to delete a user
+    /**
+     * ============================================================
+     * Delete selected user from backend
+     * ============================================================
+     */
     async function deleteUser() {
         if (!currentUserToDelete) return;
-        
+
         try {
-            // Show loading state
             if (confirmDelete) confirmDelete.innerHTML = '<span class="loading"></span>';
-            
+
             const response = await fetch('../backend/api/delete_user.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: currentUserToDelete.userId
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUserToDelete.userId })
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
-                // Remove user from the list
-                allUsers = allUsers.filter(user => user.userId !== currentUserToDelete.userId);
-                
-                // Update the display
+                allUsers = allUsers.filter(u => u.userId !== currentUserToDelete.userId);
                 filterUsers();
-                
-                // Close modal
                 if (deleteModal) deleteModal.style.display = 'none';
-                
-                // Show success message
-                alert(`User ${currentUserToDelete.userName} has been deleted successfully.`);
+                alert(`User ${currentUserToDelete.userName} deleted successfully.`);
             } else {
                 alert(`Error deleting user: ${data.message}`);
             }
-            
+
             currentUserToDelete = null;
         } catch (error) {
             console.error('Error deleting user:', error);
-            alert('Error deleting user. Please try again.');
+            alert('An error occurred while deleting user. Please try again.');
         } finally {
-            // Reset button text
             if (confirmDelete) confirmDelete.textContent = 'Delete';
         }
     }

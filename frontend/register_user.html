@@ -4,61 +4,115 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register User – PensionsGo</title>
+
+  <!-- =============== CSS FILES =============== -->
   <link rel="stylesheet" href="css/forms.css" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/menu.css" />
   <link rel="stylesheet" href="css/auth.css" />
   <link rel="stylesheet" href="css/overlay.css" />
-
   <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
 
+  <!-- =============== JS FILES =============== -->
   <script type="module" src="js/main.js"></script>
   <script defer src="js/register_user.js"></script>
   <script defer src="js/menu_toggle.js"></script>
   <script defer src="js/users.js"></script>
-  
-
 </head>
+
 <body>
   <main>
     <div class="main-wrapper">
       <section class="form-section">
         <h2>Register New User</h2>
-        <form id="registerForm" action="../backend/api/register_user.php" method="POST" enctype="multipart/form-data">
+
+        <form
+          id="registerForm"
+          action="../backend/api/register_user.php"
+          method="POST"
+          enctype="multipart/form-data"
+          autocomplete="off"
+        >
+          <!-- ========== TITLE ========== -->
           <div class="form-group">
             <label for="userTitle">Title</label>
             <select id="userTitle" name="userTitle" required></select>
           </div>
 
+          <!-- ========== FULL NAME ========== -->
           <div class="form-group">
             <label for="userName">Full Name</label>
-            <input id="userName" type="text" name="userName" required />
+            <input
+              id="userName"
+              type="text"
+              name="userName"
+              placeholder="Enter full name"
+              required
+            />
           </div>
 
+          <!-- ========== ROLE ========== -->
           <div class="form-group">
             <label for="userRole">Role</label>
             <select id="userRole" name="userRole" required></select>
           </div>
 
+          <!-- ========== EMAIL ========== -->
           <div class="form-group">
             <label for="userEmail">Email</label>
-            <input id="userEmail" type="email" name="userEmail" required />
+            <input
+              id="userEmail"
+              type="email"
+              name="userEmail"
+              placeholder="example@email.com"
+              required
+            />
           </div>
 
+          <!-- ========== PHONE NUMBER ========== -->
+          <div class="form-group">
+            <label for="phoneNo">Phone Number (International Format)</label>
+            <input
+              id="phoneNo"
+              type="tel"
+              name="phoneNo"
+              placeholder="+256700123456"
+              pattern="^\\+[1-9][0-9]{7,14}$"
+              title="Enter phone number in international format (e.g., +256700123456)"
+              required
+            />
+            <small>Use full international format starting with ‘+’ and country code.</small>
+          </div>
+
+          <!-- ========== PASSWORD ========== -->
           <div class="form-group">
             <label for="userPassword">Password</label>
-            <input id="userPassword" type="password" name="userPassword" required />
+            <input
+              id="userPassword"
+              type="password"
+              name="userPassword"
+              placeholder="Enter a secure password"
+              required
+            />
             <small>Password must include uppercase, lowercase, and a number.</small>
           </div>
 
+          <!-- ========== PHOTO UPLOAD ========== -->
           <div class="form-group">
             <label for="userPhoto">Upload Profile Photo (optional)</label>
-            <input id="userPhoto" type="file" name="userPhoto" accept="image/*" />
+            <input
+              id="userPhoto"
+              type="file"
+              name="userPhoto"
+              accept="image/*"
+            />
           </div>
 
+          <!-- Hidden fields -->
           <input type="hidden" name="userId" id="userId" />
           <input type="hidden" name="other" value="" />
 
+          <!-- ========== ACTION BUTTONS ========== -->
           <div class="button-group">
             <button type="submit" class="btn btn-submit">Register</button>
             <button type="reset" class="btn btn-reset">Clear</button>

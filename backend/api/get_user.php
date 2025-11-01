@@ -1,4 +1,12 @@
 <?php
+/**
+ * ============================================================
+ * GET USER API
+ * ============================================================
+ * Fetches full details for a given user (used in profile page).
+ * Includes userTitle and phoneNo for dynamic display.
+ * ============================================================
+ */
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config.php';
 
@@ -10,11 +18,22 @@ if (empty($userId)) {
 }
 
 try {
-    $stmt = $conn->prepare("SELECT userId, userTitle, userName, userEmail, userRole, userPhoto FROM tb_users WHERE userId = ?");
+    $stmt = $conn->prepare("
+        SELECT 
+            userId,
+            userTitle,
+            userName,
+            userEmail,
+            phoneNo,
+            userRole,
+            userPhoto
+        FROM tb_users
+        WHERE userId = ?
+    ");
     $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($row = $result->fetch_assoc()) {
         echo json_encode([
             'success' => true,
@@ -23,6 +42,7 @@ try {
                 'userTitle' => $row['userTitle'],
                 'userName' => $row['userName'],
                 'userEmail' => $row['userEmail'],
+                'phoneNo' => $row['phoneNo'],
                 'userRole' => $row['userRole'],
                 'userPhoto' => $row['userPhoto'] ?: 'images/default-user.png'
             ]
@@ -30,14 +50,10 @@ try {
     } else {
         echo json_encode(['success' => false, 'message' => 'User not found']);
     }
-    
 } catch (Exception $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error fetching user: ' . $e->getMessage()
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Error fetching user: ' . $e->getMessage()]);
+} finally {
+    if (isset($stmt)) $stmt->close();
+    $conn->close();
 }
-
-$stmt->close();
-$conn->close();
 ?>

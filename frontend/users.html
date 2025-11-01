@@ -4,27 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
+    <!-- Cache Control for Latest Updates -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>Users Management - PensionsGo</title>
-    
+
+    <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/color_variables.css">
     <link rel="stylesheet" href="css/users.css">
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/overlay.css">
-        
 
+    <!-- Scripts -->
     <script type="module" src="js/main.js"></script>
     <script src="js/users.js"></script>
 </head>
 <body>
-    <!-- Header will be dynamically inserted here by main.js -->
+    <!-- Header will be dynamically inserted by main.js -->
 
     <div class="main-wrapper">
         <div class="page-header">
@@ -32,6 +33,7 @@
             <p>View and manage all registered users in the system</p>
         </div>
 
+        <!-- Filter and Action Controls -->
         <div class="users-controls">
             <div class="filter-section">
                 <label for="roleFilter">Filter by Role:</label>
@@ -51,7 +53,7 @@
                 </select>
                 <button id="clearFilterButton" class="clear-filter-btn">Clear Filter</button>
             </div>
-            
+
             <!-- Add User Button -->
             <div class="action-section">
                 <button id="addUserButton" class="add-user-btn">
@@ -60,6 +62,7 @@
             </div>
         </div>
 
+        <!-- Users Table -->
         <div class="users-table-container">
             <table class="users-table">
                 <thead>
@@ -67,12 +70,13 @@
                         <th>Profile</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Phone No</th>
                         <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="usersTableBody">
-                    <!-- Users will be populated here by JavaScript -->
+                    <!-- Users will be dynamically populated by users.js -->
                 </tbody>
             </table>
         </div>
@@ -86,7 +90,8 @@
                 <h2>Confirm Deletion</h2>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete user <span id="deleteUserName"></span>? This action cannot be undone.</p>
+                <p>Are you sure you want to delete user <span id="deleteUserName"></span>?<br>
+                <strong>This action cannot be undone.</strong></p>
             </div>
             <div class="modal-footer">
                 <button class="modal-btn cancel">Cancel</button>
@@ -95,8 +100,6 @@
         </div>
     </div>
 
-    <!-- Footer will be dynamically inserted here by main.js -->
-
-    
+    <!-- Footer will be dynamically inserted by main.js -->
 </body>
 </html>

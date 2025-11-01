@@ -1,70 +1,54 @@
 // ====================================================================
-// main.js - COORDINATED LOADING VERSION
-// Handles coordinated header/footer loading with proper sequencing
+// main.js  —  PensionsGo Frontend Controller
+// --------------------------------------------------------------------
+// PURPOSE:
+//  - Centralized frontend logic for session handling, access control,
+//    header/footer management, mobile responsiveness, and theme toggling.
+//  - Implements coordinated asynchronous loading of header/footer.
+//  - Displays smooth overlays for session expiry and access denial.
+//  - Ensures strong session-based authentication security.
+// --------------------------------------------------------------------
+// Author:  PensionsGo Development
+// Version: 2.3 (October 2025)
 // ====================================================================
 
 import { loadFooter } from './modules/footer.js';
 
-// Global loading state management
+/* ============================================================
+   🔹 1. APPLICATION LOADING COORDINATION
+   ============================================================ */
 const AppLoader = {
   isHeaderLoaded: false,
   isFooterLoaded: false,
   isDOMReady: false,
   initCallbacks: [],
-  
-  markHeaderLoaded() {
-    this.isHeaderLoaded = true;
-    this.checkAllLoaded();
-  },
-  
-  markFooterLoaded() {
-    this.isFooterLoaded = true;
-    this.checkAllLoaded();
-  },
-  
-  markDOMReady() {
-    this.isDOMReady = true;
-    this.checkAllLoaded();
-  },
-  
+
+  markHeaderLoaded() { this.isHeaderLoaded = true; this.checkAllLoaded(); },
+  markFooterLoaded() { this.isFooterLoaded = true; this.checkAllLoaded(); },
+  markDOMReady() { this.isDOMReady = true; this.checkAllLoaded(); },
+
+  // Execute all init callbacks once DOM + header + footer are ready
   checkAllLoaded() {
-    if (this.isDOMReady && this.isHeaderLoaded && this.isFooterLoaded) {
-      this.executeCallbacks();
+    if (this.isHeaderLoaded && this.isFooterLoaded && this.isDOMReady) {
+      this.initCallbacks.forEach(cb => { try { cb(); } catch (e) { console.error(e); } });
+      this.initCallbacks = [];
     }
   },
-  
-  onAllLoaded(callback) {
-    if (this.isDOMReady && this.isHeaderLoaded && this.isFooterLoaded) {
-      callback();
-    } else {
-      this.initCallbacks.push(callback);
-    }
-  },
-  
-  executeCallbacks() {
-    console.log('🎉 All components loaded - executing callbacks');
-    this.initCallbacks.forEach(callback => {
-      try {
-        callback();
-      } catch (error) {
-        console.error('Error in init callback:', error);
-      }
-    });
-    this.initCallbacks = [];
+  onAllLoaded(cb) {
+    if (this.isHeaderLoaded && this.isFooterLoaded && this.isDOMReady) cb();
+    else this.initCallbacks.push(cb);
   }
 };
 
 /* ============================================================
-   GLOBAL SESSION, CACHE, AND HISTORY PROTECTION
+   🔹 2. CACHE & HISTORY PROTECTION
    ============================================================ */
-(function () {
-  // Prevent navigating back to cached pages after logout
+(() => {
+  // Disable cached page access after logout
   window.history.pushState(null, "", window.location.href);
-  window.onpopstate = function () {
-    window.history.pushState(null, "", window.location.href);
-  };
+  window.onpopstate = () => window.history.pushState(null, "", window.location.href);
 
-  // Add meta tags to prevent caching sensitive content
+  // Add anti-cache meta tags dynamically
   const metaTags = `
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -72,12 +56,10 @@ const AppLoader = {
   `;
   document.head.insertAdjacentHTML("beforeend", metaTags);
 
-  // Detect if page was restored from browser cache (back-forward cache)
-  window.addEventListener("pageshow", (event) => {
-    if (event.persisted) window.location.reload(true);
-  });
+  // Detect and reload pages restored from back/forward cache
+  window.addEventListener("pageshow", e => { if (e.persisted) window.location.reload(true); });
 
-  // If on login page, clear stale session data
+  // Clear session storage if user is on login page
   if (window.location.pathname.includes("login.html")) {
     sessionStorage.clear();
     localStorage.removeItem("loggedInUser");
@@ -86,7 +68,7 @@ const AppLoader = {
 })();
 
 /* ============================================================
-   SESSION VALIDATION & AUTO REDIRECT ON EXPIRY
+   🔹 3. SESSION VALIDATION & ACCESS CONTROL
    ============================================================ */
 async function verifyActiveSession() {
   try {
@@ -96,28 +78,24 @@ async function verifyActiveSession() {
     });
     const data = await response.json();
 
-    const isLoggedInPage = sessionStorage.getItem('isLoggedIn') === 'true';
-    const isLoginPage =
-      window.location.pathname.includes("login.html") ||
-      window.location.pathname.endsWith("/");
+    const isLoginPage = window.location.pathname.includes("login.html") ||
+                        window.location.pathname.endsWith("/");
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
 
-    if (isLoggedInPage && !isLoginPage && !data.active) {
-      // Save current page before redirect
+    // Handle expired session
+    if (isLoggedIn && !isLoginPage && !data.active) {
+      console.warn("🔒 Session expired detected");
       localStorage.setItem("lastVisitedPage", window.location.href);
-
-      // Clear session data
       sessionStorage.clear();
       localStorage.removeItem("loggedInUser");
       localStorage.removeItem("userRole");
-
-      // Show overlay instead of alert
       showSessionExpiredOverlay();
       return false;
     }
 
-    // Role-based access control (admin-only pages)
+    // Enforce admin-only access for restricted pages
     const userRole = localStorage.getItem("userRole");
-    const restrictedPages = ["users.html", "settings.html"];
+    const restrictedPages = ["users.html"];
     const currentPage = window.location.pathname.split("/").pop();
 
     if (restrictedPages.includes(currentPage) && userRole !== "admin") {
@@ -127,18 +105,17 @@ async function verifyActiveSession() {
 
     return true;
   } catch (err) {
-    console.error("⚠️ Error verifying session:", err);
+    console.error("⚠️ Session verification failed:", err);
     return false;
   }
 }
 
 /* ============================================================
-   SESSION EXPIRED OVERLAY
+   🔹 4. SESSION EXPIRED OVERLAY
    ============================================================ */
 function showSessionExpiredOverlay() {
-  // Prevent multiple overlays
-  if (document.querySelector('.session-overlay')) return;
-  
+  if (document.querySelector('.session-overlay')) return; // prevent duplicates
+
   const overlay = document.createElement('div');
   overlay.classList.add('session-overlay');
   overlay.innerHTML = `
@@ -151,59 +128,33 @@ function showSessionExpiredOverlay() {
       </div>
     </div>
   `;
-  
   document.body.appendChild(overlay);
-  
-  // Add event listeners
-  const okButton = document.getElementById('sessionOkButton');
+  document.documentElement.classList.add('session-expired-blur');
+
   const redirectToLogin = () => {
-    // Get the intended return URL or use role-based default
     const returnUrl = localStorage.getItem("lastVisitedPage") || window.location.href;
     const userRole = localStorage.getItem('userRole');
-    
-    // Determine safe redirect URL based on user role
     const safeRedirectUrl = getRoleBasedRedirectUrl(userRole, returnUrl);
-    
-    // Store the safe redirect URL for after login
+
     localStorage.setItem("lastVisitedPage", safeRedirectUrl);
-    
-    // Clear session data
     sessionStorage.clear();
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('userRole');
-    
+
     window.location.href = `login.html?return=${encodeURIComponent(safeRedirectUrl)}`;
   };
-  
-  // Button click
-  okButton.addEventListener('click', redirectToLogin);
-  
-  // Click anywhere on overlay
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      redirectToLogin();
-    }
-  });
-  
-  // Escape key
-  document.addEventListener('keydown', function handleEscape(e) {
-    if (e.key === 'Escape') {
-      redirectToLogin();
-      document.removeEventListener('keydown', handleEscape);
-    }
-  });
-  
-  // Add blur effect to background
-  document.documentElement.classList.add('session-expired-blur');
+
+  document.getElementById('sessionOkButton').addEventListener('click', redirectToLogin);
+  overlay.addEventListener('click', e => { if (e.target === overlay) redirectToLogin(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') redirectToLogin(); });
 }
 
 /* ============================================================
-   ACCESS DENIED OVERLAY (for non-admin users)
+   🔹 5. ACCESS DENIED OVERLAY
    ============================================================ */
 function showAccessDeniedOverlay() {
-  // Prevent multiple overlays
   if (document.querySelector('.session-overlay')) return;
-  
+
   const overlay = document.createElement('div');
   overlay.classList.add('session-overlay');
   overlay.innerHTML = `
@@ -217,494 +168,237 @@ function showAccessDeniedOverlay() {
     </div>
   `;
   document.body.appendChild(overlay);
-  
-  document.getElementById('accessOkButton').addEventListener('click', () => {
-    const userRole = localStorage.getItem('userRole');
-    const safeRedirectUrl = getRoleBasedRedirectUrl(userRole);
-    window.location.href = safeRedirectUrl;
-  });
-  
-  // Add blur effect to background
   document.documentElement.classList.add('session-expired-blur');
+
+  document.getElementById('accessOkButton').addEventListener('click', () => {
+    const role = localStorage.getItem('userRole');
+    window.location.href = getRoleBasedRedirectUrl(role);
+  });
 }
 
 /* ============================================================
-   ROLE-BASED REDIRECT LOGIC
+   🔹 6. ROLE-BASED REDIRECT LOGIC
    ============================================================ */
 function getRoleBasedRedirectUrl(userRole, requestedUrl = '') {
   const role = (userRole || '').toLowerCase();
-  
-  // Define safe landing pages for each role
   const roleLandingPages = {
-    'admin': 'dashboard.html',
-    'clerk': 'file_registry.html',
-    'pensioner': 'pensioner_board.html',
-    'user': 'dashboard.html',
-    // All these roles go to taskboard
-    'oc_pen': 'taskboard.html',
-    'writeup_officer': 'taskboard.html',
-    'file_creator': 'taskboard.html',
-    'data_entry': 'taskboard.html',
-    'assessor': 'taskboard.html',
-    'auditor': 'taskboard.html',
-    'approver': 'taskboard.html'
+    admin: 'dashboard.html',
+    clerk: 'file_registry.html',
+    pensioner: 'pensioner_board.html',
+    user: 'dashboard.html',
+    oc_pen: 'taskboard.html',
+    writeup_officer: 'taskboard.html',
+    file_creator: 'taskboard.html',
+    data_entry: 'taskboard.html',
+    assessor: 'taskboard.html',
+    auditor: 'taskboard.html',
+    approver: 'taskboard.html'
   };
-  
-  // Default safe page if role not found
-  const defaultLandingPage = 'dashboard.html';
-  
-  // Get the safe landing page for the user's role
-  const safeLandingPage = roleLandingPages[role] || defaultLandingPage;
-  
-  // If no requested URL, use the safe landing page
-  if (!requestedUrl) {
-    return safeLandingPage;
-  }
-  
-  // Extract page name from URL for validation
+
+  const defaultLanding = 'dashboard.html';
+  const safeLanding = roleLandingPages[role] || defaultLanding;
+  if (!requestedUrl) return safeLanding;
+
   const pageName = requestedUrl.split('/').pop().split('?')[0];
-  
-  // Validate the requested URL to ensure it's safe and accessible for the user's role
-  if (isUrlAccessibleForRole(pageName, role)) {
-    return requestedUrl;
-  }
-  
-  // If requested URL is not accessible, use the safe landing page
-  console.warn(`⚠️ Redirect URL ${requestedUrl} not accessible for role ${role}, using ${safeLandingPage}`);
-  return safeLandingPage;
+  return isUrlAccessibleForRole(pageName, role) ? requestedUrl : safeLanding;
 }
 
 /* ============================================================
-   URL ACCESSIBILITY VALIDATION
+   🔹 7. ROLE ACCESS RULES VALIDATION
    ============================================================ */
 function isUrlAccessibleForRole(pageName, userRole) {
-  // Define role-based access rules
-  const roleAccessRules = {
-    // Admin can access everything
-    'admin': () => true,
-    
-    // Clerk access rules
-    'clerk': (page) => [
-      'file_registry.html', 'tasks.html', 'file_tracking.html', 'profile.html', 
-      'messages.html', 'reports.html', 'dashboard.html'
-    ].includes(page),
-    
-    // OC Pension access rules  
-    'oc_pen': (page) => [
-      'taskboard.html', 'file_tracking.html', 'pension_registry.html', 'profile.html',
-      'reports.html', 'dashboard.html'
-    ].includes(page),
-    
-    // Writeup Officer access rules
-    'writeup_officer': (page) => [
-      'taskboard.html', 'file_tracking.html', 'profile.html', 'reports.html', 'dashboard.html'
-    ].includes(page),
-    
-    // File Creator access rules
-    'file_creator': (page) => [
-      'taskboard.html', 'file_tracking.html', 'profile.html', 'dashboard.html'
-    ].includes(page),
-    
-    // Data Entry access rules
-    'data_entry': (page) => [
-      'taskboard.html', 'data_entry.html', 'profile.html', 'dashboard.html'
-    ].includes(page),
-    
-    // Assessor access rules
-    'assessor': (page) => [
-      'taskboard.html', 'profile.html', 'dashboard.html'
-    ].includes(page),
-    
-    // Auditor access rules
-    'auditor': (page) => [
-      'taskboard.html', 'profile.html', 'dashboard.html'
-    ].includes(page),
-    
-    // Approver access rules
-    'approver': (page) => [
-      'taskboard.html', 'profile.html', 'dashboard.html'
-    ].includes(page),
-    
-    // Pensioner access rules
-    'pensioner': (page) => [
-      'pensioner_board.html', 'pension_status.html', 'profile.html', 'faq.html', 'dashboard.html'
-    ].includes(page),
-    
-    // Regular user access rules
-    'user': (page) => [
-      'dashboard.html', 'profile.html', 'faq.html', 'about.html'
-    ].includes(page)
+  const rules = {
+    admin: () => true,
+    clerk: p => ['file_registry.html','tasks.html','file_tracking.html','profile.html','messages.html','reports.html','dashboard.html'].includes(p),
+    oc_pen: p => ['taskboard.html','file_tracking.html','pension_registry.html','profile.html','reports.html','dashboard.html'].includes(p),
+    writeup_officer: p => ['taskboard.html','file_tracking.html','profile.html','reports.html','dashboard.html'].includes(p),
+    file_creator: p => ['taskboard.html','file_tracking.html','profile.html','dashboard.html'].includes(p),
+    data_entry: p => ['taskboard.html','data_entry.html','profile.html','dashboard.html'].includes(p),
+    assessor: p => ['taskboard.html','profile.html','dashboard.html'].includes(p),
+    auditor: p => ['taskboard.html','profile.html','dashboard.html'].includes(p),
+    approver: p => ['taskboard.html','profile.html','dashboard.html'].includes(p),
+    pensioner: p => ['pensioner_board.html','pension_status.html','profile.html','faq.html','dashboard.html'].includes(p),
+    user: p => ['dashboard.html','profile.html','faq.html','about.html'].includes(p)
   };
-  
-  // Get the access rule for the user's role, default to most restrictive
-  const accessRule = roleAccessRules[userRole] || (() => false);
-  
-  return accessRule(pageName);
+  return (rules[userRole] || (() => false))(pageName);
 }
 
 /* ============================================================
-   COORDINATED HEADER LOADING
+   🔹 8. HEADER LOADING (Dynamic)
    ============================================================ */
 async function loadAppropriateHeader() {
   try {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
     const headerPath = isLoggedIn ? './header2.html' : './header1.html';
 
-    console.log('🔄 Loading header from:', headerPath);
-    
-    const res = await fetch(headerPath, { 
-      cache: "no-store",
-      // Add timeout to prevent hanging requests
-      signal: AbortSignal.timeout(5000)
-    });
-    
-    if (!res.ok) throw new Error(`Failed to fetch ${headerPath}: ${res.status}`);
+    const res = await fetch(headerPath, { cache: "no-store", signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error(`Failed to fetch header: ${res.status}`);
+
     const headerHTML = await res.text();
-
-    // Insert header at top of body
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
-    console.log('✅ Header loaded and inserted');
 
-    // Initialize theme toggle & highlight active page
     initializeThemeToggle();
     highlightActivePage();
 
-    // Initialize header interactions for logged-in users
     if (isLoggedIn) {
       try {
         const mod = await import('./modules/header_interactions.js');
-        if (mod && typeof mod.initHeaderInteractions === 'function') {
-          mod.initHeaderInteractions();
-          console.log('✅ Mobile-optimized header interactions initialized');
-        }
-      } catch (err) {
-        console.error('❌ Failed to initialize header interactions:', err);
-        // Fallback: try to initialize basic mobile menu
+        mod?.initHeaderInteractions?.();
+      } catch {
         initBasicMobileMenu();
       }
-    } else {
-      // For non-logged-in state, activate mobile menu toggle manually
-      setTimeout(() => {
-        initPublicHeaderMenuToggle();
-        console.log('✅ Public header menu toggle initialized');
-      }, 100);
-    }
-
-    // Mark header as loaded in the coordination system
-    AppLoader.markHeaderLoaded();
-
-    // Load logout module (only if logged in)
-    if (isLoggedIn) {
       initializeLogoutModule();
+    } else {
+      setTimeout(initPublicHeaderMenuToggle, 50);
     }
 
-  } catch (err) {
-    console.error('❌ Failed to load header:', err);
-    // Mark header as loaded anyway to prevent blocking the app
     AppLoader.markHeaderLoaded();
-    
-    // Create a minimal fallback header
-    createFallbackHeader();
+  } catch (err) {
+    console.error("❌ Header load failed:", err);
+    AppLoader.markHeaderLoaded();
+    document.body.insertAdjacentHTML('afterbegin', `
+      <header style="background:#003366;color:white;padding:1rem;text-align:center;">PensionsGo</header>
+    `);
   }
 }
 
 /* ============================================================
-   BASIC MOBILE MENU FALLBACK
+   🔹 9. MOBILE MENU (LOGGED-IN)
    ============================================================ */
 function initBasicMobileMenu() {
   const menuToggle = document.getElementById('menuToggle');
   const dropdownMenu = document.getElementById('dropdownMenu');
-  const profileToggle = document.getElementById('userProfile');
-  const profileMenu = document.getElementById('profileDropdownMenu');
-  
-  // Main menu toggle
-  if (menuToggle && dropdownMenu) {
-    const newMenuToggle = menuToggle.cloneNode(true);
-    menuToggle.parentNode.replaceChild(newMenuToggle, menuToggle);
-    
-    newMenuToggle.addEventListener('click', () => {
-      dropdownMenu.classList.toggle('visible');
-      dropdownMenu.classList.toggle('hidden');
-      
-      // Close profile menu if open
-      if (profileMenu && profileMenu.classList.contains('visible')) {
-        profileMenu.classList.remove('visible');
-        profileMenu.classList.add('hidden');
-      }
-    });
-    
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!dropdownMenu.contains(e.target) && !newMenuToggle.contains(e.target)) {
-        dropdownMenu.classList.remove('visible');
-        dropdownMenu.classList.add('hidden');
-      }
-    });
-    
-    // Mobile touch support
-    newMenuToggle.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      dropdownMenu.classList.toggle('visible');
-      dropdownMenu.classList.toggle('hidden');
-    });
-  }
-  
-  // Profile menu toggle
-  if (profileToggle && profileMenu) {
-    const newProfileToggle = profileToggle.cloneNode(true);
-    profileToggle.parentNode.replaceChild(newProfileToggle, profileToggle);
-    
-    newProfileToggle.addEventListener('click', () => {
-      profileMenu.classList.toggle('visible');
-      profileMenu.classList.toggle('hidden');
-      
-      // Close main menu if open
-      if (dropdownMenu && dropdownMenu.classList.contains('visible')) {
-        dropdownMenu.classList.remove('visible');
-        dropdownMenu.classList.add('hidden');
-      }
-    });
-    
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!profileMenu.contains(e.target) && !newProfileToggle.contains(e.target)) {
-        profileMenu.classList.remove('visible');
-        profileMenu.classList.add('hidden');
-      }
-    });
-    
-    // Mobile touch support
-    newProfileToggle.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      profileMenu.classList.toggle('visible');
-      profileMenu.classList.toggle('hidden');
-    });
-  }
+  if (!menuToggle || !dropdownMenu) return;
+
+  const toggleMenu = () => dropdownMenu.classList.toggle('visible');
+  menuToggle.addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
+  menuToggle.addEventListener('touchend', e => { e.preventDefault(); toggleMenu(); });
+  document.addEventListener('click', e => {
+    if (!dropdownMenu.contains(e.target) && !menuToggle.contains(e.target))
+      dropdownMenu.classList.remove('visible');
+  });
 }
 
 /* ============================================================
-   LOGOUT MODULE INITIALIZATION
-   ============================================================ */
-async function initializeLogoutModule() {
-  try {
-    const logoutMod = await import('./logout.js');
-    if (logoutMod && typeof logoutMod.initLogout === 'function') {
-      console.log("🔄 Initializing logout module...");
-      logoutMod.initLogout();
-    } else {
-      console.error("❌ Logout module not properly exported");
-      setupFallbackLogout();
-    }
-  } catch (err) {
-    console.warn('⚠️ Could not load logout module:', err);
-    setupFallbackLogout();
-  }
-}
-
-/* ============================================================
-   FALLBACK LOGOUT HANDLER
-   ============================================================ */
-function setupFallbackLogout() {
-  console.log("🔄 Setting up fallback logout handler...");
-  setTimeout(() => {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      const newLogoutBtn = logoutBtn.cloneNode(true);
-      logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-
-      newLogoutBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (confirm('Are you sure you want to logout?')) {
-          localStorage.removeItem('loggedInUser');
-          localStorage.removeItem('userRole');
-          sessionStorage.clear();
-          window.location.href = 'login.html';
-        }
-      });
-      console.log("✅ Fallback logout handler attached");
-    }
-  }, 300);
-}
-
-/* ============================================================
-   FALLBACK HEADER (in case of loading failure)
-   ============================================================ */
-function createFallbackHeader() {
-  const fallbackHeader = `
-    <header style="background: #003366; color: white; padding: 1rem; text-align: center;">
-      <h1 style="margin: 0; font-size: 1.5rem;">PensionsGo</h1>
-      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.8;">
-        Navigation temporarily unavailable
-      </p>
-    </header>
-  `;
-  document.body.insertAdjacentHTML('afterbegin', fallbackHeader);
-}
-
-/* ============================================================
-   PUBLIC HEADER MENU TOGGLE (for header1.html)
+   🔹 10. MOBILE MENU (PUBLIC)
    ============================================================ */
 function initPublicHeaderMenuToggle() {
   const menuToggle = document.getElementById('menuToggle');
   const navMenu = document.getElementById('navLinks');
+  if (!menuToggle || !navMenu) return;
 
-  if (menuToggle && navMenu) {
-    console.log('📱 Initializing public header menu toggle');
-
-    menuToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      navMenu.classList.toggle('show');
-      menuToggle.classList.toggle('open');
-      console.log('Mobile menu toggled');
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!menuToggle.contains(e.target) && !navMenu.contains(e.target)) {
-        navMenu.classList.remove('show');
-        menuToggle.classList.remove('open');
-      }
-    });
-    
-    // Mobile touch support
-    menuToggle.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      navMenu.classList.toggle('show');
-      menuToggle.classList.toggle('open');
-    });
-  } else {
-    console.log('❌ Menu toggle elements not found:', {
-      menuToggle: !!menuToggle,
-      navMenu: !!navMenu
-    });
-  }
-}
-
-/* ============================================================
-   THEME TOGGLE HANDLING
-   ============================================================ */
-function initializeThemeToggle() {
-  const html = document.documentElement;
-  const toggleBtn = document.getElementById('themeToggle');
-
-  // Apply stored theme preference
-  const storedTheme = localStorage.getItem('theme') || 'light';
-  html.setAttribute('data-theme', storedTheme);
-
-  // Smooth transitions
-  document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
-  html.style.transition = 'background-color 0.5s ease, color 0.5s ease';
-
-  const main = document.querySelector('.main-wrapper');
-  const header = document.querySelector('header');
-  const footer = document.querySelector('footer');
-  [main, header, footer].forEach(el => {
-    if (el) el.style.transition = 'background-color 0.5s ease, color 0.5s ease';
-  });
-
-  if (toggleBtn) {
-    const newBtn = toggleBtn.cloneNode(true);
-    toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
-
-    newBtn.addEventListener('click', () => {
-      const currentTheme = html.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      html.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-
-      // Visual feedback
-      document.body.classList.add('fade-theme');
-      setTimeout(() => document.body.classList.remove('fade-theme'), 500);
-
-      newBtn.classList.add('theme-toggled');
-      setTimeout(() => newBtn.classList.remove('theme-toggled'), 300);
-    });
-    
-    // Mobile touch support
-    newBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      const currentTheme = html.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      html.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-    });
-  }
-}
-
-/* ============================================================
-   PAGE NAVIGATION HIGHLIGHT
-   ============================================================ */
-function highlightActivePage() {
-  const links = document.querySelectorAll('.nav-link');
-  const currentPage = window.location.pathname.split('/').pop();
-
-  links.forEach(link => {
-    const linkPage = link.getAttribute('href');
-    if (linkPage === currentPage) {
-      link.classList.add('active');
+  const toggleMenu = () => {
+    navMenu.classList.toggle('show');
+    menuToggle.classList.toggle('open');
+  };
+  menuToggle.addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
+  menuToggle.addEventListener('touchend', e => { e.preventDefault(); toggleMenu(); });
+  document.addEventListener('click', e => {
+    if (!menuToggle.contains(e.target) && !navMenu.contains(e.target)) {
+      navMenu.classList.remove('show'); menuToggle.classList.remove('open');
     }
   });
 }
 
 /* ============================================================
-   COORDINATED FOOTER LOADING
+   🔹 11. LOGOUT MODULE
+   ============================================================ */
+async function initializeLogoutModule() {
+  try {
+    const logoutMod = await import('./logout.js');
+    logoutMod?.initLogout?.();
+  } catch {
+    setupFallbackLogout();
+  }
+}
+
+// Fallback logout in case dynamic module fails
+function setupFallbackLogout() {
+  setTimeout(() => {
+    const btn = document.getElementById('logoutBtn');
+    if (!btn) return;
+    const clone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone, btn);
+    clone.addEventListener('click', e => {
+      e.preventDefault();
+      if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.clear();
+        localStorage.clear();
+        window.location.href = 'login.html';
+      }
+    });
+  }, 300);
+}
+
+/* ============================================================
+   🔹 12. THEME TOGGLE
+   ============================================================ */
+function initializeThemeToggle() {
+  const html = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  const theme = localStorage.getItem('theme') || 'light';
+  html.setAttribute('data-theme', theme);
+
+  if (btn) {
+    const clone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone, btn);
+    const toggle = () => {
+      const current = html.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    };
+    clone.addEventListener('click', toggle);
+    clone.addEventListener('touchend', e => { e.preventDefault(); toggle(); });
+  }
+}
+
+/* ============================================================
+   🔹 13. ACTIVE PAGE HIGHLIGHTING
+   ============================================================ */
+function highlightActivePage() {
+  const current = window.location.pathname.split('/').pop();
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (link.getAttribute('href') === current) link.classList.add('active');
+  });
+}
+
+/* ============================================================
+   🔹 14. FOOTER LOADING
    ============================================================ */
 async function loadFooterWithCoordination() {
   try {
-    console.log('🔄 Loading footer...');
     await loadFooter();
-    console.log('✅ Footer loaded');
-    AppLoader.markFooterLoaded();
-  } catch (error) {
-    console.error('❌ Failed to load footer:', error);
-    // Mark footer as loaded anyway to prevent blocking
+  } finally {
     AppLoader.markFooterLoaded();
   }
 }
 
 /* ============================================================
-   FINAL APP INITIALIZATION
+   🔹 15. APP INITIALIZATION ENTRY POINT
    ============================================================ */
 function initializeApplication() {
-  console.log('🚀 Initializing application...');
-  
-  // Start session verification
+  console.log('🚀 Initializing PensionsGo Application...');
   verifyActiveSession();
-  setInterval(verifyActiveSession, 120000); // Recheck every 2 minutes
-  
-  // Load header and footer in parallel but coordinate completion
+  setInterval(verifyActiveSession, 120000); // Recheck every 2 min
   loadAppropriateHeader();
   loadFooterWithCoordination();
 }
 
 /* ============================================================
-   DOM READY WITH COORDINATED LOADING
+   🔹 16. DOM READY EVENT
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('📄 DOM Content Loaded');
   AppLoader.markDOMReady();
-  
-  // Start the application initialization
   initializeApplication();
-  
-  // Set up final initialization when all components are loaded
   AppLoader.onAllLoaded(() => {
-    console.log('🎊 All components loaded successfully!');
-    // Add any final initialization that requires both header and footer here
     document.documentElement.classList.add('app-loaded');
+    console.log('✅ All core components loaded.');
   });
 });
 
-// Fallback: If something takes too long, force completion after timeout
+// Timeout safeguard in case some resource takes too long
 setTimeout(() => {
-  if (!AppLoader.isHeaderLoaded) {
-    console.warn('⚠️ Header loading timeout - forcing completion');
-    AppLoader.markHeaderLoaded();
-  }
-  if (!AppLoader.isFooterLoaded) {
-    console.warn('⚠️ Footer loading timeout - forcing completion');
-    AppLoader.markFooterLoaded();
-  }
-}, 8000); // 8 second timeout
+  if (!AppLoader.isHeaderLoaded) AppLoader.markHeaderLoaded();
+  if (!AppLoader.isFooterLoaded) AppLoader.markFooterLoaded();
+}, 8000);

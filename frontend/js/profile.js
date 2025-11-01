@@ -4,260 +4,173 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileAvatar = document.getElementById('profileAvatar');
     const profileName = document.getElementById('profileName');
     const profileEmail = document.getElementById('profileEmail');
+    const profilePhone = document.getElementById('profilePhone');
     const profileRole = document.getElementById('profileRole');
     const roleBadge = document.getElementById('roleBadge');
+    const profileTitleLabel = document.getElementById('profileTitleLabel');
     const editProfileBtn = document.getElementById('editProfileBtn');
     const backToDashboardBtn = document.getElementById('backToDashboardBtn');
 
-    // Initialize profile page
     initializeProfilePage();
 
-    // Event Listeners
-    if (editProfileBtn) {
-        editProfileBtn.addEventListener('click', redirectToEditProfile);
-    }
+    // ------------------ Event Listeners ------------------
+    if (editProfileBtn) editProfileBtn.addEventListener('click', redirectToEditProfile);
+    if (backToDashboardBtn) backToDashboardBtn.addEventListener('click', redirectToDashboard);
 
-    if (backToDashboardBtn) {
-        backToDashboardBtn.addEventListener('click', redirectToDashboard);
-    }
-
-    // Initialize profile page
+    // ------------------ Initialize Profile ------------------
     async function initializeProfilePage() {
-        // Get current user data
         const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
-        
+
         if (!currentUser.id) {
             showError('User not logged in. Redirecting to login...');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
+            setTimeout(() => (window.location.href = 'login.html'), 2000);
             return;
         }
 
         try {
-            // Fetch complete user data from API to get email
             const userData = await fetchUserData(currentUser.id);
             if (userData) {
-                // Merge API data with current user data
                 const completeUserData = {
                     ...currentUser,
-                    email: userData.userEmail || currentUser.email,
-                    name: userData.userName || currentUser.name,
-                    role: userData.userRole || currentUser.role,
-                    photo: userData.userPhoto || currentUser.photo
+                    email: userData.userEmail,
+                    name: userData.userName,
+                    title: userData.userTitle,
+                    role: userData.userRole,
+                    phone: userData.phoneNo,
+                    photo: userData.userPhoto
                 };
-                
-                // Update localStorage with complete data
+
                 localStorage.setItem('loggedInUser', JSON.stringify(completeUserData));
-                
-                // Populate profile data
                 populateProfileData(completeUserData);
-            } else {
-                // Fallback to localStorage data
-                populateProfileData(currentUser);
-            }
+            } else populateProfileData(currentUser);
         } catch (error) {
             console.error('Error fetching user data:', error);
-            // Fallback to localStorage data
             populateProfileData(currentUser);
         }
     }
 
-    // Fetch user data from API
+    // ------------------ Fetch User from API ------------------
     async function fetchUserData(userId) {
         try {
-            const response = await fetch(`../backend/api/get_user.php?userId=${userId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-            const data = await response.json();
-            
-            if (data.success) {
-                return data.user;
-            } else {
-                throw new Error(data.message || 'User not found');
-            }
-        } catch (error) {
-            console.error('Error fetching user data:', error);
+            const res = await fetch(`../backend/api/get_user.php?userId=${userId}`);
+            if (!res.ok) throw new Error('Failed to fetch user data');
+
+            const data = await res.json();
+            if (data.success) return data.user;
+            throw new Error(data.message);
+        } catch (err) {
+            console.error('Fetch user failed:', err);
             return null;
         }
     }
 
-    // Populate profile data
-    function populateProfileData(userData) {
-        console.log('Populating profile with data:', userData);
+    // ------------------ Populate Profile ------------------
+    function populateProfileData(user) {
+        console.log('Populating profile with:', user);
 
-        // Profile Picture
+        // Avatar
         if (profileAvatar) {
-            const profileSrc = resolveImagePath(userData.photo || 'images/default-user.png');
-            profileAvatar.src = profileSrc;
-            profileAvatar.onerror = function() {
-                console.warn('Failed to load profile avatar:', profileSrc);
-                this.src = 'images/default-user.png';
-            };
-            profileAvatar.onload = function() {
-                console.log('Successfully loaded profile avatar:', profileSrc);
-            };
+            const src = resolveImagePath(user.photo || 'images/default-user.png');
+            profileAvatar.src = src;
+            profileAvatar.onerror = () => (profileAvatar.src = 'images/default-user.png');
         }
 
-        // Name
+        // Dynamic title label
+        if (profileTitleLabel) {
+            profileTitleLabel.textContent = user.title || 'User';
+        }
+
+        // Full Name
         if (profileName) {
-            profileName.textContent = userData.name || userData.userName || 'Not specified';
+            profileName.textContent = user.name || 'Not specified';
         }
 
         // Email
         if (profileEmail) {
-            profileEmail.textContent = userData.email || userData.userEmail || 'Not specified';
+            profileEmail.textContent = user.email || 'Not specified';
+        }
+
+        // Phone
+        if (profilePhone) {
+            profilePhone.textContent = user.phone || 'Not specified';
         }
 
         // Role
         if (profileRole && roleBadge) {
-            const userRole = userData.role || userData.userRole || 'user';
-            roleBadge.textContent = formatRole(userRole);
-            
-            // Add role-specific styling using data attribute
-            roleBadge.setAttribute('data-role', userRole);
+            const role = user.role || 'user';
+            roleBadge.textContent = formatRole(role);
+            roleBadge.setAttribute('data-role', role);
         }
     }
 
-    // Resolve image path for display
+    // ------------------ Helpers ------------------
     function resolveImagePath(imagePath) {
-        console.log('Resolving image path for profile:', imagePath);
-        
-        if (!imagePath || imagePath === 'images/default-user.png' || imagePath === 'default-user.png') {
-            return 'images/default-user.png';
+        if (!imagePath || imagePath === 'images/default-user.png') return 'images/default-user.png';
+        if (imagePath.startsWith('http') || imagePath.startsWith('data:')) return imagePath;
+        if (imagePath.includes('uploads/')) {
+            const file = imagePath.split('/').pop();
+            return `../backend/api/get_image.php?file=${file}&type=profile`;
         }
-        
-        // If it's already a full URL or data URL, return as is
-        if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('data:')) {
-            return imagePath;
-        }
-        
-        // Handle backend paths - check if it contains uploads
-        if (imagePath.includes('uploads/') || imagePath.includes('backend/uploads/')) {
-            const filename = imagePath.split('/').pop();
-            const resolvedPath = `../backend/api/get_image.php?file=${filename}&type=profile`;
-            console.log('Resolved backend path for profile:', resolvedPath);
-            return resolvedPath;
-        }
-        
-        // For frontend images, ensure correct path
-        if (imagePath.startsWith('images/')) {
-            return imagePath;
-        }
-        
-        // Default case - assume it's a backend upload
-        const resolvedPath = `../backend/api/get_image.php?file=${imagePath}&type=profile`;
-        console.log('Default resolved path for profile:', resolvedPath);
-        return resolvedPath;
+        return `../backend/api/get_image.php?file=${imagePath}&type=profile`;
     }
 
-    // Format role for display
     function formatRole(role) {
-        const roleMap = {
-            'admin': 'Administrator',
-            'clerk': 'Clerk',
-            'oc_pen': 'OC Pen Officer',
-            'writeup_officer': 'Writeup Officer',
-            'file_creator': 'File Creator',
-            'data_entry': 'Data Entry',
-            'assessor': 'Assessor',
-            'auditor': 'Auditor',
-            'approver': 'Approver',
-            'user': 'User',
-            'pensioner': 'Pensioner'
+        const map = {
+            admin: 'Administrator',
+            clerk: 'Clerk',
+            oc_pen: 'OC Pen Officer',
+            writeup_officer: 'Writeup Officer',
+            file_creator: 'File Creator',
+            data_entry: 'Data Entrant',
+            assessor: 'Assessor',
+            auditor: 'Auditor',
+            approver: 'Approver',
+            user: 'User',
+            pensioner: 'Pensioner'
         };
-        
-        return roleMap[role] || role.charAt(0).toUpperCase() + role.slice(1);
+        return map[role] || role.charAt(0).toUpperCase() + role.slice(1);
     }
 
-    // Redirect to edit profile page
     function redirectToEditProfile() {
         const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
-        
-        if (currentUser.id) {
-            window.location.href = `edit_user.html?user_id=${currentUser.id}`;
-        } else {
-            showError('Unable to determine user ID. Please login again.');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
-        }
+        if (currentUser.id) window.location.href = `edit_user.html?user_id=${currentUser.id}`;
+        else showError('Unable to determine user ID. Please login again.');
     }
 
-    // Redirect to dashboard based on user role
     function redirectToDashboard() {
-        const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
-        const userRole = currentUser.role || 'user';
-        
-        let dashboardUrl = 'dashboard.html'; // Default fallback
-        
-        // Role-based redirection (same logic as auth.js)
-        switch (userRole.toLowerCase()) {
-            case 'admin':
-            case 'user':
-                dashboardUrl = 'dashboard.html';
-                break;
-            case 'clerk':
-                dashboardUrl = 'file_registry.html';
-                break;
-            case 'pensioner':
-                dashboardUrl = 'pensioner_board.html';
-                break;
-            case 'oc_pen':
-            case 'writeup_officer':
-            case 'file_creator':
-            case 'data_entry':
-            case 'assessor':
-            case 'auditor':
-            case 'approver':
-                dashboardUrl = 'taskboard.html';
-                break;
-            default:
-                dashboardUrl = 'dashboard.html';
-        }
-        
-        window.location.href = dashboardUrl;
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const role = user.role?.toLowerCase() || 'user';
+        const dashboards = {
+            admin: 'dashboard.html',
+            user: 'dashboard.html',
+            clerk: 'file_registry.html',
+            pensioner: 'pensioner_board.html'
+        };
+        window.location.href = dashboards[role] || 'taskboard.html';
     }
 
-    // Show error message
-    function showError(message) {
-        // Create error modal
+    function showError(msg) {
         const modal = document.createElement('div');
         modal.className = 'auth-modal-overlay';
         modal.innerHTML = `
             <div class="auth-modal login-error-modal">
-                <div class="auth-modal-header">
-                    <h3>Error</h3>
-                </div>
+                <div class="auth-modal-header"><h3>Error</h3></div>
                 <div class="auth-modal-body">
                     <div class="login-error-icon">⚠️</div>
-                    <p>${message}</p>
+                    <p>${msg}</p>
                 </div>
                 <div class="auth-modal-footer">
                     <button id="closeErrorModal" class="auth-btn auth-btn-secondary">OK</button>
                 </div>
-            </div>
-        `;
-        
+            </div>`;
         document.body.appendChild(modal);
-
-        // Add event listener to close the modal
-        document.getElementById('closeErrorModal').addEventListener('click', () => {
-            document.body.removeChild(modal);
-        });
-
-        // Close modal when clicking outside
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                document.body.removeChild(modal);
-            }
-        });
+        document.getElementById('closeErrorModal').onclick = () => modal.remove();
+        modal.onclick = e => { if (e.target === modal) modal.remove(); };
     }
 
-    // Refresh profile data (can be called from other modules)
-    window.refreshProfileData = function() {
-        const currentUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
-        populateProfileData(currentUser);
+    // Allow external refresh
+    window.refreshProfileData = () => {
+        const u = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        populateProfileData(u);
     };
 });

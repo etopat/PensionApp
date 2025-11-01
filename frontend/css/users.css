@@ -312,6 +312,11 @@
     background: var(--primary-blue-dark);
 }
 
+#profilePicture.profile-edit {
+  visibility: visible !important;
+  opacity: 0 !important;
+}
+
 .password-toggle {
     background: var(--primary-gold);
     color: var(--primary-blue);
