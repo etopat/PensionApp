@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Due for Retirement - PensionsGo</title>
+  <link rel="stylesheet" href="css/color-variables.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/profile.css">
+  <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="css/overlay.css">
+  <link rel="stylesheet" href="css/staff_due.css">
+</head>
+<body>
+  <!-- Header dynamically loaded by main.js -->
+  <main class="staff-due-wrapper">
+    <div class="top-bar">
+      <h2>Staff Due for Retirement</h2>
+      <button id="addStaffBtn" class="btn-add">➕ Add Staff</button>
+    </div>
+
+    <section class="search-filter-bar">
+      <input type="text" id="searchInput" placeholder="Search by name or Reg No..." />
+      <select id="filterRetirementType">
+        <option value="">All Retirement Types</option>
+        <option value="Mandatory">Mandatory</option>
+        <option value="AOR">Discharge AOR</option>
+        <option value="Early">Early Retirement</option>
+        <option value="UBE">Discharge UBE</option>
+        <option value="CBE">Discharge CBE</option>
+        <option value="Death">Death</option>
+        <option value="Marriage">Marriage Grounds</option>
+        <option value="Medical">Medical Grounds</option>
+        <option value="TX">Time Expired</option>
+        <option value="Voluntary">Voluntary Retirement</option>
+        <option value="Contract">Contract</option>
+      </select>
+      <select id="filterSubmissionStatus">
+        <option value="">All Submission Status</option>
+        <option value="pending">Pending</option>
+        <option value="submitted">Submitted</option>
+      </select>
+      <select id="filterAppnStatus">
+        <option value="">All Application Status</option>
+        <option value="pending">Pending</option>
+        <option value="verified">Verified</option>
+        <option value="queried">Queried</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button id="searchButton">🔍 Search</button>
+    </section>
+
+    <section id="staffContainer" class="staff-card-grid"></section>
+  </main>
+
+  <!-- Footer dynamically loaded by main.js -->
+  <script type="module" src="js/main.js"></script>
+  <script src="js/staff_due.js"></script>
+</body>
+</html>

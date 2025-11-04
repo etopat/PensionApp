@@ -46,7 +46,7 @@ header {
   left: 0;
   right: 0;
   background-color: var(--primary-color);
-  z-index: 1000;
+  z-index: 1001;
   transition: transform 0.8s ease-in-out;
   width: 100%;
 }
@@ -337,7 +337,7 @@ main {
   top: 70px;
   background: var(--main-bg);
   padding: 0.5rem 3rem;
-  margin: 1.5rem auto 6rem auto;
+  margin: 0.5rem auto 6rem auto;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   width: 70%;

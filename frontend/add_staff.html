@@ -1,0 +1,200 @@
+<!-- add_staff.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Staff Record</title>
+
+  <!-- Prevent browser caching of protected pages -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <link rel="stylesheet" href="../frontend/css/color-variables.css" />
+  <link rel="stylesheet" href="../frontend/css/styles.css" />
+  <link rel="stylesheet" href="../frontend/css/profile.css" />
+  <link rel="stylesheet" href="../frontend/css/menu.css" />
+  <link rel="stylesheet" href="../frontend/css/overlay.css" />
+  
+  <link rel="stylesheet" href="../frontend/css/forms.css" />
+  <link rel="stylesheet" href="../frontend/css/add_staff.css" />
+
+  <script type="module" src="../frontend/js/main.js"></script>
+  <script defer src="../frontend/js/add_staff.js"></script>
+</head>
+
+<body>
+  <main class="main-wrapper">
+    <h2>Add Staff Due for Retirement</h2>
+
+    <form id="addStaffForm" class="fade-in">
+      <div class="form-group">
+        <label>Reg No</label>
+        <input type="text" id="regNo" name="regNo" required />
+      </div>
+
+      <div class="form-group">
+        <label>Supplier No</label>
+        <input type="text" id="supplierNo" name="supplierNo" />
+      </div>
+
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="title" name="title" />
+      </div>
+
+      <div class="form-group">
+        <label>Surname</label>
+        <input type="text" id="sName" name="sName" required />
+      </div>
+
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="fName" name="fName" required />
+      </div>
+
+      <div class="form-group">
+        <label>Gender</label>
+        <select id="gender" name="gender" required>
+          <option value="">Select</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Prison Unit</label>
+        
+        <select id="prisonUnit" required class="desktop-only">
+          <option value="">Loading prison units...</option>
+        </select>
+
+        <div id="mobilePrisonSelect" class="mobile-only prison-select-trigger">Tap to select Prison Unit</div>
+
+        <div id="prisonModal" class="logout-modal-overlay" style="display:none;">
+          <div class="logout-modal" style="max-height:80vh; overflow-y:auto;">
+            <h3>Select Prison Unit</h3>
+            <input type="text" id="prisonSearch" placeholder="Search prison unit..." />
+            <div id="prisonList"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-group">
+        <label>NIN</label>
+        <input type="text" id="NIN" name="NIN" />
+      </div>
+
+      <div class="form-group">
+        <label>Tel No</label>
+        <input type="text" id="telNo" name="telNo" />
+      </div>
+
+      <div class="form-group">
+        <label>Birth Date</label>
+        <input type="date" id="birthDate" name="birthDate" />
+      </div>
+
+      <div class="form-group">
+        <label>Enlistment Date</label>
+        <input type="date" id="enlistmentDate" name="enlistmentDate" />
+      </div>
+
+      <div class="form-group">
+        <label>Retirement Date</label>
+        <input type="date" id="retirementDate" name="retirementDate" />
+      </div>
+
+      <div class="form-group">
+        <label>Financial Year</label>
+        <input type="text" id="financialYear" name="financialYear" readonly />
+      </div>
+
+      <div class="form-group">
+        <label>Retirement Type</label>
+        <select id="retirementType" name="retirementType" required>
+          <option value="">Select Type</option>
+          <option value="Mandatory">Mandatory</option>
+          <option value="Early">Early Retirement</option>
+          <option value="AOR">Discharge AOR</option>
+          <option value="Death">Death</option>
+          <option value="Medical">Medical</option>
+          <option value="Marriage">Marriage Grounds</option>
+          <option value="CBE">Discharge CBE</option>
+          <option value="UBE">Discharge UBE</option>
+          <option value="Contract">Contract</option>
+          <option value="TX">Time Expired</option>
+          <option value="Voluntary">Voluntary</option>
+          <option value="oldAge">Old Age</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Monthly Salary</label>
+        <input type="number" id="monthlySalary" name="monthlySalary" step="0.01" />
+      </div>
+
+      <div class="form-group">
+        <label>Length of Service (Months)</label>
+        <input type="number" id="lengthOfService" name="lengthOfService" readonly />
+      </div>
+
+      <div class="form-group">
+        <label>Annual Salary</label>
+        <input type="number" id="annualSalary" name="annualSalary" readonly />
+      </div>
+
+      <div class="form-group">
+        <label>Reduced Pension</label>
+        <input type="number" id="reducedPension" name="reducedPension" readonly />
+      </div>
+
+      <div class="form-group">
+        <label>Full Pension</label>
+        <input type="number" id="fullPension" name="fullPension" readonly />
+      </div>
+
+      <div class="form-group">
+        <label>Gratuity</label>
+        <input type="number" id="gratuity" name="gratuity" readonly />
+      </div>
+
+      <div class="form-group">
+        <label>Submission Status</label>
+        <select id="submissionStatus" name="submissionStatus" required>
+          <option value="pending">Pending</option>
+          <option value="submitted">Submitted</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Application Status</label>
+        <select id="appnStatus" name="appnStatus" required>
+          <option value="pending">Pending</option>
+          <option value="verified">Verified</option>
+          <option value="querried">Queried</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn">Add Staff</button>
+        <button type="reset" class="btn btn-reset">Clear</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="logout-modal-overlay" style="display:none;">
+    <div class="logout-modal">
+      <h3>✅ Success</h3>
+      <p>Staff added successfully!</p>
+      <div class="modal-actions">
+        <button id="okButton" class="btn-confirm">OK</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

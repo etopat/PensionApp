@@ -1,0 +1,204 @@
+@import url("color-variables.css");
+
+.add-staff-wrapper {
+  max-width: 900px;
+  margin: auto;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px var(--shadow-light);
+}
+
+.form-header h2 {
+  color: var(--primary-blue);
+  margin-bottom: 0.2rem;
+}
+
+.form-header p {
+  color: var(--muted-color);
+  margin-bottom: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--label-color);
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--focus-color);
+  outline: none;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn-submit {
+  background: var(--primary-maroon);
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+  background: var(--primary-maroon-dark);
+  transform: translateY(-2px);
+}
+
+.btn-cancel {
+  background: #ccc;
+  color: #000;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: #bbb;
+}
+
+/* Prison Unit Modal Styling */
+    .mobile-search-modal {
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+      height: 65vh;
+      background: var(--form-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px var(--shadow-medium);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .mobile-search-modal input {
+      padding: 0.6rem;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      margin-bottom: 0.6rem;
+      width: 100%;
+      color: var(--input-text);
+      background: var(--input-bg);
+    }
+
+    .mobile-search-modal select {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      padding: 0.3rem;
+    }
+
+    .mobile-search-modal button {
+      margin-top: 0.6rem;
+      padding: 0.6rem;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .mobile-search-modal button:hover {
+      background: var(--primary-dark);
+    }
+
+    /* Hide native dropdown arrow for mobile */
+    @media (max-width: 768px) {
+      select#prisonUnit {
+        pointer-events: none;
+
+      }
+    }
+
+
+    .mobile-only { display: none; }
+    .desktop-only { display: block; }
+
+    .prison-select-trigger {
+      background: var(--input-bg);
+      padding: 0.6rem;
+      border-radius: 5px;
+      border: 1px solid var(--input-border);
+      cursor: pointer;
+      color: var(--input-text);
+    }
+
+    @media (max-width: 768px) {
+      .mobile-only { display: block; }
+      .desktop-only { display: none; }
+    }
+
+    /* Better layout for mobile search bar */
+    #prisonModal input#prisonSearch {
+      width: 92%;
+      margin: 10px auto;
+      display: block;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    /* Lock body scroll when modal is active */
+    body.modal-open {
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    /* ================================
+   ✅ SELECT DROPDOWN IMPROVEMENT
+   ================================ */
+    select {
+      max-height: 150px; /* Show ~5 options */
+      overflow-y: auto;
+    }
+
+    select option {
+      padding: 8px;
+      font-size: 0.95rem;
+    }
+
+    /* Improve appearance on desktop */
+    @media (min-width: 769px) {
+      select {
+        height: auto;
+        line-height: 1.5;
+      }
+    }

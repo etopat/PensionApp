@@ -12,8 +12,11 @@
 
 session_start();
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
-// Session timeout in seconds (e.g., 30 minutes)
+// Session timeout in seconds
 $timeout = 1800; // 1800 = 30 mins
 
 // Check if user session exists

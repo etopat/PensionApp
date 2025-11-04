@@ -165,15 +165,15 @@ try {
     /* ============================================================
        6. STAFF DUE FOR RETIREMENT
        ============================================================ */
-    $staffDue = ['total' => 0, 'male' => 0, 'female' => 0, 'submitted' => 0, 'notSubmitted' => 0];
+    $staffDue = ['total' => 0, 'Male' => 0, 'Female' => 0, 'submitted' => 0, 'notSubmitted' => 0];
 
     $staffQuery = "
         SELECT
             gender,
             SUM(1) AS total,
-            SUM(CASE WHEN applicationStatus='submitted' THEN 1 ELSE 0 END) AS submitted,
-            SUM(CASE WHEN applicationStatus='not submitted' THEN 1 ELSE 0 END) AS notSubmitted
-        FROM tb_staff_due
+            SUM(CASE WHEN submissionStatus='submitted' THEN 1 ELSE 0 END) AS submitted,
+            SUM(CASE WHEN submissionStatus='pending' THEN 1 ELSE 0 END) AS notSubmitted
+        FROM tb_staffdue
         GROUP BY gender
     ";
 
@@ -182,8 +182,8 @@ try {
             $staffDue['total'] += $row['total'];
             $staffDue['submitted'] += $row['submitted'];
             $staffDue['notSubmitted'] += $row['notSubmitted'];
-            if (strtolower($row['gender']) === 'male') $staffDue['male'] += $row['total'];
-            else $staffDue['female'] += $row['total'];
+            if (strtolower($row['gender']) === 'Male') $staffDue['Male'] += $row['total'];
+            else $staffDue['Female'] += $row['total'];
         }
         $res->free();
     }

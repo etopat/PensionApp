@@ -357,3 +357,30 @@
 .auth-btn-secondary:hover {
   background: #5a6268;
 }
+
+/* ============================================================
+   ACCESSIBILITY & POLISH ENHANCEMENTS
+   ============================================================ */
+
+/* Prevent text flickering when blur is applied */
+.session-expired-blur * {
+  will-change: filter;
+}
+
+/* Ensure overlays always appear above other UI layers */
+header, main, footer, .main-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+/* Prevent overlay button double-clicks from bubbling */
+.session-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.5);
+}
+
+/* Smooth transition for dark/light themes */
+[data-theme="dark"] .session-overlay-content {
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 40, 40, 0.95));
+  color: #eee;
+}

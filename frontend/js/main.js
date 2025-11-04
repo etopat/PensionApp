@@ -9,7 +9,7 @@
 //  - Ensures strong session-based authentication security.
 // --------------------------------------------------------------------
 // Author:  PensionsGo Development
-// Version: 2.3 (October 2025)
+// Version: 2.4 (October 2025)
 // ====================================================================
 
 import { loadFooter } from './modules/footer.js';
@@ -68,85 +68,258 @@ const AppLoader = {
 })();
 
 /* ============================================================
-   🔹 3. SESSION VALIDATION & ACCESS CONTROL
+   🔹 3. SESSION VALIDATION & ACCESS CONTROL (Enhanced)
    ============================================================ */
+let sessionCheckInterval = null;
+let inactivityCheckInterval = null;
+let sessionExpired = false;
+
+// Session timeout in seconds (30 minutes)
+const SESSION_TIMEOUT = 1800;
+let lastActivity = Date.now();
+
 async function verifyActiveSession() {
-  try {
-    const response = await fetch("../backend/api/check_session.php", {
-      credentials: "include",
-      cache: "no-store"
-    });
-    const data = await response.json();
+    // Don't check if session already expired
+    if (sessionExpired) return false;
+    
+    try {
+        const response = await fetch("../backend/api/check_session.php", {
+            credentials: "include",
+            cache: "no-store"
+        });
+        
+        // Handle network errors gracefully
+        if (!response.ok) {
+            console.warn("Session check network error");
+            return true; // Don't logout on network issues
+        }
+        
+        const data = await response.json();
 
-    const isLoginPage = window.location.pathname.includes("login.html") ||
-                        window.location.pathname.endsWith("/");
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+        const isLoginPage = window.location.pathname.includes("login.html") ||
+                            window.location.pathname.endsWith("/");
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
 
-    // Handle expired session
-    if (isLoggedIn && !isLoginPage && !data.active) {
-      console.warn("🔒 Session expired detected");
-      localStorage.setItem("lastVisitedPage", window.location.href);
-      sessionStorage.clear();
-      localStorage.removeItem("loggedInUser");
-      localStorage.removeItem("userRole");
-      showSessionExpiredOverlay();
-      return false;
+        // Handle expired session
+        if (isLoggedIn && !isLoginPage && !data.active) {
+            console.warn("🔒 Session expired detected via backend");
+            handleSessionExpiry();
+            return false;
+        }
+
+        // Enforce admin-only access for restricted pages
+        const userRole = localStorage.getItem("userRole");
+        const restrictedPages = ["users.html"];
+        const currentPage = window.location.pathname.split("/").pop();
+
+        if (restrictedPages.includes(currentPage) && userRole !== "admin") {
+            showAccessDeniedOverlay();
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        console.error("⚠️ Session verification failed:", err);
+        return true; // Don't logout on errors
     }
-
-    // Enforce admin-only access for restricted pages
-    const userRole = localStorage.getItem("userRole");
-    const restrictedPages = ["users.html"];
-    const currentPage = window.location.pathname.split("/").pop();
-
-    if (restrictedPages.includes(currentPage) && userRole !== "admin") {
-      showAccessDeniedOverlay();
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    console.error("⚠️ Session verification failed:", err);
-    return false;
-  }
 }
 
 /* ============================================================
-   🔹 4. SESSION EXPIRED OVERLAY
+   🔹 3B. REAL-TIME ACTIVITY TRACKING & SESSION MANAGEMENT
    ============================================================ */
-function showSessionExpiredOverlay() {
-  if (document.querySelector('.session-overlay')) return; // prevent duplicates
 
-  const overlay = document.createElement('div');
-  overlay.classList.add('session-overlay');
-  overlay.innerHTML = `
-    <div class="session-overlay-content">
-      <div class="session-icon">⚠️</div>
-      <h2>Session Expired</h2>
-      <p>Your session has expired due to inactivity. Please login again to continue.</p>
-      <div class="session-overlay-buttons">
-        <button id="sessionOkButton" class="session-btn session-btn-primary">OK</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  document.documentElement.classList.add('session-expired-blur');
+// Update session timestamp on ANY user activity
+async function updateSessionActivity() {
+    if (sessionExpired) return;
+    
+    lastActivity = Date.now();
+    sessionStorage.setItem('lastActivity', lastActivity.toString());
 
-  const redirectToLogin = () => {
-    const returnUrl = localStorage.getItem("lastVisitedPage") || window.location.href;
-    const userRole = localStorage.getItem('userRole');
-    const safeRedirectUrl = getRoleBasedRedirectUrl(userRole, returnUrl);
+    try {
+        // Only ping backend if user is logged in
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+        if (isLoggedIn) {
+            await fetch('../backend/api/keep_alive.php', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        }
+    } catch (err) {
+        console.error('Keep-alive failed:', err);
+    }
+}
 
-    localStorage.setItem("lastVisitedPage", safeRedirectUrl);
+// Check if session expired due to inactivity (client-side) - REAL-TIME
+function checkInactivityTimeout() {
+    if (sessionExpired) return;
+    
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) return;
+
+    const now = Date.now();
+    const elapsed = (now - lastActivity) / 1000;
+    
+    if (elapsed > SESSION_TIMEOUT) {
+        console.warn('⚠️ Session timeout reached due to inactivity. Logging out.');
+        handleSessionExpiry();
+    }
+}
+
+// Verify backend session directly
+async function verifyBackendSession() {
+    if (sessionExpired) return;
+    
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) return;
+
+    try {
+        const res = await fetch('../backend/api/check_session.php', {
+            credentials: 'include',
+            cache: 'no-store'
+        });
+        const data = await res.json();
+        if (!data.active) {
+            handleSessionExpiry();
+        }
+    } catch (err) {
+        console.error('Backend session verification failed:', err);
+    }
+}
+
+// Stop all session monitoring
+function stopSessionMonitoring() {
+    if (sessionCheckInterval) {
+        clearInterval(sessionCheckInterval);
+        sessionCheckInterval = null;
+    }
+    if (inactivityCheckInterval) {
+        clearInterval(inactivityCheckInterval);
+        inactivityCheckInterval = null;
+    }
+}
+
+// Centralized session expiry handler
+function handleSessionExpiry() {
+    if (sessionExpired) return; // Prevent multiple triggers
+    
+    sessionExpired = true;
+    console.log('🛑 Session expiry handler triggered');
+    
+    // Store the current page for potential return
+    localStorage.setItem("lastVisitedPage", window.location.href);
+    
+    // Clear user data
     sessionStorage.clear();
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('userRole');
+    
+    // Stop all monitoring
+    stopSessionMonitoring();
+    
+    // Show the overlay immediately
+    showSessionExpiredOverlay();
+}
 
-    window.location.href = `login.html?return=${encodeURIComponent(safeRedirectUrl)}`;
-  };
+// Initialize session monitoring with real-time checks
+function initializeSessionMonitoring() {
+    const stored = sessionStorage.getItem('lastActivity');
+    lastActivity = stored ? parseInt(stored) : Date.now();
+    
+    // Start real-time inactivity check (every 1 second for immediate response)
+    inactivityCheckInterval = setInterval(checkInactivityTimeout, 1000);
+    
+    // Start backend session verification (2 minute intervals)
+    sessionCheckInterval = setInterval(verifyBackendSession, 120000);
+    
+    console.log('🔐 Session monitoring initialized with real-time checks');
+}
 
-  document.getElementById('sessionOkButton').addEventListener('click', redirectToLogin);
-  overlay.addEventListener('click', e => { if (e.target === overlay) redirectToLogin(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') redirectToLogin(); });
+// Comprehensive activity event listeners
+function initializeActivityListeners() {
+    const activityEvents = [
+        'click', 'mousemove', 'mousedown', 'mouseup',
+        'keydown', 'keyup', 'keypress',
+        'scroll', 'wheel',
+        'touchstart', 'touchmove', 'touchend',
+        'focus', 'blur', 'input', 'change',
+        'drag', 'dragstart', 'dragend', 'drop'
+    ];
+
+    activityEvents.forEach(eventType => {
+        document.addEventListener(eventType, updateSessionActivity, { 
+            passive: true,
+            capture: true 
+        });
+    });
+
+    // Also track visibility changes (tab switching)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            updateSessionActivity();
+        }
+    });
+
+    // Track page focus
+    window.addEventListener('focus', updateSessionActivity);
+}
+
+/* ============================================================
+   🔹 4. SESSION EXPIRED OVERLAY (Enhanced)
+   ============================================================ */
+function showSessionExpiredOverlay() {
+    // Prevent multiple overlays
+    const existingOverlay = document.querySelector('.session-overlay');
+    if (existingOverlay) {
+        return; // Overlay already showing
+    }
+
+    const overlay = document.createElement('div');
+    overlay.classList.add('session-overlay');
+    overlay.innerHTML = `
+        <div class="session-overlay-content">
+            <div class="session-icon">⚠️</div>
+            <h2>Session Expired</h2>
+            <p>Your session has expired due to inactivity. Please login again to continue.</p>
+            <div class="session-overlay-buttons">
+                <button id="sessionOkButton" class="session-btn session-btn-primary">OK</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    document.documentElement.classList.add('session-expired-blur');
+
+    const redirectToLogin = () => {
+        // Remove overlay
+        overlay.remove();
+        document.documentElement.classList.remove('session-expired-blur');
+        
+        // Get the last visited page
+        const lastPage = localStorage.getItem("lastVisitedPage") || window.location.href;
+        
+        // Clear all intervals
+        stopSessionMonitoring();
+        
+        // Redirect to login with return URL
+        window.location.href = `login.html?return=${encodeURIComponent(lastPage)}`;
+    };
+
+    // Add event listeners
+    document.getElementById('sessionOkButton').addEventListener('click', redirectToLogin, { once: true });
+    
+    overlay.addEventListener('click', (e) => { 
+        if (e.target === overlay) redirectToLogin(); 
+    }, { once: true });
+    
+    // Escape key handler
+    const escapeHandler = (e) => { 
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            document.removeEventListener('keydown', escapeHandler);
+            redirectToLogin();
+        }
+    };
+    document.addEventListener('keydown', escapeHandler, { once: true });
 }
 
 /* ============================================================
@@ -375,14 +548,31 @@ async function loadFooterWithCoordination() {
 }
 
 /* ============================================================
-   🔹 15. APP INITIALIZATION ENTRY POINT
+   🔹 15. APP INITIALIZATION ENTRY POINT (Enhanced)
    ============================================================ */
 function initializeApplication() {
-  console.log('🚀 Initializing PensionsGo Application...');
-  verifyActiveSession();
-  setInterval(verifyActiveSession, 120000); // Recheck every 2 min
-  loadAppropriateHeader();
-  loadFooterWithCoordination();
+    console.log('🚀 Initializing PensionsGo Application...');
+    
+    const isLoginPage = window.location.pathname.includes("login.html") ||
+                       window.location.pathname.endsWith("/");
+    
+    // Only initialize session monitoring for logged-in users on non-login pages
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    
+    if (isLoggedIn && !isLoginPage) {
+        initializeSessionMonitoring();
+        initializeActivityListeners();
+        
+        // Do initial session check
+        verifyActiveSession().then(isValid => {
+            if (!isValid) {
+                console.log('Session invalid on page load');
+            }
+        });
+    }
+    
+    loadAppropriateHeader();
+    loadFooterWithCoordination();
 }
 
 /* ============================================================

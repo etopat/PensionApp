@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("userRole", json.userRole || "");
         sessionStorage.setItem("userId", json.userId || "");
         sessionStorage.setItem("phoneNo", json.phoneNo || "");
+        sessionStorage.setItem("lastActivity", Date.now().toString()); // Initialize activity tracking
 
         // Store persistent data
         const userData = {

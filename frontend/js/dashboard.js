@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'oc_pen': 'OC-PEN',
       'writeup_officer': 'Write-up Officer',
       'file_creator': 'File Creator',
-      'data_entry': 'Data Entry',
+      'data_entry': 'Data Entrant',
       'assessor': 'Assessor',
       'auditor': 'Auditor',
       'approver': 'Approver',

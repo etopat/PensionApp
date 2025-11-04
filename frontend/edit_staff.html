@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Staff Record</title>
+  <link rel="stylesheet" href="css/overlay.css">
+  <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/edit_staff.css">
+
+  <script src="js/session_check.js" defer></script>
+  <script src="js/edit_staff.js" defer></script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <header id="dynamicHeader"></header>
+
+  <main class="edit-container">
+    <h2>Edit Staff Record</h2>
+    <form id="editStaffForm">
+      <div class="form-grid">
+        <label>Reg No:</label>
+        <input type="text" id="regNo" name="regNo" required readonly>
+
+        <label>Title:</label>
+        <input type="text" id="title" name="title" required>
+
+        <label>Surname:</label>
+        <input type="text" id="sName" name="sName" required>
+
+        <label>First Name:</label>
+        <input type="text" id="fName" name="fName" required>
+
+        <label>Gender:</label>
+        <select id="gender" name="gender" required>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+
+        <label>Prison Unit:</label>
+        <input type="text" id="prisonUnit" name="prisonUnit" required>
+
+        <label>Telephone:</label>
+        <input type="tel" id="telNo" name="telNo" required pattern="^\\+256\\d{9}$" placeholder="+2567XXXXXXXX">
+
+        <label>Retirement Type:</label>
+        <select id="retirementType" name="retirementType" required>
+          <option value="Mandatory">Mandatory</option>
+          <option value="Early">Early</option>
+          <option value="AOR">AOR</option>
+          <option value="Death">Death</option>
+          <option value="Medical">Medical</option>
+          <option value="Marriage">Marriage</option>
+          <option value="CBE">CBE</option>
+          <option value="UBE">UBE</option>
+          <option value="Contract">Contract</option>
+          <option value="TX">TX</option>
+          <option value="Voluntary">Voluntary</option>
+          <option value="oldAge">Old Age</option>
+        </select>
+
+        <label>Submission Status:</label>
+        <select id="submissionStatus" name="submissionStatus" required>
+          <option value="pending">Pending</option>
+          <option value="submitted">Submitted</option>
+        </select>
+
+        <label>Application Status:</label>
+        <select id="appnStatus" name="appnStatus" required>
+          <option value="pending">Pending</option>
+          <option value="verified">Verified</option>
+          <option value="querried">Queried</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save">💾 Save Changes</button>
+        <button type="button" class="btn-cancel" onclick="window.history.back()">↩ Cancel</button>
+      </div>
+    </form>
+    <p id="formMessage"></p>
+  </main>
+
+  <footer id="dynamicFooter"></footer>
+</body>
+</html>

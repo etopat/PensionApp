@@ -1,4 +1,10 @@
 // frontend/js/register_user.js
+
+// Redirect if not logged in
+if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+  window.location.replace('login.html');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('registerForm');
   const submitBtn = form.querySelector('button[type="submit"]');
