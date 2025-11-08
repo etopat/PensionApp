@@ -7,6 +7,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   const filterAppnStatus = document.getElementById("filterAppnStatus");
   const addStaffBtn = document.getElementById("addStaffBtn");
 
+  // ===========================
+  // 🔐 SESSION VALIDATION
+  // ===========================
+  async function checkSession() {
+    try {
+      const res = await fetch("../backend/api/check_session.php", {
+        cache: "no-store",
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      // No active session → redirect
+      if (!data.active || !data.userRole) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Restrict access to Admin and Clerk only
+      // const role = data.userRole.toLowerCase();
+      // if (role !== "admin" && role !== "clerk") {
+      //   alert("Access denied! This page is restricted to Admins and Clerks only.");
+      //   window.location.href = "dashboard.html";
+      //   return;
+      // }
+
+      // ✅ Session OK
+      // console.log(`🔐 Session active. Logged in as: ${data.userName} (${data.userRole})`);
+      // enableLogout();
+    } catch (err) {
+      console.error("Session check failed:", err);
+      window.location.href = "login.html";
+    }
+  }
+  checkSession();
+
   // ✅ Redirect to staff registration page
   addStaffBtn.addEventListener("click", () => {
     window.location.href = "add_staff.html";

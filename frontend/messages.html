@@ -1,1 +1,226 @@
-<!-- messages.html HTML scaffold -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - PensionsGo</title>
+    
+    <link rel="stylesheet" href="../frontend/css/overlay.css">
+    <link rel="stylesheet" href="../frontend/css/styles.css">
+    <link rel="stylesheet" href="../frontend/css/profile.css">
+    <link rel="stylesheet" href="../frontend/css/menu.css">
+    <link rel="stylesheet" href="../frontend/css/messages.css">
+    
+          
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script type="module" src="../frontend/js/main.js" ></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header will be dynamically loaded here -->
+        
+        <main class="main-content">
+            <div class="messages-container">
+                <!-- Sidebar -->
+                <aside class="messages-sidebar">
+                    <div class="sidebar-header">
+                        <h2>Messages</h2>
+                        <button class="btn-compose" id="composeBtn">
+                            <i class="fas fa-edit"></i>
+                            Compose
+                        </button>
+                    </div>
+
+                    <nav class="sidebar-nav">
+                        <a href="#inbox" class="nav-item active" data-type="inbox">
+                            <i class="fas fa-inbox"></i>
+                            Inbox
+                            <span class="badge" id="inboxBadge">0</span>
+                        </a>
+                        <a href="#sent" class="nav-item" data-type="sent">
+                            <i class="fas fa-paper-plane"></i>
+                            Sent
+                        </a>
+                        <a href="#broadcast" class="nav-item" data-type="broadcast">
+                            <i class="fas fa-bullhorn"></i>
+                            Broadcasts
+                            <span class="badge" id="broadcastBadge">0</span>
+                        </a>
+                    </nav>
+
+                    <div class="sidebar-footer">
+                        <div class="storage-info">
+                            <div class="storage-bar">
+                                <div class="storage-progress"></div>
+                            </div>
+                            <small>2.1 GB of 5 GB used</small>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="messages-main">
+                    <!-- Message List View -->
+                    <div class="messages-list-container" id="messagesListView">
+                        <div class="list-header">
+                            <h3 id="listTitle">Inbox</h3>
+                            <div class="list-actions">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="messageSearch" placeholder="Search messages...">
+                                </div>
+                                <button class="btn-refresh" id="refreshBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <div class="filter-dropdown">
+                                    <select id="filterSelect">
+                                        <option value="all">All Messages</option>
+                                        <option value="unread">Unread</option>
+                                        <option value="urgent">Urgent</option>
+                                        <option value="with-attachments">With Attachments</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="messages-list" id="messagesList">
+                            <!-- Messages will be loaded here -->
+                        </div>
+
+                        <div class="list-footer">
+                            <div class="pagination" id="pagination">
+                                <!-- Pagination will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message Detail View -->
+                    <div class="message-detail-container hidden" id="messageDetailView">
+                        <div class="detail-header">
+                            <button class="btn-back" id="backToList">
+                                <i class="fas fa-arrow-left"></i>
+                                Back
+                            </button>
+                            <div class="detail-actions">
+                                <button class="btn-action" title="Reply">
+                                    <i class="fas fa-reply"></i>
+                                </button>
+                                <button class="btn-action" title="Forward">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                                <button class="btn-action" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="btn-action" title="Mark as Unread">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="message-detail" id="messageDetail">
+                            <!-- Message detail will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Compose Modal -->
+        <div class="modal-overlay hidden" id="composeModal">
+            <div class="compose-modal">
+                <div class="compose-header">
+                    <h3>New Message</h3>
+                    <button class="btn-close" id="closeCompose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form class="compose-form" id="composeForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="messageRecipients">To:</label>
+                        <select id="messageRecipients" multiple>
+                            <!-- Recipients will be populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="broadcastSection">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="isBroadcast">
+                            <span class="checkmark"></span>
+                            Send as Broadcast
+                        </label>
+                        <div class="broadcast-options hidden" id="broadcastOptions">
+                            <label>Target Roles (leave empty for all):</label>
+                            <div class="role-checkboxes">
+                                <!-- Role checkboxes will be populated -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="messageSubject">Subject:</label>
+                        <input type="text" id="messageSubject" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="messageText">Message:</label>
+                        <textarea id="messageText" rows="10" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="isUrgent">
+                            <span class="checkmark"></span>
+                            Mark as Urgent
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fileAttachments">Attachments:</label>
+                        <div class="file-upload">
+                            <input type="file" id="fileAttachments" multiple>
+                            <label for="fileAttachments" class="file-upload-label">
+                                <i class="fas fa-paperclip"></i>
+                                Choose Files
+                            </label>
+                        </div>
+                        <div class="file-list" id="fileList"></div>
+                    </div>
+
+                    <div class="compose-actions">
+                        <button type="button" class="btn-secondary" id="cancelCompose">Cancel</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Broadcast Alert Modal -->
+        <div class="modal-overlay hidden" id="broadcastAlertModal">
+            <div class="broadcast-alert">
+                <div class="alert-header urgent">
+                    <i class="fas fa-bullhorn"></i>
+                    <h3>New Broadcast Message</h3>
+                </div>
+                <div class="alert-content">
+                    <h4 id="broadcastAlertSubject"></h4>
+                    <p id="broadcastAlertMessage"></p>
+                    <div class="alert-sender">
+                        From: <span id="broadcastAlertSender"></span>
+                    </div>
+                </div>
+                <div class="alert-actions">
+                    <button class="btn-secondary" id="dismissBroadcast">Dismiss</button>
+                    <button class="btn-primary" id="viewBroadcast">View Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/messages.js"></script>
+</body>
+</html>

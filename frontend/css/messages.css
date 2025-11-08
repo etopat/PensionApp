@@ -1,0 +1,1143 @@
+/* ==========================================================
+   MESSAGES MODULE STYLES
+   Fixed: Scroll issues, notification styles, responsive design
+   ========================================================== */
+
+:root {
+    --message-bg: var(--card-bg);
+    --message-border: var(--border-color);
+    --message-hover: var(--hover-bg);
+    --unread-bg: rgba(0, 123, 255, 0.05);
+    --urgent-color: #dc3545;
+    --success-color: #28a745;
+    --broadcast-color: #ffc107;
+    --sidebar-bg: var(--card-bg);
+}
+
+#pp {
+    display: block;
+    position: relative;
+    top: 100px;
+}
+
+/* FIXED: Scroll container heights */
+.messages-container {
+    display: flex;
+    position: relative;
+    top: 4rem;
+    height: calc(100vh - 140px) !important;
+    background: var(--bg-color);
+    border-radius: 12px;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin: 1rem;
+}
+
+/* Sidebar Styles */
+.messages-sidebar {
+    width: 280px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--message-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--message-border);
+}
+
+.sidebar-header h2 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.5rem;
+}
+
+.btn-compose {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-compose:hover {
+    background: var(--primary-blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background: var(--message-hover);
+    border-left-color: var(--primary-gold);
+}
+
+.nav-item.active {
+    background: var(--unread-bg);
+    border-left-color: var(--primary-blue);
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.nav-item i {
+    width: 20px;
+    margin-right: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.badge {
+    background: var(--primary-maroon);
+    color: white;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: auto;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+}
+
+.sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--message-border);
+}
+
+.storage-info small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.storage-bar {
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+}
+
+.storage-progress {
+    height: 100%;
+    background: var(--primary-blue);
+    width: 42%;
+    border-radius: 2px;
+}
+
+/* Main Content Styles */
+.messages-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--message-bg);
+    overflow: hidden !important;
+}
+
+.list-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--message-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+}
+
+.list-header h3 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.list-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+}
+
+.search-box input {
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
+    border: 1px solid var(--message-border);
+    border-radius: 6px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    width: 250px;
+}
+
+.btn-refresh {
+    padding: 0.5rem;
+    border: 1px solid var(--message-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh:hover {
+    background: var(--message-hover);
+    transform: rotate(180deg);
+}
+
+.filter-dropdown select {
+    padding: 0.5rem;
+    border: 1px solid var(--message-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    min-width: 150px;
+}
+
+/* Messages List - FIXED: Scroll height */
+.messages-list {
+    flex: 1;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 240px) !important;
+}
+
+.message-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--message-border);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.message-item:hover {
+    background: var(--message-hover);
+}
+
+.message-item.unread {
+    background: var(--unread-bg);
+    font-weight: 600;
+}
+
+.message-item.urgent {
+    border-left: 3px solid var(--urgent-color);
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.message-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.25rem;
+}
+
+.message-sender {
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.message-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.message-subject {
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.95rem;
+}
+
+.message-preview {
+    color: var(--text-muted);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9rem;
+}
+
+.message-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.meta-attachment,
+.meta-recipients {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.urgent-icon {
+    color: var(--urgent-color);
+    margin-right: 0.25rem;
+}
+
+/* Message Detail View - FIXED: Scroll height */
+.message-detail-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--message-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+}
+
+.btn-back {
+    background: none;
+    border: 1px solid var(--message-border);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: var(--message-hover);
+}
+
+.detail-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.5rem;
+    border: 1px solid var(--message-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover {
+    background: var(--message-hover);
+}
+
+.message-detail {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 200px) !important;
+}
+
+.detail-header-info {
+    border-bottom: 1px solid var(--message-border);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-subject {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.5rem;
+}
+
+.detail-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.sender-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sender-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.sender-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.sender-details strong {
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+.sender-details span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.message-time {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.recipients-info {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.detail-content {
+    line-height: 1.6;
+}
+
+.message-text {
+    white-space: pre-wrap;
+    margin-bottom: 2rem;
+    color: var(--text-color);
+}
+
+.attachments-section {
+    border-top: 1px solid var(--message-border);
+    padding-top: 1.5rem;
+}
+
+.attachments-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--message-border);
+    border-radius: 6px;
+    background: var(--bg-color);
+}
+
+.attachment-name {
+    flex: 1;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.attachment-size {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.btn-download {
+    padding: 0.25rem 0.5rem;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-download:hover {
+    background: var(--primary-blue-dark);
+}
+
+/* Compose Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+}
+
+.compose-modal {
+    background: var(--card-bg);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.compose-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--message-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.compose-header h3 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.btn-close:hover {
+    background: var(--message-hover);
+    color: var(--text-color);
+}
+
+.compose-form {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--message-border);
+    border-radius: 6px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+.form-group select[multiple] {
+    height: 120px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.checkbox-label input {
+    width: auto;
+    margin: 0;
+}
+
+.checkbox-label.small {
+    font-size: 0.9rem;
+}
+
+.broadcast-options {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-color);
+    border-radius: 6px;
+    border: 1px solid var(--message-border);
+}
+
+.role-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.file-upload {
+    position: relative;
+}
+
+.file-upload input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.file-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-color);
+    border: 2px dashed var(--message-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-muted);
+}
+
+.file-upload-label:hover {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.file-list {
+    margin-top: 0.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.compose-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--message-border);
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-blue-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--message-border);
+}
+
+.btn-secondary:hover {
+    background: var(--message-hover);
+}
+
+/* Broadcast Alert */
+.broadcast-alert {
+    background: var(--card-bg);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.alert-header {
+    padding: 1.5rem;
+    background: var(--broadcast-color);
+    color: #000;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.alert-header.urgent {
+    background: var(--urgent-color);
+    color: white;
+}
+
+.alert-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.alert-content {
+    padding: 1.5rem;
+}
+
+.alert-content h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+}
+
+.alert-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.alert-sender {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.alert-actions {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--message-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+/* Pagination */
+.list-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--message-border);
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.page-btn,
+.page-current {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--message-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.page-btn:hover {
+    background: var(--message-hover);
+}
+
+.page-current {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+    cursor: default;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* FIXED: Notification Styles */
+.message-notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10000;
+    max-width: 300px;
+    animation: slideInRight 0.3s ease;
+}
+
+.message-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.message-error {
+    border-left: 4px solid var(--urgent-color);
+}
+
+.message-info {
+    border-left: 4px solid var(--primary-blue);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* FIXED: Remove modal-open class styles that might block scrolling */
+body.modal-open {
+    overflow: auto !important;
+    position: static !important;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.attachment-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-right: 8px;
+  border: 1px solid #ddd;
+}
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+.attachment-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Ensure images don't flicker */
+.message-avatar,
+.sender-avatar {
+    background-color: var(--bg-color);
+    border: 2px solid var(--message-border);
+}
+
+/* Loading state for images */
+.message-avatar.loading {
+    opacity: 0.5;
+}
+
+/* Action buttons styling */
+.detail-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.5rem;
+    border: 1px solid var(--message-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.btn-action:hover {
+    background: var(--message-hover);
+    transform: translateY(-1px);
+}
+
+.btn-action:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .messages-container {
+        flex-direction: column;
+        height: auto;
+        min-height: calc(100vh - 120px);
+        margin: 0.5rem;
+    }
+
+    .messages-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--message-border);
+    }
+
+    .sidebar-nav {
+        display: flex;
+        padding: 0;
+    }
+
+    .nav-item {
+        flex: 1;
+        justify-content: center;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        padding: 1rem 0.5rem;
+        text-align: center;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .nav-item.active {
+        border-left: none;
+        border-bottom-color: var(--primary-blue);
+    }
+
+    .nav-item i {
+        margin-right: 0;
+        font-size: 1rem;
+    }
+
+    .badge {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+
+    .list-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .list-actions {
+        justify-content: space-between;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .compose-modal {
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+        height: 100vh;
+    }
+
+    .detail-meta {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .sender-info {
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .messages-container {
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .list-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .filter-dropdown select {
+        min-width: 100%;
+    }
+
+    .compose-actions {
+        flex-direction: column;
+    }
+
+    .alert-actions {
+        flex-direction: column;
+    }
+}
+
+
+/* Ensure broadcast section remains visible but checkbox is styled appropriately for non-admins */
+#broadcastSection:not(.admin-only) {
+    display: block !important;
+}
+
+#isBroadcast:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#isBroadcast:disabled + .checkmark {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Add a hint for non-admin users */
+.broadcast-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    display: none;
+}
+
+#isBroadcast:disabled ~ .broadcast-hint {
+    display: block;
+}
+
+/* Add to messages.css */
+
+/* Broadcast-specific styling */
+.meta-broadcast {
+    font-size: 0.8rem;
+    color: var(--broadcast-color);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.message-item.broadcast {
+    border-left: 3px solid var(--broadcast-color);
+}
+
+/* Broadcast sender avatar styling */
+.broadcast .message-avatar {
+    border: 2px solid var(--broadcast-color);
+}
+
+/* Disabled broadcast checkbox styling */
+#isBroadcast:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#isBroadcast:disabled + .checkmark {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Broadcast hint for non-admin users */
+.broadcast-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    display: none;
+    font-style: italic;
+}
+
+#isBroadcast:disabled ~ .broadcast-hint {
+    display: block;
+}

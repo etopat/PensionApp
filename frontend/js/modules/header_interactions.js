@@ -8,10 +8,12 @@
 let openDropdown = null;
 let isProcessingClick = false;
 
+// ====================================================================
+// MAIN INITIALIZATION
+// ====================================================================
 export function initHeaderInteractions() {
   console.log("🔄 Initializing comprehensive header interactions");
 
-  // Use event delegation and wait for DOM to be fully ready
   setTimeout(() => {
     initializeHeaderInteractions();
   }, 500);
@@ -21,8 +23,6 @@ function initializeHeaderInteractions() {
   console.log("🎯 Starting comprehensive header interactions");
 
   let isMobile = window.innerWidth <= 768;
-
-  // Update mobile detection on window resize
   window.addEventListener("resize", () => {
     isMobile = window.innerWidth <= 768;
   });
@@ -34,15 +34,14 @@ function initializeHeaderInteractions() {
   initializeDynamicCounts();
   initializeMenuLinks();
 
-  // Listen for logout events to update UI
   window.addEventListener("userLoggedOut", handleUserLoggedOut);
 
   console.log("🎊 Comprehensive header interactions initialized successfully");
 }
 
-// ==============================
+// ====================================================================
 // 🔐 Global Logout Handler
-// ==============================
+// ====================================================================
 window.logoutUser = async function logoutUser() {
   try {
     console.log("🚪 Initiating logout process...");
@@ -60,11 +59,9 @@ window.logoutUser = async function logoutUser() {
       data = { success: true };
     }
 
-    // Clear client data
     localStorage.removeItem("loggedInUser");
     localStorage.removeItem("userRole");
     sessionStorage.clear();
-
     window.dispatchEvent(new Event("userLoggedOut"));
 
     console.log("✅ Logout successful:", data.message || "Session ended");
@@ -75,9 +72,9 @@ window.logoutUser = async function logoutUser() {
   }
 };
 
-// ==============================
+// ====================================================================
 // Event Delegation
-// ==============================
+// ====================================================================
 function initializeEventDelegation() {
   let lastTouchTime = 0;
   const TOUCH_DELAY = 300;
@@ -130,9 +127,9 @@ function initializeEventDelegation() {
   }
 }
 
-// ==============================
-// Outside Click Handlers
-// ==============================
+// ====================================================================
+// Outside Click / Escape
+// ====================================================================
 function handleOutsideClick(e) {
   const menuToggle = document.getElementById("menuToggle");
   const dropdownMenu = document.getElementById("dropdownMenu");
@@ -146,13 +143,8 @@ function handleOutsideClick(e) {
   const isOutsideProfileMenu =
     !userProfile.contains(e.target) && !profileMenu.contains(e.target);
 
-  if (isOutsideMainMenu && dropdownMenu.classList.contains("visible")) {
-    closeMainMenu();
-  }
-
-  if (isOutsideProfileMenu && profileMenu.classList.contains("visible")) {
-    closeProfileMenu();
-  }
+  if (isOutsideMainMenu && dropdownMenu.classList.contains("visible")) closeMainMenu();
+  if (isOutsideProfileMenu && profileMenu.classList.contains("visible")) closeProfileMenu();
 }
 
 function handleOutsideTouch(e) {
@@ -186,16 +178,15 @@ function handleEscapeKey(e) {
   }
 }
 
-// ==============================
-// Menu Toggle Functions
-// ==============================
+// ====================================================================
+// Menu Toggles
+// ====================================================================
 function toggleMainMenu() {
   const dropdownMenu = document.getElementById("dropdownMenu");
   const profileMenu = document.getElementById("profileDropdownMenu");
   if (!dropdownMenu) return;
 
   if (profileMenu && profileMenu.classList.contains("visible")) closeProfileMenu();
-
   if (dropdownMenu.classList.contains("visible")) closeMainMenu();
   else openMainMenu();
 }
@@ -206,7 +197,6 @@ function toggleProfileDropdown() {
   if (!profileMenu) return;
 
   if (dropdownMenu && dropdownMenu.classList.contains("visible")) closeMainMenu();
-
   if (profileMenu.classList.contains("visible")) closeProfileMenu();
   else openProfileMenu();
 }
@@ -247,9 +237,9 @@ function closeProfileMenu() {
   console.log("✅ Profile menu closed");
 }
 
-// ==============================
+// ====================================================================
 // Desktop Hover
-// ==============================
+// ====================================================================
 function initializeDesktopHover() {
   if (window.innerWidth > 768) {
     const menuToggle = document.getElementById("menuToggle");
@@ -296,9 +286,9 @@ function initializeDesktopHover() {
 }
 setTimeout(initializeDesktopHover, 1000);
 
-// ==============================
+// ====================================================================
 // Profile Display & Menu Visibility
-// ==============================
+// ====================================================================
 function initializeUserProfileDisplay() {
   updateUserProfile();
 }
@@ -333,6 +323,9 @@ function getDefaultProfileImage() {
   return "images/default-user.png";
 }
 
+// ====================================================================
+// Role-Based Menu Visibility
+// ====================================================================
 function initializeMenuVisibility() {
   updateMenuVisibility();
 }
@@ -341,22 +334,55 @@ export function updateMenuVisibility() {
   const userData = JSON.parse(localStorage.getItem("loggedInUser") || "{}");
   const role = (userData.role || localStorage.getItem("userRole") || "").toLowerCase();
   console.log("🎭 Menu visibility for:", role);
+
+  const settingsItem = document.getElementById("settingsMenuItem");
+  const usersItem = document.getElementById("usersMenuItem");
+
+  const isAdmin = role === "admin";
+  if (settingsItem) settingsItem.style.display = isAdmin ? "block" : "none";
+  if (usersItem) usersItem.style.display = isAdmin ? "block" : "none";
 }
 
-// ==============================
+// ====================================================================
 // Dynamic Counts (messages/tasks)
-// ==============================
+// ====================================================================
 function initializeDynamicCounts() {
   loadUnreadMessageCount();
   loadTaskCount();
+  setInterval(loadUnreadMessageCount, 120000);
 }
 
-function loadUnreadMessageCount() {}
+async function loadUnreadMessageCount() {
+  try {
+    const response = await fetch("../backend/api/get_unread_count.php", {
+      credentials: "include",
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      const messageBubble = document.querySelector(".message-bubble");
+      if (messageBubble) {
+        const total = data.unread_count;
+        if (total > 0) {
+          messageBubble.textContent = total > 99 ? "99+" : total;
+          messageBubble.classList.remove("hidden");
+        } else {
+          messageBubble.classList.add("hidden");
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error loading unread count:", error);
+  }
+}
+
 function loadTaskCount() {}
 
-// ==============================
-// Menu Link Handlers
-// ==============================
+
+
+// ====================================================================
+// Menu Links & Logout Modal
+// ====================================================================
 function initializeMenuLinks() {
   setupProfileDropdownLinks();
 }
@@ -384,9 +410,6 @@ function setupProfileDropdownLinks() {
   console.log("✅ Profile dropdown links configured");
 }
 
-// ==============================
-// Logout Confirmation Modal
-// ==============================
 function showLogoutConfirmationModal() {
   if (document.querySelector(".logout-modal-overlay")) return;
 
@@ -404,7 +427,6 @@ function showLogoutConfirmationModal() {
   `;
   document.body.appendChild(overlay);
 
-  // Center and lock scroll
   overlay.scrollIntoView({ behavior: "smooth", block: "center" });
   document.body.classList.add("modal-open");
   document.body.style.overflow = "hidden";
@@ -442,9 +464,9 @@ function showLogoutConfirmationModal() {
   });
 }
 
-// ==============================
-// User Logged Out UI Reset
-// ==============================
+// ====================================================================
+// Logged Out UI Reset & Public API
+// ====================================================================
 function handleUserLoggedOut() {
   const profileName = document.getElementById("profileName");
   const profilePicture = document.getElementById("profilePicture");
@@ -455,9 +477,6 @@ function handleUserLoggedOut() {
   console.log("🚪 User logged out - UI reset");
 }
 
-// ==============================
-// Public API
-// ==============================
 export function refreshHeaderData() {
   updateUserProfile();
   updateMenuVisibility();

@@ -7,9 +7,10 @@
 //  - Implements coordinated asynchronous loading of header/footer.
 //  - Displays smooth overlays for session expiry and access denial.
 //  - Ensures strong session-based authentication security.
+//  - NEW: Includes broadcast message checking across all pages.
 // --------------------------------------------------------------------
 // Author:  PensionsGo Development
-// Version: 2.4 (October 2025)
+// Version: 2.5 (November 2025)
 // ====================================================================
 
 import { loadFooter } from './modules/footer.js';
@@ -109,7 +110,7 @@ async function verifyActiveSession() {
 
         // Enforce admin-only access for restricted pages
         const userRole = localStorage.getItem("userRole");
-        const restrictedPages = ["users.html"];
+        const restrictedPages = ["users.html", "settings.html"];
         const currentPage = window.location.pathname.split("/").pop();
 
         if (restrictedPages.includes(currentPage) && userRole !== "admin") {
@@ -548,7 +549,117 @@ async function loadFooterWithCoordination() {
 }
 
 /* ============================================================
-   🔹 15. APP INITIALIZATION ENTRY POINT (Enhanced)
+   🔹 15. BROADCAST MESSAGE CHECKER (NEW)
+   ============================================================ */
+
+/**
+ * Initialize broadcast checker for all pages
+ * Checks for new broadcast messages every 30 seconds
+ * Shows browser notifications when new broadcasts are available
+ */
+function initializeBroadcastChecker() {
+    // Only load simple broadcast checking on non-messages pages
+    if (!window.location.pathname.includes('messages.html')) {
+        console.log('🔔 Initializing broadcast checker for all pages');
+        
+        // Check immediately
+        checkForBroadcasts();
+        
+        // Then check every 30 seconds
+        setInterval(checkForBroadcasts, 30000);
+    }
+}
+
+/**
+ * Check for new broadcast messages
+ * Shows browser notifications when available
+ */
+async function checkForBroadcasts() {
+    try {
+        const response = await fetch('../backend/api/check_broadcasts.php', {
+            credentials: 'include',
+            cache: 'no-store'
+        });
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        
+        if (data.success && data.has_new && data.latest_broadcast) {
+            const broadcast = data.latest_broadcast;
+            const broadcastId = broadcast.broadcast_id || broadcast.message_id;
+            
+            if (!broadcastId) return;
+
+            // Check local storage to avoid duplicate notifications
+            const seenBroadcasts = JSON.parse(localStorage.getItem('pensionsgo_seen_broadcasts') || '[]');
+            
+            if (!seenBroadcasts.includes(String(broadcastId))) {
+                // Show browser notification if permitted
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    showBroadcastNotification(broadcast);
+                } else if (Notification.permission === 'default') {
+                    // Request permission on first broadcast
+                    requestNotificationPermission();
+                }
+                
+                // Store in local storage to prevent duplicates
+                seenBroadcasts.push(String(broadcastId));
+                localStorage.setItem('pensionsgo_seen_broadcasts', JSON.stringify(seenBroadcasts));
+            }
+        }
+    } catch (error) {
+        console.log('Broadcast check failed:', error);
+    }
+}
+
+/**
+ * Show browser notification for new broadcast
+ * @param {Object} broadcast - Broadcast message data
+ */
+function showBroadcastNotification(broadcast) {
+    const notification = new Notification('📢 New Broadcast Message', {
+        body: `${broadcast.subject}\nFrom: ${broadcast.sender_name}`,
+        icon: '../frontend/images/icon.png',
+        tag: 'broadcast-' + (broadcast.broadcast_id || broadcast.message_id),
+        requireInteraction: true
+    });
+    
+    // Handle notification click - redirect to messages page
+    notification.onclick = function() {
+        window.focus();
+        window.location.href = 'messages.html';
+        notification.close();
+    };
+    
+    // Auto-close after 10 seconds
+    setTimeout(() => {
+        notification.close();
+    }, 10000);
+}
+
+/**
+ * Request browser notification permission
+ * Only requests when user interacts with the page
+ */
+function requestNotificationPermission() {
+    // Only request on user interaction to avoid annoying popups
+    const requestPermission = () => {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('🔔 Notification permission granted');
+            }
+        });
+        // Remove the event listener after first interaction
+        document.removeEventListener('click', requestPermission);
+    };
+    
+    // Request permission on first user interaction
+    document.addEventListener('click', requestPermission, { once: true });
+}
+
+/* ============================================================
+   🔹 16. APP INITIALIZATION ENTRY POINT (Enhanced)
    ============================================================ */
 function initializeApplication() {
     console.log('🚀 Initializing PensionsGo Application...');
@@ -563,6 +674,14 @@ function initializeApplication() {
         initializeSessionMonitoring();
         initializeActivityListeners();
         
+        // NEW: Initialize broadcast message checking for all pages
+        initializeBroadcastChecker();
+        
+        // Request notification permission if not already granted/denied
+        if ('Notification' in window && Notification.permission === 'default') {
+            requestNotificationPermission();
+        }
+        
         // Do initial session check
         verifyActiveSession().then(isValid => {
             if (!isValid) {
@@ -576,7 +695,7 @@ function initializeApplication() {
 }
 
 /* ============================================================
-   🔹 16. DOM READY EVENT
+   🔹 17. DOM READY EVENT
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   AppLoader.markDOMReady();
@@ -592,3 +711,14 @@ setTimeout(() => {
   if (!AppLoader.isHeaderLoaded) AppLoader.markHeaderLoaded();
   if (!AppLoader.isFooterLoaded) AppLoader.markFooterLoaded();
 }, 8000);
+
+// Export functions for potential use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    initializeApplication,
+    initializeBroadcastChecker,
+    checkForBroadcasts,
+    getRoleBasedRedirectUrl,
+    verifyActiveSession
+  };
+}
