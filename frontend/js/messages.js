@@ -3,6 +3,11 @@
 // Complete Messages module (Inbox/Sent/Broadcast, Compose, Attachments, Actions)
 // ============================================================================
 
+// Redirect if not logged in
+if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+  window.location.replace('login.html');
+}
+
 class MessagesApp {
   constructor() {
     // API endpoints
