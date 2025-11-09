@@ -73,7 +73,7 @@ window.logoutUser = async function logoutUser() {
 };
 
 // ====================================================================
-// Event Delegation
+// Event Delegation - FIXED: Profile dropdown menu item interactions
 // ====================================================================
 function initializeEventDelegation() {
   let lastTouchTime = 0;
@@ -102,6 +102,15 @@ function initializeEventDelegation() {
     const profileToggle = document.getElementById("profileDropdownToggle");
     const profilePicture = document.getElementById("profilePicture");
 
+    // Check if click is on profile dropdown menu items - MOVED TO TOP
+    const profileMenuItem = e.target.closest && e.target.closest('#profileDropdownMenu a');
+    if (profileMenuItem) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleProfileMenuItemClick(profileMenuItem);
+      return;
+    }
+
     if (menuToggle && (e.target === menuToggle || menuToggle.contains(e.target))) {
       e.preventDefault();
       e.stopPropagation();
@@ -128,7 +137,32 @@ function initializeEventDelegation() {
 }
 
 // ====================================================================
-// Outside Click / Escape
+// Profile Dropdown Menu Item Handler - NEW
+// ====================================================================
+function handleProfileMenuItemClick(menuItem) {
+  if (!menuItem) return;
+  
+  console.log("📱 Profile dropdown menu item clicked:", menuItem.textContent.trim());
+  
+  if (menuItem.id === "logoutBtn") {
+    closeProfileMenu();
+    setTimeout(showLogoutConfirmationModal, 150);
+  } else if (menuItem.href && menuItem.href !== "#" && menuItem.href !== "javascript:void(0)") {
+    // Close menu first, then navigate for better UX
+    closeProfileMenu();
+    
+    // Use setTimeout to ensure the menu closes before navigation
+    setTimeout(() => {
+      window.location.href = menuItem.href;
+    }, 200);
+  } else {
+    // Handle other menu items if needed
+    closeProfileMenu();
+  }
+}
+
+// ====================================================================
+// Outside Click / Escape - UPDATED: Don't close if clicking on profile menu items
 // ====================================================================
 function handleOutsideClick(e) {
   const menuToggle = document.getElementById("menuToggle");
@@ -137,6 +171,10 @@ function handleOutsideClick(e) {
   const profileMenu = document.getElementById("profileDropdownMenu");
 
   if (!dropdownMenu || !profileMenu) return;
+
+  // Check if click is on profile menu item
+  const isProfileMenuItem = e.target.closest && e.target.closest('#profileDropdownMenu a');
+  if (isProfileMenuItem) return; // Don't close if clicking on menu items
 
   const isOutsideMainMenu =
     !menuToggle.contains(e.target) && !dropdownMenu.contains(e.target);
@@ -154,6 +192,14 @@ function handleOutsideTouch(e) {
   const profileMenu = document.getElementById("profileDropdownMenu");
 
   if (!dropdownMenu || !profileMenu) return;
+
+  // Check if touch is on profile menu item
+  const isProfileMenuItem = e.target.closest && e.target.closest('#profileDropdownMenu a');
+  if (isProfileMenuItem) {
+    // For touch devices, prevent default but allow the click to propagate
+    e.preventDefault();
+    return;
+  }
 
   const isOutsideMainMenu =
     !menuToggle.contains(e.target) && !dropdownMenu.contains(e.target);
@@ -378,36 +424,12 @@ async function loadUnreadMessageCount() {
 
 function loadTaskCount() {}
 
-
-
 // ====================================================================
-// Menu Links & Logout Modal
+// Menu Links & Logout Modal - SIMPLIFIED
 // ====================================================================
 function initializeMenuLinks() {
-  setupProfileDropdownLinks();
-}
-
-function setupProfileDropdownLinks() {
-  const profileLinks = document.querySelectorAll("#profileDropdownMenu a");
-  profileLinks.forEach((link) => {
-    const newLink = link.cloneNode(true);
-    link.parentNode.replaceChild(newLink, link);
-
-    newLink.addEventListener("click", function (e) {
-      console.log("📱 Profile dropdown link clicked:", this.textContent);
-      if (this.id === "logoutBtn") {
-        e.preventDefault();
-        e.stopPropagation();
-        closeProfileMenu();
-        setTimeout(showLogoutConfirmationModal, 150);
-      } else if (this.href && this.href !== "#" && this.href !== "javascript:void(0)") {
-        e.preventDefault();
-        closeProfileMenu();
-        setTimeout(() => (window.location.href = this.href), 200);
-      }
-    });
-  });
-  console.log("✅ Profile dropdown links configured");
+  // The event delegation now handles profile menu items directly
+  console.log("✅ Profile dropdown menu links configured via event delegation");
 }
 
 function showLogoutConfirmationModal() {
