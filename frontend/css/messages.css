@@ -1622,9 +1622,11 @@
 /* ================= RESPONSIVE DESIGN ================= */
 @media (max-width: 768px) {
     .messages-container {
+        display: flex;
         flex-direction: column;
         height: calc(100vh - 120px) !important;
         margin: 0.5rem;
+        overflow: hidden !important;
     }
 
     .messages-sidebar {
@@ -1667,10 +1669,24 @@
         right: 0.5rem;
     }
 
+    /* Ensure list header stays fixed while content scrolls */
     .list-header {
-        flex-direction: column;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        background: var(--card-bg);
+        z-index: 10;
+        box-shadow: 0 2px 4px var(--shadow-light);
+    }
+
+    /* Ensure pagination stays at bottom */
+    .list-footer {
+        flex-shrink: 0;
+        position: sticky;
+        bottom: 0;
+        background: var(--card-bg);
+        z-index: 10;
+        box-shadow: 0 -2px 4px var(--shadow-light);
     }
 
     .list-header h3 {
@@ -1726,14 +1742,59 @@
         margin: 0.25rem 0;
     }
 
-    /* Ensure message detail has enough bottom space */
+    /* Message detail view scrolling */
+    .message-detail-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden !important;
+        min-height: 0;
+    }
+
     .message-detail {
-        padding-bottom: 4rem;
+        flex: 1;
+        overflow-y: auto !important;
+        max-height: none !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 2rem;
+        padding-bottom: 4rem; /* Ensure message detail has enough bottom space */
     }
 
     .messages-list,
     .message-detail {
+        flex: 1;
+        overflow-y: auto !important;
+        max-height: none !important;
         -webkit-overflow-scrolling: touch !important;
+        overflow-x: hidden !important;
+        min-height: 0;
+    }
+
+    .messages-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden !important;
+        min-height: 0; /* Crucial for flexbox scrolling */
+    }
+
+    .messages-list-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden !important;
+        min-height: 0;
+    }
+
+    /* Fix for iOS Safari */
+    @supports (-webkit-touch-callout: none) {
+        .messages-list {
+            height: 100% !important;
+        }
+        
+        .message-detail {
+            height: 100% !important;
+        }
     }
 }
 
@@ -1778,13 +1839,58 @@
         font-size: 0.65rem;
     }
 
+    .messages-list {
+        padding-bottom: 1rem;
+    }
+
     .message-item {
         padding: 0.75rem 1rem;
+        min-height: 80px;
     }
 
     .message-avatar {
         width: 36px;
         height: 36px;
+    }
+
+     .message-sender {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .message-subject {
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .message-preview {
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .message-meta {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-attachment,
+    .meta-recipients,
+    .meta-broadcast,
+    .meta-deleted {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
     }
 }
 

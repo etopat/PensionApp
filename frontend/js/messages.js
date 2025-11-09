@@ -588,7 +588,13 @@ class MessagesApp {
       <div class="recipients-info">
         <strong>Recipients</strong>
         <ul>
-          ${recipients.map(r => `<li>${this.escapeHtml(r.userName)} ${r.is_read ? `<small>— read at ${new Date(r.read_at).toLocaleString()}</small>` : '<small>— unread</small>'}</li>`).join("")}
+          ${recipients.map(r => {
+              const readTime = r.read_at ? new Date(r.read_at) : null;
+              const readTimeFormatted = readTime ? 
+                  `${readTime.getDate()} ${readTime.toLocaleDateString('en-US', { month: 'short' })} ${readTime.getFullYear()}` : 
+                  'unread';
+              return `<li>${this.escapeHtml(r.userName)} <small>— ${readTimeFormatted}</small></li>`;
+          }).join("")}
         </ul>
       </div>
     ` : "";
@@ -622,6 +628,9 @@ class MessagesApp {
     `
     : "";
 
+    const sentDate = new Date(m.created_at);
+    const sentDateFormatted = `${sentDate.getDate()} ${sentDate.toLocaleDateString('en-US', { month: 'short' })} ${sentDate.getFullYear()}`;
+
     container.innerHTML = `
       <div class="detail-header-info">
         <div class="sender-info">
@@ -629,7 +638,7 @@ class MessagesApp {
           <div class="sender-details">
             <strong>${this.escapeHtml(m.sender_name)}</strong>
             <div>${this.escapeHtml(m.sender_role || "")} • ${this.escapeHtml(m.sender_email || "")}</div>
-            <div>Sent: ${new Date(m.created_at).toLocaleString()}</div>
+            <div>Sent: ${sentDateFormatted}</div>
           </div>
         </div>
         ${recipientsHtml}
@@ -718,6 +727,13 @@ class MessagesApp {
       const diffHours = Math.floor(diffMins / 60);
       const diffDays = Math.floor(diffHours / 24);
       
+      // Always return in "d mmm yyyy" format
+      const day = d.getDate();
+      const month = d.toLocaleDateString('en-US', { month: 'short' });
+      const year = d.getFullYear();
+      
+      return `${day} ${month} ${year}`;
+
       if (diffSecs < 60) {
           return "Just now";
       } else if (diffMins < 60) {
