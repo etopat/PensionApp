@@ -1,6 +1,6 @@
 // ============================================================================
 // frontend/js/messages.js
-// Complete Messages module (Inbox/Sent/Broadcast, Compose, Attachments, Actions)
+// Complete Messages module with Enhanced Modal System
 // ============================================================================
 
 // Redirect if not logged in
@@ -20,7 +20,8 @@ class MessagesApp {
       getUnreadCount: "../backend/api/get_unread_count.php",
       checkBroadcasts: "../backend/api/check_broadcasts.php",
       getUsers: "../backend/api/get_message_users.php",
-      markBroadcastSeen: "../backend/api/mark_broadcast_seen.php"
+      markBroadcastSeen: "../backend/api/mark_broadcast_seen.php",
+      submitFeedback: "../backend/api/submit_feedback.php"
     };
 
     // UI & state
@@ -56,6 +57,12 @@ class MessagesApp {
       window.MessagesAppInstance = this;
       this.init();
     }, { once: true });
+
+    // Clean up intervals when page unloads
+    window.addEventListener('beforeunload', () => {
+        this.stopRealTimeUpdates();
+        this.stopBroadcastChecker();
+    });
   }
 
   // -----------------------
@@ -76,6 +83,7 @@ class MessagesApp {
     this.startBroadcastChecker();     // broadcast checks
     await this.updateUnreadBadges();  // header + sidebar badges
     this.setupActionButtons();        // reply/forward/delete/mark unread
+    this.initRealTimeUpdates();       // Initialize real-time time updates
     // Load storage information
     await this.loadStorageInfo();
     console.log("MessagesApp initialized - User Role:", this.userRole);
@@ -180,6 +188,8 @@ class MessagesApp {
     const dropdown = document.getElementById('recipientsDropdown');
     const selectedContainer = document.getElementById('selectedRecipients');
     const hiddenSelect = document.getElementById('messageRecipients');
+    const recipientsSearch = document.getElementById('recipientsSearch');
+    const recipientsContainer = document.querySelector('.recipients-container');
 
     if (!searchInput || !dropdown || !selectedContainer) return;
 
@@ -199,6 +209,19 @@ class MessagesApp {
         dropdown.classList.add('hidden');
       }
     });
+
+    if (recipientsSearch && recipientsContainer) {
+      recipientsSearch.addEventListener('focus', () => {
+          recipientsContainer.classList.add('dropdown-open');
+      });
+      
+      recipientsSearch.addEventListener('blur', () => {
+          // Small delay to allow for click events
+          setTimeout(() => {
+              recipientsContainer.classList.remove('dropdown-open');
+          }, 200);
+      });
+    }
   }
 
   filterRecipients(query = '') {
@@ -376,12 +399,14 @@ class MessagesApp {
     container.querySelectorAll('.file-name-input').forEach(input => {
       input.addEventListener('change', (e) => {
         const fileId = e.target.dataset.fileId;
+        const fileObj = this.selectedFiles.find(f => f.id === fileId);
         const newName = e.target.value.trim() || fileObj.file.name;
         this.updateFileName(fileId, newName);
       });
 
       input.addEventListener('blur', (e) => {
         const fileId = e.target.dataset.fileId;
+        const fileObj = this.selectedFiles.find(f => f.id === fileId);
         const newName = e.target.value.trim() || fileObj.file.name;
         this.updateFileName(fileId, newName);
       });
@@ -398,7 +423,7 @@ class MessagesApp {
   }
 
   // -----------------------
-  // MESSAGES: list & pagination - FIXED: Broadcast sender profile pictures
+  // MESSAGES: list & pagination
   // -----------------------
   async loadMessages(type = this.currentType, page = this.currentPage) {
     // All users can access broadcast view (only sending is restricted)
@@ -407,7 +432,7 @@ class MessagesApp {
     const list = document.getElementById("messagesList");
     if (!list) return;
 
-    list.innerHTML = `<div class="loading">Loading...</div>`;
+    list.innerHTML = `<div class="loading">Loading messages...</div>`;
     try {
       const url = `${this.API.getMessages}?type=${encodeURIComponent(type)}&page=${page}&limit=${this.limit}`;
       const res = await fetch(url, { credentials: "include" });
@@ -443,64 +468,72 @@ class MessagesApp {
   }
 
   // Sent message display logic
-    messageRowHtml(m) {
-        const unread = (m.is_read === "0" || m.is_read === false || m.is_read === 0) && this.currentType === "inbox";
-        const unreadClass = unread ? "unread" : "";
-        const urgent = m.is_urgent ? `<i class="fas fa-exclamation-circle urgent-icon" title="Urgent"></i>` : "";
-        const preview = (m.preview || "").length > 220 ? `${m.preview.slice(0, 220)}...` : (m.preview || "");
+  messageRowHtml(m) {
+    const unread = (m.is_read === "0" || m.is_read === false || m.is_read === 0) && this.currentType === "inbox";
+    const unreadClass = unread ? "unread" : "";
+    const urgent = m.is_urgent ? `<i class="fas fa-exclamation-circle urgent-icon" title="Urgent"></i>` : "";
+    const preview = (m.preview || "").length > 220 ? `${m.preview.slice(0, 220)}...` : (m.preview || "");
+    
+    let avatarSrc, displayName;
+    
+    if (this.currentType === "sent") {
+        // Handle recipient information
+        const totalRecipients = m.total_recipients || 1;
+        const activeRecipients = m.active_recipients || 0;
         
-        let avatarSrc, displayName;
+        // Use the primary recipient name (will show deleted recipients if no active ones)
+        const primaryName = m.primary_recipient_name || 'Unknown';
         
-        if (this.currentType === "sent") {
-            // Handle recipient information
-            const totalRecipients = m.total_recipients || 1;
-            const activeRecipients = m.active_recipients || 0;
-            
-            // Use the primary recipient name (will show deleted recipients if no active ones)
-            const primaryName = m.primary_recipient_name || 'Unknown';
-            
-            if (activeRecipients === 0) {
-                // All recipients deleted
-                displayName = `To: ${primaryName} (deleted)`;
-            } else if (totalRecipients === 1) {
-                // Single recipient
-                displayName = `To: ${primaryName}`;
-            } else {
-                // Multiple recipients
-                displayName = `To: ${primaryName} + ${totalRecipients - 1} more`;
-            }
-            
-            avatarSrc = this.getUserImage(m.recipient_photo);
-            
-        } else if (this.currentType === "broadcast") {
-            avatarSrc = this.getUserImage(m.sender_photo);
-            displayName = m.sender_name || 'Unknown';
+        if (activeRecipients === 0) {
+            // All recipients deleted
+            displayName = `To: ${primaryName} (deleted)`;
+        } else if (totalRecipients === 1) {
+            // Single recipient
+            displayName = `To: ${primaryName}`;
         } else {
-            // inbox
-            avatarSrc = this.getUserImage(m.sender_photo);
-            displayName = m.sender_name || 'Unknown';
+            // Multiple recipients
+            displayName = `To: ${primaryName} + ${totalRecipients - 1} more`;
         }
-
-        return `
-        <div class="message-item ${unreadClass} ${m.is_urgent ? "urgent" : ""}" data-message-id="${m.message_id}">
-            <img src="${avatarSrc}" alt="${this.escapeHtml(displayName)}" class="message-avatar" />
-            <div class="message-content">
-            <div class="message-header">
-                <h4 class="message-sender">${this.escapeHtml(displayName)}</h4>
-                <span class="message-time">${this.formatTime(m.created_at)}</span>
-            </div>
-            <h5 class="message-subject">${urgent} ${this.escapeHtml(m.subject || "(No subject)")}</h5>
-            <p class="message-preview">${this.escapeHtml(preview)}</p>
-            <div class="message-meta">
-                ${m.attachment_count > 0 ? `<span class="meta-attachment"><i class="fas fa-paperclip"></i> ${m.attachment_count}</span>` : ""}
-                ${this.currentType === "sent" && m.total_recipients > 1 ? `<span class="meta-recipients">To: ${m.total_recipients} recipients</span>` : ""}
-                ${this.currentType === "sent" && m.active_recipients === 0 ? `<span class="meta-deleted"><i class="fas fa-trash"></i> All recipients deleted</span>` : ""}
-                ${this.currentType === "broadcast" ? `<span class="meta-broadcast"><i class="fas fa-bullhorn"></i> Broadcast</span>` : ""}
-            </div>
-            </div>
-        </div>
-        `;
+        
+        avatarSrc = this.getUserImage(m.recipient_photo);
+        
+    } else if (this.currentType === "broadcast") {
+        avatarSrc = this.getUserImage(m.sender_photo);
+        displayName = m.sender_name || 'Unknown';
+    } else {
+        // inbox
+        avatarSrc = this.getUserImage(m.sender_photo);
+        displayName = m.sender_name || 'Unknown';
     }
+
+    return `
+    <div class="message-item ${unreadClass} ${m.is_urgent ? "urgent" : ""}" data-message-id="${m.message_id}" data-timestamp="${m.created_at}">
+        <img src="${avatarSrc}" alt="${this.escapeHtml(displayName)}" class="message-avatar" />
+        <div class="message-content">
+        <div class="message-header">
+            <h4 class="message-sender">${this.escapeHtml(displayName)}</h4>
+            <span class="message-time" data-timestamp="${m.created_at}">${this.formatTime(m.created_at)}</span>
+        </div>
+        <h5 class="message-subject">${urgent} ${this.escapeHtml(m.subject || "(No subject)")}</h5>
+        <p class="message-preview">${this.escapeHtml(preview)}</p>
+        <div class="message-meta">
+            ${m.attachment_count > 0 ? `<span class="meta-attachment"><i class="fas fa-paperclip"></i> ${m.attachment_count}</span>` : ""}
+            ${this.currentType === "sent" && m.total_recipients > 1 ? `<span class="meta-recipients">To: ${m.total_recipients} recipients</span>` : ""}
+            ${this.currentType === "sent" && m.active_recipients === 0 ? `<span class="meta-deleted"><i class="fas fa-trash"></i> All recipients deleted</span>` : ""}
+            ${this.currentType === "broadcast" ? `<span class="meta-broadcast"><i class="fas fa-bullhorn"></i> Broadcast</span>` : ""}
+        </div>
+        </div>
+    </div>
+    `;
+  }
+
+  // Clean up interval when needed
+  stopRealTimeUpdates() {
+      if (this.timeUpdateInterval) {
+          clearInterval(this.timeUpdateInterval);
+          this.timeUpdateInterval = null;
+      }
+  }
 
   renderPagination(pagination = { page: 1, pages: 1 }) {
     const container = document.getElementById("pagination");
@@ -540,7 +573,7 @@ class MessagesApp {
       await this.loadMessages(this.currentType, this.currentPage);
     } catch (err) {
       console.error("showMessageDetail error", err);
-      this.showNotification("Failed to load message", "error");
+      this.showErrorModal("Load Failed", "Failed to load message details. Please try again.");
     }
   }
 
@@ -613,12 +646,479 @@ class MessagesApp {
     this.updateActionButtons();
   }
 
+  // REAL-TIME TIME UPDATES
+  // -----------------------
+
+  // Initialize real-time time updates
+  initRealTimeUpdates() {
+    // Update times immediately and then every minute
+    this.updateAllMessageTimes();
+    this.timeUpdateInterval = setInterval(() => {
+        this.updateAllMessageTimes();
+    }, 60000); // Update every minute
+
+    // Also update when switching views or loading new messages
+    this.originalLoadMessages = this.loadMessages;
+    this.loadMessages = async (type = this.currentType, page = this.currentPage) => {
+        await this.originalLoadMessages(type, page);
+        this.updateAllMessageTimes();
+    };
+  }
+
+  // Update all message times in the current list
+  updateAllMessageTimes() {
+      const messageItems = document.querySelectorAll('.message-item');
+      messageItems.forEach(item => {
+          const timeElement = item.querySelector('.message-time');
+          const messageId = item.dataset.messageId;
+          
+          if (timeElement && messageId) {
+              // Find the message data to get the original timestamp
+              const message = this.messages.find(m => m.message_id == messageId);
+              if (message && message.created_at) {
+                  const newTime = this.formatTime(message.created_at);
+                  if (timeElement.textContent !== newTime) {
+                      timeElement.textContent = newTime;
+                  }
+              }
+          }
+      });
+
+      // Also update detail view if open
+      this.updateDetailViewTime();
+  }
+
+  // Update time in detail view if open
+  updateDetailViewTime() {
+      const detailView = document.getElementById('messageDetailView');
+      if (!detailView || !detailView.classList.contains('hidden') || !this.selectedMessage) {
+          return;
+      }
+
+      const timeElements = detailView.querySelectorAll('.message-time, .sender-details div:last-child');
+      timeElements.forEach(element => {
+          if (this.selectedMessage && this.selectedMessage.message) {
+              const newTime = this.formatTime(this.selectedMessage.message.created_at);
+              if (element.textContent.includes('Sent:') && !element.textContent.includes(newTime)) {
+                  element.textContent = `Sent: ${new Date(this.selectedMessage.message.created_at).toLocaleString()}`;
+              }
+          }
+      });
+  }
+
+  // Enhanced formatTime method with more precise calculations
+  formatTime(ts) {
+      if (!ts) return "";
+      
+      const d = new Date(ts);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      
+      if (diffSecs < 60) {
+          return "Just now";
+      } else if (diffMins < 60) {
+          return `${diffMins}m ago`;
+      } else if (diffHours < 24) {
+          return `${diffHours}h ago`;
+      } else if (diffDays < 7) {
+          return `${diffDays}d ago`;
+      } else {
+          // For older dates, show actual date but in a shorter format
+          const isSameYear = d.getFullYear() === now.getFullYear();
+          if (isSameYear) {
+              return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          } else {
+              return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+          }
+      }
+  }
+
   formatMessageText(text) {
     return this.escapeHtml(text).replace(/\n/g, "<br>");
   }
 
+
+
   // -----------------------
-  // COMPOSE / SEND - Only broadcast sending restricted to admins
+  // COMPREHENSIVE MODAL SYSTEM
+  // -----------------------
+  showModal(options) {
+    // Remove any existing modal
+    const existingModal = document.querySelector('.modal-system-overlay');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const {
+        type = 'info',
+        title = '',
+        message = '',
+        html = '',
+        actions = [],
+        onClose = null,
+        onConfirm = null,
+        onCancel = null,
+        showCloseButton = true,
+        closeOnOverlay = true
+    } = options;
+
+    const icons = {
+        error: 'fas fa-exclamation-circle',
+        success: 'fas fa-check-circle',
+        info: 'fas fa-info-circle',
+        warning: 'fas fa-exclamation-triangle',
+        confirm: 'fas fa-question-circle',
+        feedback: 'fas fa-comment-alt'
+    };
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-system-overlay';
+    modal.innerHTML = `
+        <div class="modal-system">
+            <div class="modal-header ${type}">
+                <i class="modal-icon ${icons[type]}"></i>
+                <h3 class="modal-title">${this.escapeHtml(title)}</h3>
+            </div>
+            <div class="modal-content">
+                ${message ? `<p class="modal-message ${options.center ? 'center' : ''}">${this.escapeHtml(message)}</p>` : ''}
+                ${html || ''}
+            </div>
+            <div class="modal-actions ${actions.length === 1 ? 'single' : 'dual'}">
+                ${actions.map(action => `
+                    <button class="modal-btn ${action.type || 'secondary'}" 
+                            ${action.id ? `id="${action.id}"` : ''}
+                            ${action.disabled ? 'disabled' : ''}>
+                        ${action.icon ? `<i class="${action.icon}"></i>` : ''}
+                        ${this.escapeHtml(action.label)}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+
+    // Add event listeners
+    const closeModal = (result = false) => {
+        modal.remove();
+        document.removeEventListener('keydown', handleEscape);
+        if (onClose) onClose(result);
+    };
+
+    const handleEscape = (e) => {
+        if (e.key === 'Escape' && showCloseButton) {
+            closeModal(false);
+            if (onCancel) onCancel();
+        }
+    };
+
+    // Action button handlers
+    actions.forEach(action => {
+        if (action.id) {
+            const btn = document.getElementById(action.id);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    if (action.handler) {
+                        action.handler();
+                    }
+                    if (action.close !== false) {
+                        closeModal(true);
+                    }
+                });
+            }
+        }
+    });
+
+    // Overlay click handler
+    if (closeOnOverlay) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal && showCloseButton) {
+                closeModal(false);
+                if (onCancel) onCancel();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', handleEscape);
+
+    // Focus the first button for accessibility
+    setTimeout(() => {
+        const firstBtn = modal.querySelector('.modal-btn');
+        if (firstBtn) firstBtn.focus();
+    }, 100);
+
+    return {
+        close: () => closeModal(false),
+        update: (newOptions) => {
+            // Implementation for dynamic modal updates
+        }
+    };
+  }
+
+  // Specific modal methods
+  showConfirmationModal(options) {
+    const {
+        title = 'Confirm Action',
+        message = 'Are you sure you want to proceed?',
+        confirmText = 'Confirm',
+        cancelText = 'Cancel',
+        danger = false,
+        details = null,
+        ...rest
+    } = options;
+
+    let detailsHtml = '';
+    if (details && typeof details === 'object') {
+        detailsHtml = `
+            <div class="confirmation-details">
+                ${Object.entries(details).map(([key, value]) => `
+                    <div class="confirmation-item">
+                        <span class="confirmation-label">${this.escapeHtml(key)}:</span>
+                        <span class="confirmation-value">${this.escapeHtml(value)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // Create the complete HTML content
+    const messageHtml = `
+        <p class="modal-message">${this.escapeHtml(message)}</p>
+        ${detailsHtml}
+    `;
+
+    return this.showModal({
+        type: 'confirm',
+        title,
+        html: messageHtml, // Use html instead of message
+        actions: [
+            {
+                id: 'modalCancel',
+                label: cancelText,
+                type: 'secondary',
+                handler: rest.onCancel
+            },
+            {
+                id: 'modalConfirm',
+                label: confirmText,
+                type: danger ? 'danger' : 'primary',
+                handler: rest.onConfirm
+            }
+        ],
+        ...rest
+    });
+  }
+
+  showFeedbackModal() {
+      const feedbackHtml = `
+          <form class="feedback-form" id="feedbackForm">
+              <div class="feedback-group">
+                  <label for="feedbackType">Feedback Type:</label>
+                  <select id="feedbackType" class="feedback-select" required>
+                      <option value="">Select type...</option>
+                      <option value="bug">Bug Report</option>
+                      <option value="suggestion">Suggestion</option>
+                      <option value="compliment">Compliment</option>
+                      <option value="other">Other</option>
+                  </select>
+              </div>
+              <div class="feedback-group">
+                  <label for="feedbackMessage">Your Feedback:</label>
+                  <textarea id="feedbackMessage" class="feedback-textarea" 
+                          placeholder="Please provide your feedback here..." 
+                          maxlength="1000" required></textarea>
+                  <div class="feedback-char-count" id="charCount">0/1000</div>
+              </div>
+          </form>
+      `;
+
+      const modal = this.showModal({
+          type: 'feedback',
+          title: 'Send Feedback',
+          html: feedbackHtml,
+          actions: [
+              {
+                  id: 'feedbackCancel',
+                  label: 'Cancel',
+                  type: 'secondary'
+              },
+              {
+                  id: 'feedbackSubmit',
+                  label: 'Submit Feedback',
+                  type: 'primary',
+                  handler: () => this.submitFeedback()
+              }
+          ]
+      });
+
+      // Setup character counter
+      this.setupFeedbackCharCounter();
+      return modal;
+  }
+
+  showSuccessModal(title, message, options = {}) {
+      return this.showModal({
+          type: 'success',
+          title,
+          message,
+          center: true,
+          actions: [
+              {
+                  id: 'successOk',
+                  label: options.buttonText || 'OK',
+                  type: 'primary',
+                  icon: 'fas fa-check'
+              }
+          ],
+          ...options
+      });
+  }
+
+  showErrorModal(title, message, options = {}) {
+      return this.showModal({
+          type: 'error',
+          title,
+          message,
+          center: true,
+          actions: [
+              {
+                  id: 'errorOk',
+                  label: options.buttonText || 'OK',
+                  type: 'primary',
+                  icon: 'fas fa-times'
+              }
+          ],
+          ...options
+      });
+  }
+
+  showWarningModal(title, message, options = {}) {
+      return this.showModal({
+          type: 'warning',
+          title,
+          message,
+          center: true,
+          actions: [
+              {
+                  id: 'warningOk',
+                  label: options.buttonText || 'OK',
+                  type: 'primary',
+                  icon: 'fas fa-exclamation-triangle'
+              }
+          ],
+          ...options
+      });
+  }
+
+  showInfoModal(title, message, options = {}) {
+      return this.showModal({
+          type: 'info',
+          title,
+          message,
+          center: true,
+          actions: [
+              {
+                  id: 'infoOk',
+                  label: options.buttonText || 'OK',
+                  type: 'primary',
+                  icon: 'fas fa-info-circle'
+              }
+          ],
+          ...options
+      });
+  }
+
+  showLoadingModal(title = 'Processing', message = 'Please wait...') {
+      const loadingHtml = `
+          <div class="modal-loading">
+              <div class="modal-spinner"></div>
+              <div class="modal-loading-text">${this.escapeHtml(message)}</div>
+          </div>
+      `;
+
+      return this.showModal({
+          type: 'info',
+          title,
+          html: loadingHtml,
+          actions: [],
+          showCloseButton: false,
+          closeOnOverlay: false
+      });
+  }
+
+  // Feedback submission handler
+  async submitFeedback() {
+      const type = document.getElementById('feedbackType')?.value;
+      const message = document.getElementById('feedbackMessage')?.value;
+      
+      if (!type || !message) {
+          this.showErrorModal('Missing Information', 'Please select a feedback type and provide your message.');
+          return;
+      }
+
+      const loadingModal = this.showLoadingModal('Submitting Feedback', 'Sending your feedback...');
+      
+      try {
+          const response = await fetch(this.API.submitFeedback, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                  type: type,
+                  message: message,
+                  page: 'messages',
+                  timestamp: new Date().toISOString()
+              })
+          });
+          
+          const data = await response.json();
+          
+          loadingModal.close();
+          
+          if (data.success) {
+              this.showSuccessModal('Thank You!', 'Your feedback has been submitted successfully. We appreciate your input!');
+              
+              // Reset form
+              document.getElementById('feedbackType').value = '';
+              document.getElementById('feedbackMessage').value = '';
+              document.getElementById('charCount').textContent = '0/1000';
+          } else {
+              throw new Error(data.message || 'Failed to submit feedback');
+          }
+          
+      } catch (error) {
+          loadingModal.close();
+          this.showErrorModal('Submission Failed', 'Failed to submit feedback. Please try again later.');
+      }
+  }
+
+  // Character counter for feedback
+  setupFeedbackCharCounter() {
+      const messageInput = document.getElementById('feedbackMessage');
+      const charCount = document.getElementById('charCount');
+      
+      if (messageInput && charCount) {
+          messageInput.addEventListener('input', () => {
+              const length = messageInput.value.length;
+              charCount.textContent = `${length}/1000`;
+              
+              charCount.className = 'feedback-char-count';
+              if (length > 900) {
+                  charCount.classList.add('warning');
+              }
+              if (length > 990) {
+                  charCount.classList.add('error');
+              }
+          });
+      }
+  }
+
+  // -----------------------
+  // COMPOSE / SEND
   // -----------------------
   showComposeModal(prefill = {}) {
     const modal = document.getElementById("composeModal");
@@ -630,7 +1130,6 @@ class MessagesApp {
       if (broadcastCheckbox) {
         broadcastCheckbox.checked = false;
         broadcastCheckbox.disabled = true;
-        // Optional: Add a tooltip or hint
         broadcastCheckbox.title = "Broadcast messages can only be sent by administrators";
       }
     }
@@ -671,7 +1170,7 @@ class MessagesApp {
     if (dropdown) dropdown.classList.add('hidden');
   }
 
-    // Storage management methods
+  // Storage management methods
   async loadStorageInfo() {
       try {
           const response = await fetch('../backend/api/get_storage_usage.php', {
@@ -714,11 +1213,11 @@ class MessagesApp {
           
           // Change color based on usage
           if (percentage >= 90) {
-              progressBar.style.backgroundColor = 'var(--urgent-color)'; // Red
+              progressBar.style.backgroundColor = 'var(--urgent-color)';
           } else if (percentage >= 75) {
-              progressBar.style.backgroundColor = 'var(--broadcast-color)'; // Yellow/Orange
+              progressBar.style.backgroundColor = 'var(--broadcast-color)';
           } else {
-              progressBar.style.backgroundColor = 'var(--primary-blue)'; // Blue
+              progressBar.style.backgroundColor = 'var(--primary-blue)';
           }
           
           // Update text
@@ -764,14 +1263,13 @@ class MessagesApp {
       }
   }
 
-
-
   async sendMessage(e) {
     e?.preventDefault();
     const sendBtn = document.querySelector("#composeForm button[type='submit']");
+    const originalBtnHTML = sendBtn?.innerHTML;
+    
     if (sendBtn) {
       sendBtn.disabled = true;
-      sendBtn.dataset.orig = sendBtn.innerHTML;
       sendBtn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Sending...";
     }
 
@@ -841,7 +1339,7 @@ class MessagesApp {
       const result = await res.json();
       if (!result.success) throw new Error(result.message || "Failed to send message");
 
-      this.showNotification(result.message || "Message sent", "success");
+      this.showSuccessModal("Message Sent", "Your message has been sent successfully.");
       this.hideComposeModal();
       await this.loadMessages(this.currentType, 1);
       await this.updateUnreadBadges();
@@ -849,14 +1347,17 @@ class MessagesApp {
       await this.loadStorageInfo();
     } catch (err) {
       console.error("sendMessage error", err);
-      this.showNotification(err.message || "Failed to send", "error");
+      this.showErrorModal("Send Failed", err.message || "Failed to send message. Please try again.");
     } finally {
-      if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = sendBtn.dataset.orig || "Send Message"; }
+      if (sendBtn) { 
+        sendBtn.disabled = false; 
+        sendBtn.innerHTML = originalBtnHTML || "Send Message"; 
+      }
     }
   }
 
   // -----------------------
-  // ACTIONS: reply, forward, delete, mark unread - FIXED: Broadcast deletion for users
+  // ACTIONS
   // -----------------------
   setupActionButtons() {
     document.querySelector(".btn-action[title='Reply']")?.addEventListener("click", () => this.replyToMessage());
@@ -874,16 +1375,13 @@ class MessagesApp {
       const message = this.selectedMessage.message;
       const isBroadcast = message.message_type === 'broadcast';
       
-      // FIXED: Only allow admin to delete broadcast messages
       let canDelete = false;
       let deleteTitle = "Delete";
       
       if (isBroadcast) {
-        // Broadcast messages - only admin can delete
         canDelete = this.userRole === 'admin';
         deleteTitle = canDelete ? "Delete broadcast for all users" : "Only administrators can delete broadcast messages";
       } else {
-        // Regular messages - sender or recipient can delete
         canDelete = message.sender_id === this.userId || 
                    this.selectedMessage.recipients?.some(r => r.userId === this.userId);
         deleteTitle = canDelete ? "Delete" : "You can only delete messages you sent or received";
@@ -905,7 +1403,7 @@ class MessagesApp {
     const message = this.selectedMessage.message;
     
     if (message.message_type === 'broadcast') {
-      this.showNotification("Cannot reply to broadcast messages", "info");
+      this.showInfoModal("Cannot Reply", "You cannot reply to broadcast messages.");
       return;
     }
     
@@ -923,91 +1421,107 @@ class MessagesApp {
   }
 
   async deleteSelectedMessage() {
-    if (!this.selectedMessage) return;
-    
-    const message = this.selectedMessage.message;
-    const isBroadcast = message.message_type === 'broadcast';
-    
-    // FIXED: Enhanced permission checks
-    const isSender = message.sender_id === this.userId;
-    const isRecipient = this.selectedMessage.recipients?.some(r => r.userId === this.userId);
-    
-    let canDelete = false;
-    let confirmMessage = "";
-    
-    if (isBroadcast) {
-      // Broadcast deletion - only admin
-      canDelete = this.userRole === 'admin';
-      confirmMessage = "Are you sure you want to delete this broadcast message? This will remove it for ALL users.";
-    } else {
-      // Regular message deletion
-      canDelete = isSender || isRecipient;
-      confirmMessage = "Are you sure you want to delete this message?";
-    }
-    
-    if (!canDelete) {
-      const errorMsg = isBroadcast 
-        ? "Only administrators can delete broadcast messages" 
-        : "You can only delete messages you sent or received";
-      this.showNotification(errorMsg, "error");
-      return;
-    }
+      if (!this.selectedMessage) return;
+      
+      const message = this.selectedMessage.message;
+      const isBroadcast = message.message_type === 'broadcast';
+      
+      const isSender = message.sender_id === this.userId;
+      const isRecipient = this.selectedMessage.recipients?.some(r => r.userId === this.userId);
+      
+      let canDelete = false;
+      
+      if (isBroadcast) {
+          canDelete = this.userRole === 'admin';
+      } else {
+          canDelete = isSender || isRecipient;
+      }
+      
+      if (!canDelete) {
+          const errorMsg = isBroadcast 
+              ? "Only administrators can delete broadcast messages" 
+              : "You can only delete messages you sent or received";
+          
+          this.showErrorModal("Permission Denied", errorMsg);
+          return;
+      }
 
-    if (!confirm(confirmMessage)) return;
-    
-    const messageId = this.selectedMessage.message.message_id;
-    try {
-      const res = await fetch(this.API.deleteMessage, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ ids: [messageId] })
+      // Use confirmation modal instead of native confirm
+      this.showConfirmationModal({
+          title: isBroadcast ? 'Delete Broadcast Message' : 'Delete Message',
+          message: isBroadcast 
+              ? 'This action will delete this broadcast message for ALL users. This cannot be undone.'
+              : 'Are you sure you want to delete this message? This action cannot be undone.',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+          danger: true,
+          details: {
+              Subject: message.subject || '(No subject)',
+              From: message.sender_name || 'Unknown',
+              Date: new Date(message.created_at).toLocaleString()
+          },
+          onConfirm: async () => {
+              const messageId = this.selectedMessage.message.message_id;
+              const loadingModal = this.showLoadingModal('Deleting', 'Please wait while we delete the message...');
+              
+              try {
+                  const res = await fetch(this.API.deleteMessage, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      credentials: "include",
+                      body: JSON.stringify({ ids: [messageId] })
+                  });
+                  const data = await res.json();
+                  
+                  loadingModal.close();
+                  
+                  if (!data.success) throw new Error(data.message || "Delete failed");
+
+                  const successMessage = isBroadcast 
+                      ? "Broadcast message deleted for all users" 
+                      : "Message deleted successfully";
+                  
+                  this.showSuccessModal("Success", successMessage);
+                  
+                  this.showListView();
+                  await this.loadMessages(this.currentType, 1);
+                  await this.updateUnreadBadges();
+                  this.selectedMessage = null;
+                  
+              } catch (err) {
+                  loadingModal.close();
+                  console.error("deleteSelectedMessage error", err);
+                  this.showErrorModal("Delete Failed", "Failed to delete message: " + err.message);
+              }
+          }
       });
-      const data = await res.json();
-      
-      if (!data.success) throw new Error(data.message || "Delete failed");
-
-      const successMessage = isBroadcast 
-        ? "Broadcast message deleted for all users" 
-        : "Message deleted successfully";
-      
-      this.showNotification(successMessage, "success");
-      this.showListView();
-      
-      // FIXED: Reload messages to ensure UI updates properly
-      await this.loadMessages(this.currentType, 1);
-      await this.updateUnreadBadges();
-      this.selectedMessage = null;
-      
-    } catch (err) {
-      console.error("deleteSelectedMessage error", err);
-      this.showNotification("Failed to delete message: " + err.message, "error");
-    }
   }
 
   // Hide/show MarkAsUnread button based on role
-    setupRoleBasedUI() {
-        const markUnreadBtn = document.querySelector('.mark-unread-btn');
-        if (markUnreadBtn) {
-            if (this.userRole === 'admin') {
-                markUnreadBtn.style.display = 'flex';
-                markUnreadBtn.addEventListener("click", () => this.markSelectedAsUnread());
-            } else {
-                markUnreadBtn.style.display = 'none';
-            }
-        }
-    }
+  setupRoleBasedUI() {
+      const markUnreadBtn = document.querySelector('.mark-unread-btn');
+      if (markUnreadBtn) {
+          if (this.userRole === 'admin') {
+              markUnreadBtn.style.display = 'flex';
+              markUnreadBtn.addEventListener("click", () => this.markSelectedAsUnread());
+          } else {
+              markUnreadBtn.style.display = 'none';
+          }
+      }
+  }
 
   async markSelectedAsUnread() {
     if (!this.selectedMessage) return;
     
     const message = this.selectedMessage.message;
     if (message.message_type === 'broadcast') {
-      this.showNotification("Cannot mark broadcast messages as unread", "info");
+      this.showInfoModal("Cannot Mark Unread", "You cannot mark broadcast messages as unread.");
       return;
     }
     
     const messageId = this.selectedMessage.message.message_id;
+    const loadingModal = this.showLoadingModal('Updating', 'Marking message as unread...');
+    
     try {
       const res = await fetch(this.API.markUnread, {
         method: "POST",
@@ -1016,21 +1530,25 @@ class MessagesApp {
         body: JSON.stringify({ message_id: messageId })
       });
       const data = await res.json();
+      
+      loadingModal.close();
+      
       if (!data.success) throw new Error(data.message || "Mark unread failed");
 
-      this.showNotification("Message marked as unread", "success");
+      this.showSuccessModal("Success", "Message marked as unread");
       this.showListView();
       await this.loadMessages(this.currentType, this.currentPage);
       await this.updateUnreadBadges();
       this.selectedMessage = null;
     } catch (err) {
+      loadingModal.close();
       console.error("markSelectedAsUnread error", err);
-      this.showNotification("Failed to mark unread", "error");
+      this.showErrorModal("Failed", "Failed to mark message as unread");
     }
   }
 
   // -----------------------
-  // UNREAD COUNTS / BADGES - Broadcast badge visible to all
+  // UNREAD COUNTS / BADGES
   // -----------------------
   async updateUnreadBadges() {
     try {
@@ -1057,7 +1575,6 @@ class MessagesApp {
       }
       
       if (broadcastBadge) { 
-        // Broadcast badge visible to all users
         broadcastBadge.textContent = this.unreadCounts.broadcast > 0 ? this.unreadCounts.broadcast : ""; 
         broadcastBadge.style.display = this.unreadCounts.broadcast > 0 ? "flex" : "none"; 
       }
@@ -1067,7 +1584,7 @@ class MessagesApp {
   }
 
   // -----------------------
-  // BROADCAST CHECKING & POPUP - All users receive broadcast notifications
+  // BROADCAST CHECKING & POPUP
   // -----------------------
   startBroadcastChecker() {
     this.checkNewBroadcasts();
@@ -1121,7 +1638,6 @@ class MessagesApp {
 
     document.getElementById("viewBroadcast").addEventListener("click", () => {
       this.dismissBroadcastModal(true);
-      // All users can view broadcasts when clicking "View"
       this.switchView("broadcast");
     });
 
@@ -1245,33 +1761,6 @@ class MessagesApp {
     return `../backend/api/get_msg_image.php?file=${encodeURIComponent(filename)}&type=profile`;
   }
 
-  showNotification(message, type = "info") {
-    const existing = document.querySelectorAll(".message-notification");
-    existing.forEach(n => n.remove());
-    
-    const notification = document.createElement("div");
-    notification.className = `message-notification message-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas ${type==="success"?"fa-check-circle": type==="error"?"fa-exclamation-circle":"fa-info-circle"}"></i>
-            <span>${this.escapeHtml(message)}</span>
-            <button class="notification-close">&times;</button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    notification.querySelector(".notification-close").addEventListener("click", () => {
-      notification.remove();
-    });
-    
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.remove();
-      }
-    }, 5000);
-  }
-
   // -----------------------
   // SEARCH & FILTER
   // -----------------------
@@ -1305,7 +1794,7 @@ class MessagesApp {
   }
 
   // -----------------------
-  // Event listeners wiring - All users can access broadcast view
+  // Event listeners wiring
   // -----------------------
   setupEventListeners() {
     // nav items - All users can click broadcast nav item
@@ -1341,6 +1830,12 @@ class MessagesApp {
     document.getElementById("broadcastAlertModal")?.addEventListener("click", (e) => {
       if (e.target.id === "broadcastAlertModal") this.dismissBroadcastModal(false);
     });
+
+    // Add feedback button if exists
+    const feedbackBtn = document.getElementById('feedbackBtn');
+    if (feedbackBtn) {
+      feedbackBtn.addEventListener('click', () => this.showFeedbackModal());
+    }
 
     // detail action buttons are wired in setupActionButtons() and updateActionButtons()
   }
