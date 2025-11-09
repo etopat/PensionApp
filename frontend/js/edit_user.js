@@ -5,6 +5,11 @@
 // Now includes phone number in international format (+256...)
 // ============================================================
 
+// Redirect if not logged in
+if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+  window.location.replace('login.html');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Handle redirect if no user_id in query
     if (handleProfileMenuRedirect()) return;

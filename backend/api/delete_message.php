@@ -1,9 +1,8 @@
 <?php
 // ============================================================================
 // delete_message.php
-// Purpose: Soft delete message for recipient or fully remove if all deleted
-//          Proper deletion logic for both recipients and senders
-//          Allow senders to delete their own messages
+// Purpose: Proper soft deletion that respects foreign key constraints
+//          Correct deletion order, proper soft delete logic
 // ============================================================================
 
 require_once __DIR__ . '/../config.php';
@@ -26,8 +25,125 @@ if (!is_array($messageIds) || empty($messageIds)) {
     exit;
 }
 
+// Function to delete physical attachment files
+function deleteAttachmentFiles($messageId, $conn) {
+    $deletedFiles = 0;
+    
+    // Get all attachments for this message
+    $stmt = $conn->prepare("
+        SELECT file_path 
+        FROM tb_message_attachments 
+        WHERE message_id = ?
+    ");
+    if ($stmt) {
+        $stmt->bind_param("i", $messageId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        while ($row = $result->fetch_assoc()) {
+            $filePath = __DIR__ . '/../' . $row['file_path'];
+            if (file_exists($filePath)) {
+                if (unlink($filePath)) {
+                    $deletedFiles++;
+                }
+            }
+        }
+        $stmt->close();
+    }
+    
+    return $deletedFiles;
+}
+
+// Function to completely delete a message and all associated data
+function deleteMessageCompletely($messageId, $conn) {
+    $deletedFiles = deleteAttachmentFiles($messageId, $conn);
+    
+    // Delete in correct order to respect foreign key constraints
+    // 1. First delete user broadcast status (if broadcast)
+    $statusStmt = $conn->prepare("
+        DELETE ubs FROM tb_user_broadcast_status ubs
+        INNER JOIN tb_broadcast_messages bm ON ubs.broadcast_id = bm.broadcast_id
+        WHERE bm.message_id = ?
+    ");
+    if ($statusStmt) {
+        $statusStmt->bind_param("i", $messageId);
+        $statusStmt->execute();
+        $statusStmt->close();
+    }
+    
+    // 2. Delete broadcast messages record (if exists)
+    $broadcastStmt = $conn->prepare("DELETE FROM tb_broadcast_messages WHERE message_id = ?");
+    if ($broadcastStmt) {
+        $broadcastStmt->bind_param("i", $messageId);
+        $broadcastStmt->execute();
+        $broadcastStmt->close();
+    }
+    
+    // 3. Delete attachments
+    $attachmentStmt = $conn->prepare("DELETE FROM tb_message_attachments WHERE message_id = ?");
+    if ($attachmentStmt) {
+        $attachmentStmt->bind_param("i", $messageId);
+        $attachmentStmt->execute();
+        $attachmentStmt->close();
+    }
+    
+    // 4. Delete recipients
+    $recipientStmt = $conn->prepare("DELETE FROM tb_message_recipients WHERE message_id = ?");
+    if ($recipientStmt) {
+        $recipientStmt->bind_param("i", $messageId);
+        $recipientStmt->execute();
+        $recipientStmt->close();
+    }
+    
+    // 5. Finally delete the message itself
+    $messageStmt = $conn->prepare("DELETE FROM tb_messages WHERE message_id = ?");
+    if ($messageStmt) {
+        $messageStmt->bind_param("i", $messageId);
+        $messageStmt->execute();
+        $messageStmt->close();
+    }
+    
+    return $deletedFiles;
+}
+
+// Function to check if message should be completely deleted
+function shouldDeleteCompletely($messageId, $conn) {
+    // Check if sender has deleted the message
+    $senderStmt = $conn->prepare("
+        SELECT is_deleted_by_sender 
+        FROM tb_messages 
+        WHERE message_id = ?
+    ");
+    $senderStmt->bind_param("i", $messageId);
+    $senderStmt->execute();
+    $senderResult = $senderStmt->get_result();
+    $senderData = $senderResult->fetch_assoc();
+    $senderStmt->close();
+    
+    $senderDeleted = $senderData['is_deleted_by_sender'] ?? false;
+    
+    // Check if there are any active recipients left
+    $recipientStmt = $conn->prepare("
+        SELECT COUNT(*) as active_recipients
+        FROM tb_message_recipients 
+        WHERE message_id = ? AND is_deleted = FALSE
+    ");
+    $recipientStmt->bind_param("i", $messageId);
+    $recipientStmt->execute();
+    $recipientResult = $recipientStmt->get_result();
+    $recipientData = $recipientResult->fetch_assoc();
+    $recipientStmt->close();
+    
+    $activeRecipients = $recipientData['active_recipients'] ?? 0;
+    
+    // Message should be completely deleted only if:
+    // 1. Sender has deleted it AND there are no active recipients left
+    return ($senderDeleted && $activeRecipients == 0);
+}
+
 try {
     $userId = $_SESSION['userId'];
+    $userRole = $_SESSION['userRole'] ?? '';
     $conn->begin_transaction();
 
     // Validate and cast to integers
@@ -43,11 +159,17 @@ try {
     // Create placeholders for prepared statement
     $placeholders = str_repeat('?,', count($validIds) - 1) . '?';
     
-    // Check if user is recipient or sender
+    // Check message details including broadcast info
     $checkStmt = $conn->prepare("
-        SELECT m.message_id, m.sender_id, mr.recipient_user_id
+        SELECT 
+            m.message_id, 
+            m.sender_id, 
+            m.message_type,
+            mr.recipient_user_id,
+            bm.broadcast_id
         FROM tb_messages m
         LEFT JOIN tb_message_recipients mr ON m.message_id = mr.message_id AND mr.recipient_user_id = ?
+        LEFT JOIN tb_broadcast_messages bm ON m.message_id = bm.message_id
         WHERE m.message_id IN ($placeholders)
     ");
     
@@ -57,46 +179,107 @@ try {
     $messages = $checkStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $checkStmt->close();
 
+    $completelyDeletedMessages = 0;
+    $deletedAttachments = 0;
+
     foreach ($messages as $message) {
         $messageId = $message['message_id'];
+        $isBroadcast = !empty($message['broadcast_id']);
+        $isSender = ($message['sender_id'] === $userId);
         
-        // If user is recipient, soft delete
-        if ($message['recipient_user_id'] === $userId) {
-            $delStmt = $conn->prepare("
-                UPDATE tb_message_recipients
-                SET is_deleted = TRUE, deleted_at = NOW()
-                WHERE message_id = ? AND recipient_user_id = ?
-            ");
-            $delStmt->bind_param("is", $messageId, $userId);
-            $delStmt->execute();
-            $delStmt->close();
+        // Handle broadcast deletion
+        if ($isBroadcast) {
+            if ($userRole === 'admin') {
+                // FIXED: Admin should completely delete broadcast and all associated data
+                $attachmentsDeleted = deleteMessageCompletely($messageId, $conn);
+                $deletedAttachments += $attachmentsDeleted;
+                $completelyDeletedMessages++;
+                
+            } else {
+                // Non-admin users mark broadcast as deleted for themselves only
+                $userBroadcastStmt = $conn->prepare("
+                    INSERT INTO tb_user_broadcast_status (user_id, broadcast_id, is_seen, seen_at, is_deleted)
+                    VALUES (?, ?, TRUE, NOW(), TRUE)
+                    ON DUPLICATE KEY UPDATE is_deleted = TRUE, deleted_at = NOW()
+                ");
+                $userBroadcastStmt->bind_param("si", $userId, $message['broadcast_id']);
+                $userBroadcastStmt->execute();
+                $userBroadcastStmt->close();
+            }
         }
-        
-        // NEW: If user is sender, mark as deleted for sender (allow sender to delete)
-        if ($message['sender_id'] === $userId) {
-            $senderDelStmt = $conn->prepare("
-                UPDATE tb_messages 
-                SET is_deleted = TRUE 
-                WHERE message_id = ? AND sender_id = ?
-            ");
-            $senderDelStmt->bind_param("is", $messageId, $userId);
-            $senderDelStmt->execute();
-            $senderDelStmt->close();
-            
-            // Also remove any broadcast associations if this was a broadcast
-            $broadcastDelStmt = $conn->prepare("
-                UPDATE tb_broadcast_messages 
-                SET is_active = FALSE 
-                WHERE message_id = ?
-            ");
-            $broadcastDelStmt->bind_param("i", $messageId);
-            $broadcastDelStmt->execute();
-            $broadcastDelStmt->close();
+        // Handle regular message deletion
+        else {
+            if ($isSender) {
+                // Sender marks message as deleted for themselves
+                $senderDelStmt = $conn->prepare("
+                    UPDATE tb_messages 
+                    SET is_deleted_by_sender = TRUE, deleted_by_sender_at = NOW()
+                    WHERE message_id = ? AND sender_id = ?
+                ");
+                $senderDelStmt->bind_param("is", $messageId, $userId);
+                $senderDelStmt->execute();
+                
+                if ($senderDelStmt->affected_rows > 0) {
+                    // Check if all recipients have also deleted this message
+                    $checkRecipientsStmt = $conn->prepare("
+                        SELECT COUNT(*) as remaining_recipients
+                        FROM tb_message_recipients 
+                        WHERE message_id = ? AND is_deleted = FALSE
+                    ");
+                    $checkRecipientsStmt->bind_param("i", $messageId);
+                    $checkRecipientsStmt->execute();
+                    $result = $checkRecipientsStmt->get_result();
+                    $recipientData = $result->fetch_assoc();
+                    $checkRecipientsStmt->close();
+                    
+                    $remainingRecipients = $recipientData['remaining_recipients'] ?? 0;
+                    
+                    // If no recipients left, delete completely
+                    if ($remainingRecipients == 0) {
+                        $attachmentsDeleted = deleteMessageCompletely($messageId, $conn);
+                        $deletedAttachments += $attachmentsDeleted;
+                        $completelyDeletedMessages++;
+                    }
+                }
+                $senderDelStmt->close();
+                
+            } else {
+                // Recipient marks message as deleted for themselves ONLY
+                // This should NOT affect the sender's view of the message
+                $recipientDelStmt = $conn->prepare("
+                    UPDATE tb_message_recipients
+                    SET is_deleted = TRUE, deleted_at = NOW()
+                    WHERE message_id = ? AND recipient_user_id = ?
+                ");
+                $recipientDelStmt->bind_param("is", $messageId, $userId);
+                $recipientDelStmt->execute();
+                
+                if ($recipientDelStmt->affected_rows > 0) {
+                    // FIXED: Check if we should delete the message completely
+                    // This should only happen if sender has ALSO deleted AND no other recipients remain
+                    if (shouldDeleteCompletely($messageId, $conn)) {
+                        $attachmentsDeleted = deleteMessageCompletely($messageId, $conn);
+                        $deletedAttachments += $attachmentsDeleted;
+                        $completelyDeletedMessages++;
+                    }
+                }
+                $recipientDelStmt->close();
+            }
         }
     }
 
     $conn->commit();
-    echo json_encode(['success' => true, 'message' => 'Message(s) deleted successfully']);
+    
+    $message = 'Message(s) deleted successfully';
+    if ($completelyDeletedMessages > 0) {
+        $message .= " ($completelyDeletedMessages message(s) completely removed from database)";
+    }
+    if ($deletedAttachments > 0) {
+        $message .= " ($deletedAttachments attachment(s) removed)";
+    }
+    
+    echo json_encode(['success' => true, 'message' => $message]);
+    
 } catch (Exception $e) {
     $conn->rollback();
     error_log("delete_message error: " . $e->getMessage());

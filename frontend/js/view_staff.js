@@ -1,3 +1,8 @@
+// Redirect if not logged in
+if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+  window.location.replace('login.html');
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const staffId = urlParams.get("id");

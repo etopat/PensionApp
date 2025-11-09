@@ -1,7 +1,8 @@
 <?php
 // ============================================================================
 // send_message.php
-// Fixed: Admin-only broadcast, exclude sender from recipients, security validation
+// Admin-only broadcast, exclude sender from recipients, security validation
+// Support for custom file names and enhanced recipient handling
 // ============================================================================
 
 // Enable error reporting for debugging
@@ -19,7 +20,7 @@ if (!isset($_SESSION['userId'])) {
     exit;
 }
 
-function handleFileUpload($file, $messageId, $conn) {
+function handleFileUpload($file, $messageId, $conn, $customName = null) {
     // Check if file upload exists and has no errors
     if (!isset($file['name']) || empty($file['name']) || $file['error'] !== UPLOAD_ERR_OK) {
         return false;
@@ -39,6 +40,9 @@ function handleFileUpload($file, $messageId, $conn) {
     $safeName = preg_replace('/[^a-zA-Z0-9\._-]/', '_', $originalName);
     $fileName = time() . '_' . $safeName;
     $filePath = $uploadDir . $fileName;
+    
+    // Use custom name if provided, otherwise use original name
+    $displayName = $customName ?: $originalName;
     
     // Basic file type validation
     $allowedTypes = [
@@ -84,7 +88,7 @@ function handleFileUpload($file, $messageId, $conn) {
     }
     
     $relativePath = 'uploads/messages/' . $fileName;
-    $stmt->bind_param("issis", $messageId, $originalName, $relativePath, $file['size'], $mimeType);
+    $stmt->bind_param("issis", $messageId, $displayName, $relativePath, $file['size'], $mimeType);
     
     if (!$stmt->execute()) {
         unlink($filePath);
@@ -100,6 +104,7 @@ try {
     
     // Determine input method
     $messageData = [];
+    $fileNames = [];
     
     // Check if it's multipart form data (with files)
     if (!empty($_FILES)) {
@@ -110,6 +115,11 @@ try {
             
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new Exception("Invalid JSON data in form: " . json_last_error_msg());
+            }
+            
+            // Get custom file names if provided
+            if (isset($messageData['fileNames'])) {
+                $fileNames = $messageData['fileNames'];
             }
         } else {
             throw new Exception("No message data found in form");
@@ -155,7 +165,7 @@ try {
         throw new Exception("Subject is too long (max 255 characters)");
     }
 
-    // NEW: Enhanced broadcast permissions validation
+    // Broadcast permissions validation
     if ($isBroadcast) {
         if ($userRole !== 'admin') {
             throw new Exception("Only administrators can send broadcast messages");
@@ -169,7 +179,7 @@ try {
             throw new Exception("Please select at least one recipient.");
         }
         
-        // NEW: Filter out sender from recipients to prevent self-messaging
+        // Filter out sender from recipients to prevent self-messaging
         $recipients = array_filter($recipients, function($recipientId) use ($userId) {
             return $recipientId !== $userId;
         });
@@ -177,6 +187,46 @@ try {
         if (empty($recipients)) {
             throw new Exception("Cannot send message to yourself. Please select other recipients.");
         }
+    }
+
+    // Check storage limit before sending
+    $storageCheckStmt = $conn->prepare("
+        SELECT COALESCE(SUM(att.file_size), 0) as current_usage
+        FROM tb_message_attachments att
+        INNER JOIN tb_messages m ON att.message_id = m.message_id
+        WHERE m.sender_id = ?
+        AND (m.is_deleted_by_sender = FALSE OR m.is_deleted_by_sender IS NULL)
+    ");
+    $storageCheckStmt->bind_param("s", $userId);
+    $storageCheckStmt->execute();
+    $storageResult = $storageCheckStmt->get_result();
+    $storageData = $storageResult->fetch_assoc();
+    $storageCheckStmt->close();
+
+    $currentUsage = $storageData['current_usage'] ?? 0;
+    $maxStorage = 100 * 1024 * 1024; // 300MB
+
+    // Calculate new attachments size if any
+    $newAttachmentsSize = 0;
+    if (!empty($_FILES['attachments'])) {
+        $attachments = $_FILES['attachments'];
+        if (is_array($attachments['name'])) {
+            for ($i = 0; $i < count($attachments['name']); $i++) {
+                if ($attachments['error'][$i] === UPLOAD_ERR_OK) {
+                    $newAttachmentsSize += $attachments['size'][$i];
+                }
+            }
+        } else {
+            if ($attachments['error'] === UPLOAD_ERR_OK) {
+                $newAttachmentsSize += $attachments['size'];
+            }
+        }
+    }
+
+    // Check if new message would exceed storage limit
+    if (($currentUsage + $newAttachmentsSize) > $maxStorage) {
+        $remainingMB = round(($maxStorage - $currentUsage) / (1024 * 1024), 2);
+        throw new Exception("Storage limit exceeded. You have {$remainingMB}MB remaining. Please delete some messages or attachments.");
     }
 
     // Start transaction
@@ -220,7 +270,7 @@ try {
                 throw new Exception("Failed to create broadcast: " . $broadcastStmt->error);
             }
             
-            // NEW: For broadcasts, get all users except sender and add as recipients
+            // For broadcasts, get all users except sender and add as recipients
             $getUsersStmt = $conn->prepare("
                 SELECT userId FROM tb_users 
                 WHERE userId != ? AND userRole != 'pensioner'
@@ -275,7 +325,7 @@ try {
                         continue;
                     }
                     
-                    // NEW: Double-check we're not sending to self
+                    // Double-check we're not sending to self
                     if ($recipientId === $userId) {
                         continue;
                     }
@@ -289,9 +339,10 @@ try {
             }
         }
 
-        // Handle file attachments
+        // Handle file attachments with custom names
         if (!empty($_FILES['attachments'])) {
             $attachments = $_FILES['attachments'];
+            $attachmentNames = $_POST['attachment_names'] ?? [];
             
             if (is_array($attachments['name'])) {
                 for ($i = 0; $i < count($attachments['name']); $i++) {
@@ -303,12 +354,16 @@ try {
                             'error' => $attachments['error'][$i],
                             'size' => $attachments['size'][$i]
                         ];
-                        handleFileUpload($file, $messageId, $conn);
+                        
+                        // Get custom name if available
+                        $customName = $attachmentNames[$i] ?? null;
+                        handleFileUpload($file, $messageId, $conn, $customName);
                     }
                 }
             } else {
                 if ($attachments['error'] === UPLOAD_ERR_OK) {
-                    handleFileUpload($attachments, $messageId, $conn);
+                    $customName = $attachmentNames[0] ?? null;
+                    handleFileUpload($attachments, $messageId, $conn, $customName);
                 }
             }
         }

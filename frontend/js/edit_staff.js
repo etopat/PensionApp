@@ -1,3 +1,8 @@
+// Redirect if not logged in
+if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+  window.location.replace('login.html');
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("staffDueForm");
 

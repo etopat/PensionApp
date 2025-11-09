@@ -35,6 +35,10 @@ class MessagesApp {
     this.broadcastEscapeHandler = null;
     this.userRole = localStorage.getItem('userRole') || '';
     this.userId = sessionStorage.getItem('userId') || '';
+    
+    // Enhanced recipient and file management
+    this.selectedRecipients = [];
+    this.selectedFiles = [];
 
     // Broadcast sound & seen-tracking
     this.BROADCAST_SOUND = "../frontend/audio/notification.mp3";
@@ -66,9 +70,14 @@ class MessagesApp {
     await this.loadUsers();           // populate compose recipients & roles
     await this.loadMessages();        // initial load
     this.setupEventListeners();       // UI controls
+    this.setupRecipientSelection();   // Enhanced recipient selection
+    this.setupFileAttachments();      // Enhanced file attachments
+    this.setupRoleBasedUI();          // Hide/show buttons based on role
     this.startBroadcastChecker();     // broadcast checks
     await this.updateUnreadBadges();  // header + sidebar badges
     this.setupActionButtons();        // reply/forward/delete/mark unread
+    // Load storage information
+    await this.loadStorageInfo();
     console.log("MessagesApp initialized - User Role:", this.userRole);
   }
 
@@ -141,7 +150,6 @@ class MessagesApp {
       opt.dataset.role = u.userRole;
       select.appendChild(opt);
     });
-    select.addEventListener("change", () => this.updateSelectedRecipients());
   }
 
   populateRoleCheckboxes() {
@@ -164,13 +172,229 @@ class MessagesApp {
     `).join("");
   }
 
-  updateSelectedRecipients() {
-    const select = document.getElementById("messageRecipients");
-    const broadcastSection = document.getElementById("broadcastSection");
-    if (!select || !broadcastSection) return;
-    const selected = Array.from(select.selectedOptions).map(o => o.value);
-    if (selected.length > 1) broadcastSection.classList.add("multiple-recipients");
-    else broadcastSection.classList.remove("multiple-recipients");
+  // -----------------------
+  // RECIPIENT SELECTION WITH CHIPS
+  // -----------------------
+  setupRecipientSelection() {
+    const searchInput = document.getElementById('recipientsSearch');
+    const dropdown = document.getElementById('recipientsDropdown');
+    const selectedContainer = document.getElementById('selectedRecipients');
+    const hiddenSelect = document.getElementById('messageRecipients');
+
+    if (!searchInput || !dropdown || !selectedContainer) return;
+
+    this.selectedRecipients = [];
+
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      this.filterRecipients(query);
+    });
+
+    searchInput.addEventListener('focus', () => {
+      this.filterRecipients('');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && !searchInput.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  filterRecipients(query = '') {
+    const dropdown = document.getElementById('recipientsDropdown');
+    const searchInput = document.getElementById('recipientsSearch');
+    
+    if (!dropdown || !searchInput) return;
+
+    const filteredUsers = this.users.filter(user => 
+      user.userName.toLowerCase().includes(query) ||
+      user.userRole.toLowerCase().includes(query) ||
+      user.userEmail.toLowerCase().includes(query)
+    ).filter(user => !this.selectedRecipients.some(selected => selected.userId === user.userId));
+
+    if (filteredUsers.length === 0) {
+      dropdown.innerHTML = '<div class="dropdown-item">No matching users found</div>';
+    } else {
+      dropdown.innerHTML = filteredUsers.map(user => `
+        <div class="dropdown-item" data-user-id="${user.userId}">
+          <img src="${this.getUserImage(user.userPhoto)}" class="dropdown-avatar">
+          <div class="dropdown-user-info">
+            <strong>${this.escapeHtml(user.userName)}</strong>
+            <small>${this.escapeHtml(user.userRole)} • ${this.escapeHtml(user.userEmail)}</small>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    dropdown.classList.remove('hidden');
+
+    // Add click listeners to dropdown items
+    dropdown.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const userId = item.dataset.userId;
+        const user = this.users.find(u => u.userId === userId);
+        if (user) {
+          this.addRecipient(user);
+          searchInput.value = '';
+          dropdown.classList.add('hidden');
+          searchInput.focus();
+        }
+      });
+    });
+  }
+
+  addRecipient(user) {
+    if (this.selectedRecipients.some(r => r.userId === user.userId)) return;
+
+    this.selectedRecipients.push(user);
+    this.renderSelectedRecipients();
+
+    // Update hidden select
+    const hiddenSelect = document.getElementById('messageRecipients');
+    if (hiddenSelect) {
+      const option = document.createElement('option');
+      option.value = user.userId;
+      option.selected = true;
+      hiddenSelect.appendChild(option);
+    }
+
+    this.updateBroadcastSection();
+  }
+
+  removeRecipient(userId) {
+    this.selectedRecipients = this.selectedRecipients.filter(r => r.userId !== userId);
+    this.renderSelectedRecipients();
+
+    // Update hidden select
+    const hiddenSelect = document.getElementById('messageRecipients');
+    if (hiddenSelect) {
+      const option = hiddenSelect.querySelector(`option[value="${userId}"]`);
+      if (option) option.remove();
+    }
+
+    this.updateBroadcastSection();
+  }
+
+  renderSelectedRecipients() {
+    const container = document.getElementById('selectedRecipients');
+    if (!container) return;
+
+    container.innerHTML = this.selectedRecipients.map(recipient => `
+      <div class="recipient-chip">
+        <img src="${this.getUserImage(recipient.userPhoto)}" class="recipient-avatar">
+        <span class="recipient-name">${this.escapeHtml(recipient.userName)}</span>
+        <button type="button" class="recipient-remove" data-user-id="${recipient.userId}">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `).join('');
+
+    // Add remove event listeners
+    container.querySelectorAll('.recipient-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const userId = btn.dataset.userId;
+        this.removeRecipient(userId);
+      });
+    });
+  }
+
+  updateBroadcastSection() {
+    const broadcastSection = document.getElementById('broadcastSection');
+    if (!broadcastSection) return;
+    
+    const selectedCount = this.selectedRecipients.length;
+    if (selectedCount > 1) {
+      broadcastSection.classList.add("multiple-recipients");
+    } else {
+      broadcastSection.classList.remove("multiple-recipients");
+    }
+  }
+
+  // -----------------------
+  // FILE ATTACHMENTS WITH CUSTOM NAMES
+  // -----------------------
+  setupFileAttachments() {
+    const fileInput = document.getElementById('fileAttachments');
+    const selectedContainer = document.getElementById('selectedFiles');
+
+    if (!fileInput || !selectedContainer) return;
+
+    this.selectedFiles = [];
+
+    fileInput.addEventListener('change', (e) => {
+      Array.from(e.target.files).forEach(file => {
+        this.addFile(file);
+      });
+      fileInput.value = ''; // Reset input to allow selecting same file again
+    });
+  }
+
+  addFile(file) {
+    const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    this.selectedFiles.push({
+      id: fileId,
+      file: file,
+      customName: file.name,
+      size: file.size
+    });
+
+    this.renderSelectedFiles();
+  }
+
+  removeFile(fileId) {
+    this.selectedFiles = this.selectedFiles.filter(f => f.id !== fileId);
+    this.renderSelectedFiles();
+  }
+
+  updateFileName(fileId, newName) {
+    const fileObj = this.selectedFiles.find(f => f.id === fileId);
+    if (fileObj) {
+      fileObj.customName = newName;
+    }
+  }
+
+  renderSelectedFiles() {
+    const container = document.getElementById('selectedFiles');
+    if (!container) return;
+
+    container.innerHTML = this.selectedFiles.map(fileObj => `
+      <div class="file-chip">
+        <i class="fas fa-file"></i>
+        <input type="text" class="file-name-input" value="${this.escapeHtml(fileObj.customName)}" 
+               data-file-id="${fileObj.id}" placeholder="Enter file name...">
+        <small>(${this.formatFileSize(fileObj.size)})</small>
+        <button type="button" class="file-remove" data-file-id="${fileObj.id}">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `).join('');
+
+    // Add event listeners for file name changes
+    container.querySelectorAll('.file-name-input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const fileId = e.target.dataset.fileId;
+        const newName = e.target.value.trim() || fileObj.file.name;
+        this.updateFileName(fileId, newName);
+      });
+
+      input.addEventListener('blur', (e) => {
+        const fileId = e.target.dataset.fileId;
+        const newName = e.target.value.trim() || fileObj.file.name;
+        this.updateFileName(fileId, newName);
+      });
+    });
+
+    // Add remove event listeners
+    container.querySelectorAll('.file-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const fileId = btn.dataset.fileId;
+        this.removeFile(fileId);
+      });
+    });
   }
 
   // -----------------------
@@ -218,47 +442,65 @@ class MessagesApp {
     }
   }
 
-  // FIXED: Broadcast sender profile pictures now display correctly
-  messageRowHtml(m) {
-    const unread = (m.is_read === "0" || m.is_read === false || m.is_read === 0) && this.currentType === "inbox";
-    const unreadClass = unread ? "unread" : "";
-    const urgent = m.is_urgent ? `<i class="fas fa-exclamation-circle urgent-icon" title="Urgent"></i>` : "";
-    const preview = (m.preview || "").length > 220 ? `${m.preview.slice(0, 220)}...` : (m.preview || "");
-    
-    let avatarSrc, displayName;
-    
-    if (this.currentType === "sent") {
-      avatarSrc = this.getUserImage(m.recipient_photo);
-      displayName = `To: ${m.recipient_names || m.primary_recipient_name || 'Unknown'}`;
-    } else if (this.currentType === "broadcast") {
-      // FIXED: Use sender_photo for broadcast messages
-      avatarSrc = this.getUserImage(m.sender_photo);
-      displayName = m.sender_name || 'Unknown';
-    } else {
-      // inbox
-      avatarSrc = this.getUserImage(m.sender_photo);
-      displayName = m.sender_name || 'Unknown';
-    }
+  // Sent message display logic
+    messageRowHtml(m) {
+        const unread = (m.is_read === "0" || m.is_read === false || m.is_read === 0) && this.currentType === "inbox";
+        const unreadClass = unread ? "unread" : "";
+        const urgent = m.is_urgent ? `<i class="fas fa-exclamation-circle urgent-icon" title="Urgent"></i>` : "";
+        const preview = (m.preview || "").length > 220 ? `${m.preview.slice(0, 220)}...` : (m.preview || "");
+        
+        let avatarSrc, displayName;
+        
+        if (this.currentType === "sent") {
+            // Handle recipient information
+            const totalRecipients = m.total_recipients || 1;
+            const activeRecipients = m.active_recipients || 0;
+            
+            // Use the primary recipient name (will show deleted recipients if no active ones)
+            const primaryName = m.primary_recipient_name || 'Unknown';
+            
+            if (activeRecipients === 0) {
+                // All recipients deleted
+                displayName = `To: ${primaryName} (deleted)`;
+            } else if (totalRecipients === 1) {
+                // Single recipient
+                displayName = `To: ${primaryName}`;
+            } else {
+                // Multiple recipients
+                displayName = `To: ${primaryName} + ${totalRecipients - 1} more`;
+            }
+            
+            avatarSrc = this.getUserImage(m.recipient_photo);
+            
+        } else if (this.currentType === "broadcast") {
+            avatarSrc = this.getUserImage(m.sender_photo);
+            displayName = m.sender_name || 'Unknown';
+        } else {
+            // inbox
+            avatarSrc = this.getUserImage(m.sender_photo);
+            displayName = m.sender_name || 'Unknown';
+        }
 
-    return `
-      <div class="message-item ${unreadClass} ${m.is_urgent ? "urgent" : ""}" data-message-id="${m.message_id}">
-        <img src="${avatarSrc}" alt="${this.escapeHtml(displayName)}" class="message-avatar" />
-        <div class="message-content">
-          <div class="message-header">
-            <h4 class="message-sender">${this.escapeHtml(displayName)}</h4>
-            <span class="message-time">${this.formatTime(m.created_at)}</span>
-          </div>
-          <h5 class="message-subject">${urgent} ${this.escapeHtml(m.subject || "(No subject)")}</h5>
-          <p class="message-preview">${this.escapeHtml(preview)}</p>
-          <div class="message-meta">
-            ${m.attachment_count > 0 ? `<span class="meta-attachment"><i class="fas fa-paperclip"></i> ${m.attachment_count}</span>` : ""}
-            ${this.currentType === "sent" && m.recipient_count > 1 ? `<span class="meta-recipients">To: ${m.recipient_count} recipients</span>` : ""}
-            ${this.currentType === "broadcast" ? `<span class="meta-broadcast"><i class="fas fa-bullhorn"></i> Broadcast</span>` : ""}
-          </div>
+        return `
+        <div class="message-item ${unreadClass} ${m.is_urgent ? "urgent" : ""}" data-message-id="${m.message_id}">
+            <img src="${avatarSrc}" alt="${this.escapeHtml(displayName)}" class="message-avatar" />
+            <div class="message-content">
+            <div class="message-header">
+                <h4 class="message-sender">${this.escapeHtml(displayName)}</h4>
+                <span class="message-time">${this.formatTime(m.created_at)}</span>
+            </div>
+            <h5 class="message-subject">${urgent} ${this.escapeHtml(m.subject || "(No subject)")}</h5>
+            <p class="message-preview">${this.escapeHtml(preview)}</p>
+            <div class="message-meta">
+                ${m.attachment_count > 0 ? `<span class="meta-attachment"><i class="fas fa-paperclip"></i> ${m.attachment_count}</span>` : ""}
+                ${this.currentType === "sent" && m.total_recipients > 1 ? `<span class="meta-recipients">To: ${m.total_recipients} recipients</span>` : ""}
+                ${this.currentType === "sent" && m.active_recipients === 0 ? `<span class="meta-deleted"><i class="fas fa-trash"></i> All recipients deleted</span>` : ""}
+                ${this.currentType === "broadcast" ? `<span class="meta-broadcast"><i class="fas fa-bullhorn"></i> Broadcast</span>` : ""}
+            </div>
+            </div>
         </div>
-      </div>
-    `;
-  }
+        `;
+    }
 
   renderPagination(pagination = { page: 1, pages: 1 }) {
     const container = document.getElementById("pagination");
@@ -396,10 +638,11 @@ class MessagesApp {
     if (prefill.subject) document.getElementById("messageSubject").value = prefill.subject;
     if (prefill.message) document.getElementById("messageText").value = prefill.message;
     if (prefill.recipients && prefill.recipients.length) {
-      const select = document.getElementById("messageRecipients");
-      if (select) {
-        Array.from(select.options).forEach(o => { o.selected = prefill.recipients.includes(o.value); });
-      }
+      // Add recipients to enhanced selection
+      prefill.recipients.forEach(recipientId => {
+        const user = this.users.find(u => u.userId === recipientId);
+        if (user) this.addRecipient(user);
+      });
     }
     modal.classList.remove("hidden");
     document.body.classList.add("modal-open");
@@ -411,22 +654,117 @@ class MessagesApp {
     if (!modal) return;
     modal.classList.add("hidden");
     document.getElementById("composeForm")?.reset();
-    document.getElementById("fileList") && (document.getElementById("fileList").innerHTML = "");
     document.body.classList.remove("modal-open");
     document.body.style.overflow = "";
+    
+    // Reset enhanced components
+    this.selectedRecipients = [];
+    this.selectedFiles = [];
+    this.renderSelectedRecipients();
+    this.renderSelectedFiles();
+    
+    // Reset search
+    const searchInput = document.getElementById('recipientsSearch');
+    if (searchInput) searchInput.value = '';
+    
+    const dropdown = document.getElementById('recipientsDropdown');
+    if (dropdown) dropdown.classList.add('hidden');
   }
 
-  handleFileSelect(e) {
-    const fileList = document.getElementById("fileList");
-    if (!fileList) return;
-    fileList.innerHTML = "";
-    Array.from(e.target.files).forEach(f => {
-      const div = document.createElement("div");
-      div.className = "file-item";
-      div.innerHTML = `<i class="fas fa-file"></i> <span>${this.escapeHtml(f.name)}</span> <small>(${this.formatFileSize(f.size)})</small>`;
-      fileList.appendChild(div);
-    });
+    // Storage management methods
+  async loadStorageInfo() {
+      try {
+          const response = await fetch('../backend/api/get_storage_usage.php', {
+              credentials: 'include'
+          });
+          const data = await response.json();
+          
+          if (data.success) {
+              this.updateStorageDisplay(data.storage);
+          } else {
+              console.warn('Failed to load storage info:', data.message);
+              // Set default values
+              this.updateStorageDisplay({
+                  used_mb: 0,
+                  max_mb: 300,
+                  percentage: 0,
+                  remaining_mb: 300
+              });
+          }
+      } catch (error) {
+          console.error('Error loading storage info:', error);
+          // Set default values on error
+          this.updateStorageDisplay({
+              used_mb: 0,
+              max_mb: 300,
+              percentage: 0,
+              remaining_mb: 300
+          });
+      }
   }
+
+  updateStorageDisplay(storage) {
+      const progressBar = document.querySelector('.storage-progress');
+      const storageText = document.querySelector('.storage-info small');
+      
+      if (progressBar && storageText) {
+          // Update progress bar width and color
+          const percentage = storage.percentage;
+          progressBar.style.width = `${percentage}%`;
+          
+          // Change color based on usage
+          if (percentage >= 90) {
+              progressBar.style.backgroundColor = 'var(--urgent-color)'; // Red
+          } else if (percentage >= 75) {
+              progressBar.style.backgroundColor = 'var(--broadcast-color)'; // Yellow/Orange
+          } else {
+              progressBar.style.backgroundColor = 'var(--primary-blue)'; // Blue
+          }
+          
+          // Update text
+          storageText.textContent = `${storage.used_mb} MB of ${storage.max_mb} MB used`;
+          
+          // Add warning tooltip if near limit
+          if (percentage >= 80) {
+              storageText.title = `Warning: You have only ${storage.remaining_mb} MB remaining`;
+              storageText.style.color = 'var(--urgent-color)';
+              storageText.style.fontWeight = '600';
+          } else {
+              storageText.title = `${storage.remaining_mb} MB remaining`;
+              storageText.style.color = '';
+              storageText.style.fontWeight = '';
+          }
+      }
+  }
+
+  // Storage check before sending messages
+  async checkStorageBeforeSend(files = []) {
+      try {
+          const response = await fetch('../backend/api/get_storage_usage.php', {
+              credentials: 'include'
+          });
+          const data = await response.json();
+          
+          if (data.success) {
+              const storage = data.storage;
+              const newFilesSize = files.reduce((total, file) => total + file.size, 0);
+              const newTotal = storage.used_bytes + newFilesSize;
+              const maxBytes = storage.max_bytes;
+              
+              if (newTotal > maxBytes) {
+                  const remainingMB = Math.max(0, (maxBytes - storage.used_bytes) / (1024 * 1024)).toFixed(2);
+                  throw new Error(`Storage limit will be exceeded. You have ${remainingMB}MB remaining. Please remove some attachments or delete old messages.`);
+              }
+              
+              return true;
+          }
+      } catch (error) {
+          console.error('Storage check error:', error);
+          throw error;
+      }
+  }
+
+
 
   async sendMessage(e) {
     e?.preventDefault();
@@ -438,6 +776,9 @@ class MessagesApp {
     }
 
     try {
+      // Check storage before sending
+      await this.checkStorageBeforeSend(this.selectedFiles.map(f => f.file));
+
       const subject = (document.getElementById("messageSubject")?.value || "").trim();
       const messageText = (document.getElementById("messageText")?.value || "").trim();
       const isUrgent = !!document.getElementById("isUrgent")?.checked;
@@ -452,8 +793,7 @@ class MessagesApp {
 
       let recipients = [];
       if (!isBroadcast) {
-        const select = document.getElementById("messageRecipients");
-        if (select) recipients = Array.from(select.selectedOptions).map(o => o.value);
+        recipients = this.selectedRecipients.map(r => r.userId);
         if (!recipients.length) throw new Error("Please select at least one recipient.");
       }
 
@@ -462,8 +802,7 @@ class MessagesApp {
         targetRoles = Array.from(document.querySelectorAll("input[name='targetRoles']:checked")).map(cb => cb.value);
       }
 
-      const fileInput = document.getElementById("fileAttachments");
-      const hasFiles = fileInput && fileInput.files && fileInput.files.length > 0;
+      const hasFiles = this.selectedFiles.length > 0;
 
       let res;
       if (hasFiles) {
@@ -475,10 +814,16 @@ class MessagesApp {
           isUrgent, 
           isBroadcast, 
           targetRoles, 
-          messageType: (recipients.length > 1 ? "group" : "direct") 
+          messageType: (recipients.length > 1 ? "group" : "direct"),
+          fileNames: this.selectedFiles.map(f => ({ id: f.id, name: f.customName }))
         };
         fd.append("data", JSON.stringify(payload));
-        Array.from(fileInput.files).forEach(f => fd.append("attachments[]", f));
+        
+        this.selectedFiles.forEach(fileObj => {
+          fd.append("attachments[]", fileObj.file);
+          fd.append("attachment_names[]", fileObj.customName);
+        });
+        
         res = await fetch(this.API.sendMessage, { method: "POST", body: fd, credentials: "include" });
       } else {
         const payload = { 
@@ -500,6 +845,8 @@ class MessagesApp {
       this.hideComposeModal();
       await this.loadMessages(this.currentType, 1);
       await this.updateUnreadBadges();
+      // After successful send, update storage info
+      await this.loadStorageInfo();
     } catch (err) {
       console.error("sendMessage error", err);
       this.showNotification(err.message || "Failed to send", "error");
@@ -637,6 +984,19 @@ class MessagesApp {
       this.showNotification("Failed to delete message: " + err.message, "error");
     }
   }
+
+  // Hide/show MarkAsUnread button based on role
+    setupRoleBasedUI() {
+        const markUnreadBtn = document.querySelector('.mark-unread-btn');
+        if (markUnreadBtn) {
+            if (this.userRole === 'admin') {
+                markUnreadBtn.style.display = 'flex';
+                markUnreadBtn.addEventListener("click", () => this.markSelectedAsUnread());
+            } else {
+                markUnreadBtn.style.display = 'none';
+            }
+        }
+    }
 
   async markSelectedAsUnread() {
     if (!this.selectedMessage) return;
@@ -967,7 +1327,6 @@ class MessagesApp {
 
     // compose form submit + file input
     document.getElementById("composeForm")?.addEventListener("submit", (e) => this.sendMessage(e));
-    document.getElementById("fileAttachments")?.addEventListener("change", (e) => this.handleFileSelect(e));
 
     // refresh
     document.getElementById("refreshBtn")?.addEventListener("click", () => this.loadMessages(this.currentType, this.currentPage));
@@ -987,6 +1346,8 @@ class MessagesApp {
   }
 
   switchView(type) {
+    // Always show list view when switching navigation
+    this.showListView();
     this.currentType = type;
     this.currentPage = 1;
     this.loadMessages(type, 1);

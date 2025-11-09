@@ -234,7 +234,7 @@ if (typeof window !== 'undefined') {
   window.clearAllUserData = clearAllUserData;
 }
 
-// Optional: Add event listener for other modules to react to logout
+// Add event listener for other modules to react to logout
 if (typeof window !== 'undefined') {
   window.addEventListener('userLoggedOut', () => {
     console.log('📢 User logged out event received');

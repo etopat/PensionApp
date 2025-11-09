@@ -93,15 +93,17 @@
     cursor: pointer;
 }
 
+
 .nav-item:hover {
     background: var(--message-hover);
     border-left-color: var(--primary-gold);
+    color: #fff;
 }
 
 .nav-item.active {
     background: var(--unread-bg);
     border-left-color: var(--primary-blue);
-    color: var(--primary-blue);
+    color: var(--primary-maroon);
     font-weight: 600;
 }
 
@@ -129,26 +131,6 @@
 .sidebar-footer {
     padding: 1rem 1.5rem;
     border-top: 1px solid var(--message-border);
-}
-
-.storage-info small {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-}
-
-.storage-bar {
-    height: 4px;
-    background: var(--border-color);
-    border-radius: 2px;
-    margin: 0.5rem 0;
-    overflow: hidden;
-}
-
-.storage-progress {
-    height: 100%;
-    background: var(--primary-blue);
-    width: 42%;
-    border-radius: 2px;
 }
 
 /* Main Content Styles */
@@ -1140,4 +1122,243 @@ body.modal-open {
 
 #isBroadcast:disabled ~ .broadcast-hint {
     display: block;
+}
+
+/* Enhanced Recipient Selection Styles */
+.recipients-container {
+    border: 1px solid var(--message-border);
+    border-radius: 6px;
+    background: var(--bg-color);
+}
+
+.recipients-input-container {
+    position: relative;
+    padding: 0.5rem;
+}
+
+#recipientsSearch {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+#recipientsSearch:focus {
+    outline: none;
+}
+
+.recipients-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--message-border);
+    border-radius: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background: var(--message-hover);
+}
+
+.dropdown-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dropdown-user-info {
+    flex: 1;
+}
+
+.dropdown-user-info strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.dropdown-user-info small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.selected-recipients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-top: 1px solid var(--message-border);
+    min-height: 3rem;
+}
+
+.recipient-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--primary-blue);
+    color: white;
+    border-radius: 16px;
+    font-size: 0.8rem;
+}
+
+.recipient-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.recipient-remove {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.recipient-remove:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* Enhanced File Attachment Styles */
+.selected-files {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.file-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-color);
+    border: 1px solid var(--message-border);
+    border-radius: 6px;
+}
+
+.file-name-input {
+    flex: 1;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--message-border);
+    border-radius: 4px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 0.8rem;
+}
+
+.file-name-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+.file-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.file-remove:hover {
+    background: var(--message-hover);
+    color: var(--urgent-color);
+}
+
+/* Fix for broadcast profile images */
+.message-item.broadcast .message-avatar {
+    border: 2px solid var(--broadcast-color);
+}
+
+/* Ensure hidden class works properly */
+.hidden {
+    display: none !important;
+}
+
+/* Storage Info Styles */
+.storage-info {
+    margin-top: auto;
+    padding: 1rem 0;
+}
+
+.storage-bar {
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.storage-progress {
+    height: 100%;
+    background: var(--primary-blue);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    width: 0%; /* Will be set by JavaScript */
+}
+
+.storage-info small {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    display: block;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Storage warning states */
+.storage-warning {
+    color: var(--broadcast-color) !important;
+    font-weight: 600;
+}
+
+.storage-critical {
+    color: var(--urgent-color) !important;
+    font-weight: 700;
+}
+
+/* Tooltip for storage info */
+.storage-info {
+    position: relative;
+}
+
+.storage-info:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }

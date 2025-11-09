@@ -56,11 +56,11 @@
                     </nav>
 
                     <div class="sidebar-footer">
-                        <div class="storage-info">
+                        <div class="storage-info" id="storageInfo">
                             <div class="storage-bar">
-                                <div class="storage-progress"></div>
+                                <div class="storage-progress" id="storageProgress"></div>
                             </div>
-                            <small>2.1 GB of 5 GB used</small>
+                            <small id="storageText">Calculating storage...</small>
                         </div>
                     </div>
                 </aside>
@@ -118,7 +118,7 @@
                                 <button class="btn-action" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                <button class="btn-action" title="Mark as Unread">
+                                <button class="btn-action mark-unread-btn" title="Mark as Unread" data-role="admin">
                                     <i class="fas fa-envelope"></i>
                                 </button>
                             </div>
@@ -145,9 +145,16 @@
                 <form class="compose-form" id="composeForm" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="messageRecipients">To:</label>
-                        <select id="messageRecipients" multiple>
+                        <select id="messageRecipients" multiple class="hidden">
                             <!-- Recipients will be populated dynamically -->
                         </select>
+                        <div class="recipients-container">
+                            <div class="recipients-input-container">
+                                <input type="text" id="recipientsSearch" placeholder="Type to search recipients..." autocomplete="off">
+                                <div class="recipients-dropdown" id="recipientsDropdown"></div>
+                            </div>
+                            <div class="selected-recipients" id="selectedRecipients"></div>
+                        </div>
                     </div>
 
                     <div class="form-group" id="broadcastSection">
@@ -191,7 +198,7 @@
                                 Choose Files
                             </label>
                         </div>
-                        <div class="file-list" id="fileList"></div>
+                        <div class="selected-files" id="selectedFiles"></div>
                     </div>
 
                     <div class="compose-actions">
