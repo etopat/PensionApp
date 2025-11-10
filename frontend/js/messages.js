@@ -1,6 +1,6 @@
 // ============================================================================
 // frontend/js/messages.js
-// Complete Messages module with Enhanced Modal System
+// Complete Messages module with Enhanced Time Formatting & Modal System
 // ============================================================================
 
 // Redirect if not logged in
@@ -46,6 +46,10 @@ class MessagesApp {
     this.SEEN_BROADCASTS_KEY = "pensionsgo_seen_broadcasts";
     this.preloadedSound = null;
     this.soundInitBound = this.initSoundOnFirstInteraction.bind(this);
+
+    // Real-time time updates
+    this.timeUpdateInterval = null;
+    this.originalLoadMessages = null;
 
     // Bind once to allow autoplay after user interaction
     document.addEventListener("click", this.soundInitBound, { once: true });
@@ -467,7 +471,78 @@ class MessagesApp {
     }
   }
 
-  // Sent message display logic
+  // -----------------------
+  // TIME FORMATTING - Enhanced with relative time for lists & detailed format for detail view
+  // -----------------------
+
+  /**
+   * Format timestamp to "d mmm, yyyy HH:MM:ss" format (with seconds)
+   * Used for detailed views where precise timing is important
+   */
+  formatTime(ts) {
+      if (!ts) return "";
+      
+      const d = new Date(ts);
+      const day = d.getDate();
+      const month = d.toLocaleDateString('en-US', { month: 'short' });
+      const year = d.getFullYear();
+      
+      // Format time with leading zeros including seconds
+      const hours = d.getHours().toString().padStart(2, '0');
+      const minutes = d.getMinutes().toString().padStart(2, '0');
+      const seconds = d.getSeconds().toString().padStart(2, '0');
+      
+      return `${day} ${month}, ${year} ${hours}:${minutes}:${seconds}`;
+  }
+
+  /**
+   * Format timestamp to relative time format for message lists
+   * Used for Sent and Inbox folders only - maintains "just now", "minutes", "hours", etc.
+   */
+  formatTimeShort(ts) {
+      if (!ts) return "";
+      
+      // For broadcast messages, always use the detailed format
+      if (this.currentType === "broadcast") {
+          const d = new Date(ts);
+          const day = d.getDate();
+          const month = d.toLocaleDateString('en-US', { month: 'short' });
+          const year = d.getFullYear();
+          const hours = d.getHours().toString().padStart(2, '0');
+          const minutes = d.getMinutes().toString().padStart(2, '0');
+          return `${day} ${month}, ${year} ${hours}:${minutes}`;
+      }
+      
+      // For Sent and Inbox folders, use relative time format
+      const d = new Date(ts);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      const diffWeeks = Math.floor(diffDays / 7);
+      const diffMonths = Math.floor(diffDays / 30);
+      const diffYears = Math.floor(diffDays / 365);
+      
+      if (diffSecs < 60) {
+          return "Just now";
+      } else if (diffMins < 60) {
+          return `${diffMins}m ago`;
+      } else if (diffHours < 24) {
+          return `${diffHours}h ago`;
+      } else if (diffDays < 7) {
+          return `${diffDays}d ago`;
+      } else if (diffWeeks < 4) {
+          return `${diffWeeks}w ago`;
+      } else if (diffMonths < 12) {
+          return `${diffMonths}mo ago`;
+      } else {
+          return `${diffYears}y ago`;
+      }
+  }
+
+  // Sent message display logic with enhanced time formatting
   messageRowHtml(m) {
     const unread = (m.is_read === "0" || m.is_read === false || m.is_read === 0) && this.currentType === "inbox";
     const unreadClass = unread ? "unread" : "";
@@ -512,7 +587,7 @@ class MessagesApp {
         <div class="message-content">
         <div class="message-header">
             <h4 class="message-sender">${this.escapeHtml(displayName)}</h4>
-            <span class="message-time" data-timestamp="${m.created_at}">${this.formatTime(m.created_at)}</span>
+            <span class="message-time" data-timestamp="${m.created_at}">${this.formatTimeShort(m.created_at)}</span>
         </div>
         <h5 class="message-subject">${urgent} ${this.escapeHtml(m.subject || "(No subject)")}</h5>
         <p class="message-preview">${this.escapeHtml(preview)}</p>
@@ -527,7 +602,93 @@ class MessagesApp {
     `;
   }
 
-  // Clean up interval when needed
+  // -----------------------
+  // REAL-TIME TIME UPDATES - For relative time formatting in lists
+  // -----------------------
+
+  /**
+   * Initialize real-time time updates
+   * Updates every minute to keep relative times current in list views
+   */
+  initRealTimeUpdates() {
+    // For relative time formatting, update every minute
+    this.updateAllMessageTimes();
+    this.timeUpdateInterval = setInterval(() => {
+        this.updateAllMessageTimes();
+    }, 60000); // Update every minute for relative time updates
+
+    // Also update when switching views or loading new messages
+    this.originalLoadMessages = this.loadMessages;
+    this.loadMessages = async (type = this.currentType, page = this.currentPage) => {
+        await this.originalLoadMessages(type, page);
+        this.updateAllMessageTimes();
+    };
+  }
+
+  /**
+   * Update all message times in the current list
+   * Ensures relative time displays are always current for Sent and Inbox
+   */
+  updateAllMessageTimes() {
+      const messageItems = document.querySelectorAll('.message-item');
+      messageItems.forEach(item => {
+          const timeElement = item.querySelector('.message-time');
+          const messageId = item.dataset.messageId;
+          
+          if (timeElement && messageId) {
+              // Find the message data to get the original timestamp
+              const message = this.messages.find(m => m.message_id == messageId);
+              if (message && message.created_at) {
+                  const newTime = this.formatTimeShort(message.created_at);
+                  if (timeElement.textContent !== newTime) {
+                      timeElement.textContent = newTime;
+                  }
+              }
+          }
+      });
+
+      // Also update detail view if open
+      this.updateDetailViewTime();
+  }
+
+  /**
+   * Update time in detail view if open
+   * Ensures detailed timestamps with seconds stay current
+   */
+  updateDetailViewTime() {
+      const detailView = document.getElementById('messageDetailView');
+      if (detailView && !detailView.classList.contains('hidden') && this.selectedMessage) {
+          // Update sent time in detail view
+          const sentTimeElement = document.querySelector('.sent-time');
+          if (sentTimeElement && this.selectedMessage.message) {
+              const newTime = this.formatTime(this.selectedMessage.message.created_at);
+              sentTimeElement.innerHTML = `<i class="fas fa-paper-plane"></i> Sent: ${newTime}`;
+          }
+
+          // Update read status times in recipients list
+          const readStatusElements = document.querySelectorAll('.read-status');
+          readStatusElements.forEach(element => {
+              if (element.classList.contains('read') && element.textContent.includes('Read at')) {
+                  const recipientItem = element.closest('.recipient-item');
+                  if (recipientItem) {
+                      const recipientName = recipientItem.querySelector('strong')?.textContent;
+                      if (recipientName && this.selectedMessage.recipients) {
+                          const recipient = this.selectedMessage.recipients.find(r => 
+                              r.userName === recipientName && r.read_at
+                          );
+                          if (recipient) {
+                              element.textContent = `✓ Read at ${this.formatTime(recipient.read_at)}`;
+                          }
+                      }
+                  }
+              }
+          });
+      }
+  }
+
+  /**
+   * Clean up interval when needed
+   */
   stopRealTimeUpdates() {
       if (this.timeUpdateInterval) {
           clearInterval(this.timeUpdateInterval);
@@ -555,7 +716,7 @@ class MessagesApp {
   }
 
   // -----------------------
-  // MESSAGE DETAIL
+  // MESSAGE DETAIL with Enhanced Time Display
   // -----------------------
   async showMessageDetail(messageId) {
     try {
@@ -584,21 +745,31 @@ class MessagesApp {
     const recipients = this.selectedMessage.recipients || [];
     const attachments = this.selectedMessage.attachments || [];
 
+    // Enhanced recipients HTML with precise read timestamps
     const recipientsHtml = recipients.length ? `
       <div class="recipients-info">
-        <strong>Recipients</strong>
-        <ul>
-          ${recipients.map(r => {
-              const readTime = r.read_at ? new Date(r.read_at) : null;
-              const readTimeFormatted = readTime ? 
-                  `${readTime.getDate()} ${readTime.toLocaleDateString('en-US', { month: 'short' })} ${readTime.getFullYear()}` : 
-                  'unread';
-              return `<li>${this.escapeHtml(r.userName)} <small>— ${readTimeFormatted}</small></li>`;
-          }).join("")}
-        </ul>
+        <strong>Recipients (${recipients.length})</strong>
+        <div class="recipients-list">
+            ${recipients.map(r => {
+                const readTime = r.read_at ? new Date(r.read_at) : null;
+                const readStatus = r.is_read ? 
+                    `<span class="read-status read">✓ Read at ${this.formatTime(r.read_at)}</span>` : 
+                    '<span class="read-status unread">✗ Unread</span>';
+                
+                return `
+                <div class="recipient-item">
+                    <div class="recipient-info">
+                        <strong>${this.escapeHtml(r.userName)}</strong>
+                        <span class="recipient-role">${this.escapeHtml(r.userRole || '')}</span>
+                    </div>
+                    ${readStatus}
+                </div>`;
+            }).join("")}
+        </div>
       </div>
     ` : "";
 
+    // Enhanced attachments HTML with upload timestamps
     const attachmentsHtml = attachments.length
     ? `
         <div class="attachments-section">
@@ -609,6 +780,7 @@ class MessagesApp {
                 const storedFileName = a.file_path.split("/").pop();
                 const downloadUrl = `../backend/api/get_msg_image.php?file=${encodeURIComponent(storedFileName)}&type=attachment`;
                 const isImage = a.mime_type?.startsWith("image/");
+                const uploadTime = a.uploaded_at ? this.formatTime(a.uploaded_at) : 'Unknown';
 
                 return `
                 <div class="attachment-item">
@@ -616,8 +788,13 @@ class MessagesApp {
                     ${isImage 
                         ? `<img src="${downloadUrl}" class="attachment-thumb" alt="${this.escapeHtml(a.file_name)}">`
                         : `<i class="fas fa-file"></i>`}
-                    <span>${this.escapeHtml(a.file_name)}</span>
-                    <small>(${this.formatFileSize(a.file_size)})</small>
+                    <div class="attachment-info">
+                        <span class="attachment-name">${this.escapeHtml(a.file_name)}</span>
+                        <div class="attachment-meta">
+                            <small>${this.formatFileSize(a.file_size)}</small>
+                            <small>• Uploaded: ${uploadTime}</small>
+                        </div>
+                    </div>
                     </a>
                 </div>
                 `;
@@ -628,8 +805,8 @@ class MessagesApp {
     `
     : "";
 
-    const sentDate = new Date(m.created_at);
-    const sentDateFormatted = `${sentDate.getDate()} ${sentDate.toLocaleDateString('en-US', { month: 'short' })} ${sentDate.getFullYear()}`;
+    // Use full timestamp format with seconds for detail view
+    const sentDateFormatted = this.formatTime(m.created_at);
 
     container.innerHTML = `
       <div class="detail-header-info">
@@ -637,8 +814,14 @@ class MessagesApp {
           <img src="${this.getUserImage(m.sender_photo)}" class="sender-avatar" alt="${this.escapeHtml(m.sender_name)}" />
           <div class="sender-details">
             <strong>${this.escapeHtml(m.sender_name)}</strong>
-            <div>${this.escapeHtml(m.sender_role || "")} • ${this.escapeHtml(m.sender_email || "")}</div>
-            <div>Sent: ${sentDateFormatted}</div>
+            <div class="sender-meta">
+                <span class="sender-role">${this.escapeHtml(m.sender_role || "")}</span>
+                <span class="sender-email">${this.escapeHtml(m.sender_email || "")}</span>
+            </div>
+            <div class="sent-time">
+                <i class="fas fa-paper-plane"></i>
+                Sent: ${sentDateFormatted}
+            </div>
           </div>
         </div>
         ${recipientsHtml}
@@ -655,109 +838,9 @@ class MessagesApp {
     this.updateActionButtons();
   }
 
-  // REAL-TIME TIME UPDATES
-  // -----------------------
-
-  // Initialize real-time time updates
-  initRealTimeUpdates() {
-    // Update times immediately and then every minute
-    this.updateAllMessageTimes();
-    this.timeUpdateInterval = setInterval(() => {
-        this.updateAllMessageTimes();
-    }, 60000); // Update every minute
-
-    // Also update when switching views or loading new messages
-    this.originalLoadMessages = this.loadMessages;
-    this.loadMessages = async (type = this.currentType, page = this.currentPage) => {
-        await this.originalLoadMessages(type, page);
-        this.updateAllMessageTimes();
-    };
-  }
-
-  // Update all message times in the current list
-  updateAllMessageTimes() {
-      const messageItems = document.querySelectorAll('.message-item');
-      messageItems.forEach(item => {
-          const timeElement = item.querySelector('.message-time');
-          const messageId = item.dataset.messageId;
-          
-          if (timeElement && messageId) {
-              // Find the message data to get the original timestamp
-              const message = this.messages.find(m => m.message_id == messageId);
-              if (message && message.created_at) {
-                  const newTime = this.formatTime(message.created_at);
-                  if (timeElement.textContent !== newTime) {
-                      timeElement.textContent = newTime;
-                  }
-              }
-          }
-      });
-
-      // Also update detail view if open
-      this.updateDetailViewTime();
-  }
-
-  // Update time in detail view if open
-  updateDetailViewTime() {
-      const detailView = document.getElementById('messageDetailView');
-      if (!detailView || !detailView.classList.contains('hidden') || !this.selectedMessage) {
-          return;
-      }
-
-      const timeElements = detailView.querySelectorAll('.message-time, .sender-details div:last-child');
-      timeElements.forEach(element => {
-          if (this.selectedMessage && this.selectedMessage.message) {
-              const newTime = this.formatTime(this.selectedMessage.message.created_at);
-              if (element.textContent.includes('Sent:') && !element.textContent.includes(newTime)) {
-                  element.textContent = `Sent: ${new Date(this.selectedMessage.message.created_at).toLocaleString()}`;
-              }
-          }
-      });
-  }
-
-  // Enhanced formatTime method with more precise calculations
-  formatTime(ts) {
-      if (!ts) return "";
-      
-      const d = new Date(ts);
-      const now = new Date();
-      const diffMs = now - d;
-      const diffSecs = Math.floor(diffMs / 1000);
-      const diffMins = Math.floor(diffSecs / 60);
-      const diffHours = Math.floor(diffMins / 60);
-      const diffDays = Math.floor(diffHours / 24);
-      
-      // Always return in "d mmm yyyy" format
-      const day = d.getDate();
-      const month = d.toLocaleDateString('en-US', { month: 'short' });
-      const year = d.getFullYear();
-      
-      return `${day} ${month} ${year}`;
-
-      if (diffSecs < 60) {
-          return "Just now";
-      } else if (diffMins < 60) {
-          return `${diffMins}m ago`;
-      } else if (diffHours < 24) {
-          return `${diffHours}h ago`;
-      } else if (diffDays < 7) {
-          return `${diffDays}d ago`;
-      } else {
-          // For older dates, show actual date but in a shorter format
-          const isSameYear = d.getFullYear() === now.getFullYear();
-          if (isSameYear) {
-              return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-          } else {
-              return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-          }
-      }
-  }
-
   formatMessageText(text) {
     return this.escapeHtml(text).replace(/\n/g, "<br>");
   }
-
-
 
   // -----------------------
   // COMPREHENSIVE MODAL SYSTEM
@@ -1424,7 +1507,7 @@ class MessagesApp {
     }
     
     const replySubject = `Re: ${message.subject}`;
-    const replyBody = `\n\n--- Original Message ---\nFrom: ${message.sender_name}\nDate: ${new Date(message.created_at).toLocaleString()}\n\n${message.message_text}`;
+    const replyBody = `\n\n--- Original Message ---\nFrom: ${message.sender_name}\nDate: ${this.formatTime(message.created_at)}\n\n${message.message_text}`;
     this.showComposeModal({ subject: replySubject, message: replyBody, recipients: [message.sender_id?.toString()] });
   }
 
@@ -1432,7 +1515,7 @@ class MessagesApp {
     if (!this.selectedMessage) return;
     const message = this.selectedMessage.message;
     const fwdSubject = `Fwd: ${message.subject}`;
-    const fwdBody = `\n\n--- Forwarded Message ---\nFrom: ${message.sender_name}\nDate: ${new Date(message.created_at).toLocaleString()}\nSubject: ${message.subject}\n\n${message.message_text}`;
+    const fwdBody = `\n\n--- Forwarded Message ---\nFrom: ${message.sender_name}\nDate: ${this.formatTime(message.created_at)}\nSubject: ${message.subject}\n\n${message.message_text}`;
     this.showComposeModal({ subject: fwdSubject, message: fwdBody, recipients: [] });
   }
 
@@ -1474,7 +1557,7 @@ class MessagesApp {
           details: {
               Subject: message.subject || '(No subject)',
               From: message.sender_name || 'Unknown',
-              Date: new Date(message.created_at).toLocaleString()
+              Date: this.formatTime(message.created_at)
           },
           onConfirm: async () => {
               const messageId = this.selectedMessage.message.message_id;
@@ -1748,19 +1831,6 @@ class MessagesApp {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-  }
-
-  formatTime(ts) {
-    if (!ts) return "";
-    const d = new Date(ts);
-    const now = new Date();
-    const diff = Math.floor((now - d) / 1000);
-    if (diff < 60) return "Just now";
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    const days = Math.floor(diff / 86400);
-    if (days < 7) return `${days}d ago`;
-    return d.toLocaleString();
   }
 
   formatFileSize(bytes) {

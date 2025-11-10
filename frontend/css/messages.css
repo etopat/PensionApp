@@ -295,7 +295,7 @@
     background: var(--input-bg);
     color: var(--input-text);
     width: 100%;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     transition: all 0.3s ease;
 }
 
@@ -1535,90 +1535,6 @@
     transform: translateY(0);
 }
 
-/* Responsive Design for Compose Modal */
-@media (max-width: 768px) {
-    .compose-modal {
-        margin: 0;
-        border-radius: 0;
-        max-height: 100vh;
-        height: 100vh;
-    }
-    
-    .compose-form {
-        padding: 1.5rem;
-        gap: 1.25rem;
-    }
-    
-    .compose-header {
-        padding: 1.25rem 1.5rem;
-    }
-    
-    .compose-actions {
-        flex-direction: column-reverse;
-        gap: 0.75rem;
-    }
-    
-    .btn-secondary,
-    .btn-primary {
-        width: 100%;
-        padding: 1rem;
-    }
-    
-    .role-checkboxes {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .recipients-dropdown {
-        max-height: 180px;
-    }
-}
-
-@media (max-width: 480px) {
-    .compose-form {
-        padding: 1rem;
-    }
-    
-    .compose-header {
-        padding: 1rem 1.25rem;
-    }
-    
-    .compose-header h3 {
-        font-size: 1.2rem;
-    }
-    
-    .form-group input[type="text"],
-    .form-group textarea {
-        padding: 0.75rem;
-    }
-    
-    .file-upload-label {
-        padding: 0.75rem 1rem;
-    }
-}
-
-/* Loading state for send button */
-.btn-primary.sending {
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-primary.sending::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-}
-
 /* ================= RESPONSIVE DESIGN ================= */
 @media (max-width: 768px) {
     .messages-container {
@@ -1633,6 +1549,30 @@
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
+    }
+
+    /* MOBILE SIDEBAR HEADER - TITLE AND COMPOSE BUTTON SIDE BY SIDE */
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .sidebar-header h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .btn-compose {
+        width: auto;
+        min-width: 120px;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        flex-shrink: 0;
     }
 
     .sidebar-nav {
@@ -1651,6 +1591,7 @@
         flex-direction: column;
         gap: 0.25rem;
         min-width: 100px;
+        font-size: 0.8rem;
     }
 
     .nav-item.active {
@@ -1660,7 +1601,7 @@
 
     .nav-item i {
         margin-right: 0;
-        font-size: 1rem;
+        font-size: 0.8rem;
     }
 
     .badge {
@@ -1722,24 +1663,24 @@
     }
 
     .btn-refresh {
-        width: 36px;
-        height: 36px;
+        width: 33px;
+        height: 33px;
         flex-shrink: 0;
     }
 
     /* Compact storage info for mobile */
     .storage-info {
-        padding: 0.25rem 0;
+        padding: 0.15rem 0;
     }
 
     .storage-bar {
-        height: 4px;
-        margin: 0.25rem 0;
+        height: 3px;
+        margin: 0.5rem 0;
     }
 
     .storage-info small {
         font-size: 0.7rem;
-        margin: 0.25rem 0;
+        margin: 0.5rem 0;
     }
 
     /* Message detail view scrolling */
@@ -1803,6 +1744,26 @@
         margin: 0;
         border-radius: 0;
         height: calc(100vh - 100px) !important;
+    }
+
+    /* Further compact sidebar header for very small screens */
+    .sidebar-header {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .sidebar-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .btn-compose {
+        min-width: 100px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .btn-compose i {
+        font-size: 0.8rem;
     }
 
     .list-header {
@@ -2585,4 +2546,163 @@
         animation: none;
         border-top-color: transparent;
     }
+}
+
+/* ================= TIME AND STATUS STYLES ================= */
+
+/* Recipients list in detail view */
+.recipients-list {
+    margin-top: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.recipient-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--form-bg);
+}
+
+.recipient-item:last-child {
+    border-bottom: none;
+}
+
+.recipient-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.recipient-info strong {
+    color: var(--text-high-contrast);
+    font-size: 0.9rem;
+}
+
+.recipient-role {
+    color: var(--muted-color);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.read-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.read-status.read {
+    color: var(--success-color);
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.read-status.unread {
+    color: var(--muted-color);
+    background: rgba(108, 117, 125, 0.1);
+    border: 1px solid rgba(108, 117, 125, 0.2);
+}
+
+/* Sender details */
+.sender-meta {
+    display: flex;
+    gap: 1rem;
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: var(--muted-color);
+}
+
+.sent-time {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-blue);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.sent-time i {
+    color: var(--primary-gold);
+}
+
+/* Attachment info */
+.attachment-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.attachment-name {
+    font-weight: 600;
+    color: var(--text-high-contrast);
+}
+
+.attachment-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted-color);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .recipient-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .read-status {
+        align-self: flex-start;
+    }
+    
+    .sender-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .attachment-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    /* Ensure time displays properly on mobile */
+    .message-time {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    
+    .sent-time {
+        font-size: 0.8rem;
+    }
+}
+
+/* Time display in list view - ensure it fits */
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.message-sender {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.message-time {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    color: var(--muted-color);
 }
