@@ -1,12 +1,13 @@
 <?php
 /**
  * ============================================================
- * CONFIGURATION FILE (Safe Version)
+ * CONFIGURATION FILE (Enhanced with Session Tracking)
  * ============================================================
  * - Establishes MySQL connection
  * - Manages secure PHP sessions
  * - Implements session timeout (auto logout after inactivity)
  * - Prevents cache and stale browser history
+ * - Single device login tracking
  * ============================================================
  */
 
@@ -48,6 +49,14 @@ $timeout_duration = 1800; // 30 minutes
 if (isset($_SESSION['last_activity'])) {
     $elapsed = time() - $_SESSION['last_activity'];
     if ($elapsed > $timeout_duration) {
+        // Mark session as inactive in database before destroying
+        if (isset($_SESSION['session_id'])) {
+            $stmt = $conn->prepare("UPDATE tb_user_sessions SET is_active = 0 WHERE session_id = ?");
+            $stmt->bind_param("s", $_SESSION['session_id']);
+            $stmt->execute();
+            $stmt->close();
+        }
+        
         session_unset();
         session_destroy();
 

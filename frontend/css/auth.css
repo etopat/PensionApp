@@ -76,6 +76,16 @@
   justify-content: center;
 }
 
+/* Dual buttons layout for confirmation modals */
+.auth-modal-footer.dual-buttons {
+  justify-content: space-between;
+}
+
+.auth-modal-footer.dual-buttons .auth-btn {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Compact Auth Buttons */
 .auth-btn {
   padding: 0.5rem 1.25rem;
@@ -95,6 +105,7 @@
 
 .auth-btn-primary:hover {
   background: var(--primary-gold-light);
+  transform: translateY(-1px);
 }
 
 .auth-btn-danger {
@@ -104,6 +115,7 @@
 
 .auth-btn-danger:hover {
   background: var(--primary-maroon-dark);
+  transform: translateY(-1px);
 }
 
 .auth-btn-secondary {
@@ -114,6 +126,7 @@
 .auth-btn-secondary:hover {
   background: var(--muted-color);
   color: white;
+  transform: translateY(-1px);
 }
 
 /* Auth Overlay (Loading) */
@@ -183,6 +196,59 @@
   color: var(--error-color);
   margin-bottom: 0.75rem;
   display: block;
+}
+
+/* Login Info Modal */
+.login-info-modal .auth-modal-header {
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-maroon) 100%);
+}
+
+.login-info-modal .auth-modal-body {
+  padding: 1.5rem 1.25rem;
+}
+
+.login-info-icon {
+  font-size: 2.5rem;
+  color: var(--primary-blue);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* ==========================================================
+   SINGLE DEVICE LOGIN MODAL STYLES
+   ========================================================== */
+
+/* Login Confirm Modal (Single Device Warning) */
+.login-confirm-modal .auth-modal {
+  max-width: 420px;
+}
+
+.login-confirm-modal .auth-modal-header {
+  background: linear-gradient(135deg, var(--warning-color) 0%, var(--primary-maroon) 100%);
+}
+
+.login-confirm-modal .auth-modal-body {
+  padding: 1.5rem 1.25rem;
+  text-align: left;
+}
+
+.login-warning-icon {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: block;
+  color: var(--warning-color);
+}
+
+.modal-note {
+  font-size: 0.85rem;
+  color: var(--muted-color);
+  font-style: italic;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid var(--warning-color);
 }
 
 /* Compact No Changes Modal */
@@ -265,6 +331,177 @@
   transform: none;
 }
 
+/* ==========================================================
+   SESSION OVERLAY STYLES (Enhanced for Better Visibility)
+   ========================================================== */
+
+.session-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+}
+
+.session-overlay-content {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2.5rem;
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  animation: sessionModalSlideIn 0.3s ease-out;
+  
+}
+
+@keyframes sessionModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.session-overlay-content .session-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+/* 🔥 Better heading colors with high contrast */
+.session-overlay-content h2 {
+  color: var(--primary-maroon);
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Specific colors for different session overlay types */
+.session-overlay[data-type="device-conflict"] h2 {
+  color: #d32f2f; /* Deep red for device conflicts */
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.session-overlay[data-type="session-expired"] h2 {
+  color: #ff6f00; /* Amber for session expiry */
+  background: linear-gradient(135deg, #ff6f00, #e65100);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.session-overlay[data-type="access-denied"] h2 {
+  color: #7b1fa2; /* Purple for access denied */
+  background: linear-gradient(135deg, #7b1fa2, #4a148c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 🔥 Better paragraph text with improved contrast */
+.session-overlay-content p {
+  color: var(--text-color);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Force dark text in light mode and light text in dark mode for better readability */
+[data-theme="light"] .session-overlay-content p {
+  color: #2d3748 !important; /* Dark gray for light mode */
+}
+
+[data-theme="dark"] .session-overlay-content p {
+  color: #e2e8f0 !important; /* Light gray for dark mode */
+}
+
+.session-overlay-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.session-btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  font-size: 1rem;
+  border: 2px solid transparent;
+}
+
+.session-btn-primary {
+  background: var(--primary-maroon);
+  color: white;
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
+.session-btn-primary:hover {
+  background: var(--primary-maroon-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+}
+
+.session-btn:focus {
+  outline: none;
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+}
+
+/* Session expired blur effect */
+.session-expired-blur {
+  filter: blur(4px);
+  pointer-events: none;
+  transition: filter 0.3s ease;
+}
+
+/* 🔥 Specific styling for device conflict overlay */
+.session-overlay.device-conflict .session-overlay-content {
+  border-top: 4px solid #d32f2f;
+}
+
+.session-overlay.device-conflict .session-icon {
+  color: #d32f2f;
+}
+
+/* 🔥 Specific styling for session expired overlay */
+.session-overlay.session-expired .session-overlay-content {
+  border-top: 4px solid #ff6f00;
+}
+
+.session-overlay.session-expired .session-icon {
+  color: #ff6f00;
+}
+
+/* 🔥 Specific styling for access denied overlay */
+.session-overlay.access-denied .session-overlay-content {
+  border-top: 4px solid #7b1fa2;
+}
+
+.session-overlay.access-denied .session-icon {
+  color: #7b1fa2;
+}
+
 /* Responsive Auth Styles */
 @media (max-width: 768px) {
   .auth-modal {
@@ -289,6 +526,14 @@
     flex-direction: column;
   }
 
+  .auth-modal-footer.dual-buttons {
+    flex-direction: column;
+  }
+
+  .auth-modal-footer.dual-buttons .auth-btn {
+    width: 100%;
+  }
+
   .auth-btn {
     width: 100%;
     min-width: auto;
@@ -297,6 +542,47 @@
   .login-form-container {
     margin: 1rem;
     padding: 1.5rem;
+  }
+
+  /* Single Device Modal Mobile Adjustments */
+  .login-confirm-modal .auth-modal {
+    max-width: 350px;
+  }
+
+  .login-confirm-modal .auth-modal-body {
+    padding: 1.25rem;
+  }
+
+  .login-warning-icon {
+    font-size: 2.5rem;
+  }
+
+  /* 🔥 Mobile session overlay adjustments */
+  .session-overlay-content {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+
+  .session-overlay-content .session-icon {
+    font-size: 3rem;
+  }
+
+  .session-overlay-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .session-overlay-content p {
+    font-size: 1rem;
+  }
+
+  .session-overlay-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .session-btn {
+    width: 100%;
+    max-width: 200px;
   }
 }
 
@@ -323,8 +609,41 @@
 
   .login-success-icon,
   .login-error-icon,
+  .login-info-icon,
   .no-changes-icon {
     font-size: 2rem;
+  }
+
+  .login-warning-icon {
+    font-size: 2rem;
+  }
+
+  .modal-note {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+
+  /* Single Device Modal Small Screen Adjustments */
+  .login-confirm-modal .auth-modal {
+    max-width: 300px;
+  }
+
+  /* 🔥 Small screen session overlay adjustments */
+  .session-overlay-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .session-overlay-content .session-icon {
+    font-size: 2.5rem;
+  }
+
+  .session-overlay-content h2 {
+    font-size: 1.3rem;
+  }
+
+  .session-overlay-content p {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
   }
 }
 
@@ -359,4 +678,33 @@
   background: rgba(255, 193, 7, 0.1);
   color: var(--warning-color);
   border-left-color: var(--warning-color);
+}
+
+/* Button focus states for accessibility */
+.auth-btn:focus {
+  outline: 2px solid var(--primary-gold);
+  outline-offset: 2px;
+}
+
+.auth-btn:active {
+  transform: translateY(0);
+}
+
+/* 🔥 High contrast fallbacks for older browsers */
+.session-overlay-content h2 {
+  /* Fallback for browsers that don't support background-clip */
+  color: #8b0000 !important;
+}
+
+[data-theme="dark"] .session-overlay-content h2 {
+  color: #ff6b6b !important;
+}
+
+.session-overlay-content p {
+  /* Fallback for browsers that don't support CSS variables */
+  color: #333 !important;
+}
+
+[data-theme="dark"] .session-overlay-content p {
+  color: #f8f9fa !important;
 }

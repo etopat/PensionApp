@@ -1,6 +1,15 @@
 <?php
-// backend/api/logout.php
+// backend/api/logout.php (Enhanced with Session Cleanup)
 session_start();
+require_once __DIR__ . '/../config.php';
+
+// Mark session as inactive in database
+if (isset($_SESSION['session_id'])) {
+    $stmt = $conn->prepare("UPDATE tb_user_sessions SET is_active = 0 WHERE session_id = ?");
+    $stmt->bind_param("s", $_SESSION['session_id']);
+    $stmt->execute();
+    $stmt->close();
+}
 
 // Clear session data
 $_SESSION = [];
@@ -24,3 +33,4 @@ echo json_encode([
     'message' => 'You have been successfully logged out.'
 ]);
 exit;
+?>

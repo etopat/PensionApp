@@ -3,15 +3,23 @@
  * ============================================================
  * LOGIN API
  * ============================================================
- * Authenticates users using either Email or Phone Number.
- * - Accepts input in email or phone format.
- * - Checks both tb_users.userEmail and tb_users.phoneNo columns.
- * - Creates a secure PHP session on successful login.
- * - Returns user details as JSON.
+ * Authenticates users using either Email OR Phone Number.
+ * - Uses the correct userId (varchar) from your tb_users table
+ * - Single device login enforcement
  * ============================================================
  */
 
 session_start();
+
+// Clear any existing session if this is a login attempt
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Clear previous session data to prevent conflicts
+    session_unset();
+    
+    // Generate new session ID for fresh login
+    session_regenerate_id(true);
+}
+
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config.php';
 
@@ -76,14 +84,76 @@ try {
     // ------------------------------------------------------------
     if ($row = $result->fetch_assoc()) {
         if (password_verify($password, $row['userPassword'])) {
-            // ✅ Create secure session
+            $userId = $row['userId']; // This is the VARCHAR userId
+            
+            // ------------------------------------------------------------
+            // 6️⃣ SINGLE DEVICE LOGIN: Check for existing active sessions
+            // ------------------------------------------------------------
+            $deviceId = generateDeviceId();
+            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+            $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+            $sessionId = session_id();
+            
+            // Check if user has other active sessions
+            $checkStmt = $conn->prepare("
+                SELECT session_id, login_time 
+                FROM tb_user_sessions 
+                WHERE user_id = ? AND is_active = 1 
+                ORDER BY last_activity DESC 
+                LIMIT 1
+            ");
+            
+            if (!$checkStmt) {
+                throw new Exception("Failed to prepare check statement: " . $conn->error);
+            }
+            
+            $checkStmt->bind_param("s", $userId); // Changed to "s" for string
+            $checkStmt->execute();
+            $existingSession = $checkStmt->get_result()->fetch_assoc();
+            $checkStmt->close();
+            
+            $hasExistingSession = !empty($existingSession);
+            $existingSessionId = $existingSession['session_id'] ?? null;
+            
+            // ------------------------------------------------------------
+            // 7️⃣ Create new session in database
+            // ------------------------------------------------------------
+            $insertStmt = $conn->prepare("
+                INSERT INTO tb_user_sessions (session_id, user_id, device_id, user_agent, ip_address, is_active)
+                VALUES (?, ?, ?, ?, ?, 1)
+                ON DUPLICATE KEY UPDATE 
+                    device_id = VALUES(device_id),
+                    user_agent = VALUES(user_agent),
+                    ip_address = VALUES(ip_address),
+                    is_active = 1,
+                    last_activity = CURRENT_TIMESTAMP
+            ");
+            
+            if (!$insertStmt) {
+                throw new Exception("Failed to prepare insert statement: " . $conn->error);
+            }
+            
+            $insertStmt->bind_param("sssss", $sessionId, $userId, $deviceId, $userAgent, $ipAddress);
+            $insertSuccess = $insertStmt->execute();
+            
+            if (!$insertSuccess) {
+                throw new Exception("Failed to insert session: " . $conn->error);
+            }
+            
+            $insertStmt->close();
+            
+            // ------------------------------------------------------------
+            // 8️⃣ Create secure PHP session
+            // ------------------------------------------------------------
             $_SESSION['userId'] = $row['userId'];
             $_SESSION['userName'] = $row['userName'];
             $_SESSION['userRole'] = $row['userRole'];
             $_SESSION['userPhoto'] = $row['userPhoto'] ?: '../uploads/profiles/default-user.png';
             $_SESSION['phoneNo'] = $row['phoneNo'];
             $_SESSION['last_activity'] = time();
-
+            $_SESSION['session_id'] = $sessionId;
+            $_SESSION['device_id'] = $deviceId;
+            
             echo json_encode([
                 'success' => true,
                 'message' => 'Login successful',
@@ -91,7 +161,9 @@ try {
                 'userName' => $row['userName'],
                 'userRole' => $row['userRole'],
                 'userPhoto' => $row['userPhoto'] ?: '../uploads/profiles/default-user.png',
-                'phoneNo' => $row['phoneNo']
+                'phoneNo' => $row['phoneNo'],
+                'hasExistingSession' => $hasExistingSession,
+                'existingSessionId' => $existingSessionId
             ]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Incorrect password']);
@@ -100,11 +172,25 @@ try {
         echo json_encode(['success' => false, 'message' => 'No user found with that email or phone number']);
     }
 } catch (Exception $e) {
+    error_log("Login error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
 } finally {
     if (isset($stmt) && $stmt instanceof mysqli_stmt) {
         $stmt->close();
     }
     $conn->close();
+}
+
+/**
+ * Generate a unique device identifier
+ */
+function generateDeviceId() {
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    $language = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+    
+    $deviceString = $userAgent . $ip . $accept . $language;
+    return hash('sha256', $deviceString);
 }
 ?>

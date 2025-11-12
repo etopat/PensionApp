@@ -1,11 +1,12 @@
 // ====================================================================
-// frontend/js/auth.js
+// frontend/js/auth.js (Enhanced with Single Device Login)
 // --------------------------------------------------------------------
 // Handles user authentication via Email OR Phone Number (E.164 format)
 // - Validates input format
 // - Displays modals for feedback
 // - Manages session and localStorage
 // - Redirects user based on role or return URL
+// - NEW: Single device login with confirmation modal
 // ====================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -66,34 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
       // 4️⃣ Handle Login Response
       // ----------------------------------------------------------------
       if (json.success) {
-        showLoginModal("success", "Login successful! Redirecting...");
-
-        // Save session info
-        sessionStorage.setItem("isLoggedIn", "true");
-        sessionStorage.setItem("userName", json.userName || "");
-        sessionStorage.setItem("userRole", json.userRole || "");
-        sessionStorage.setItem("userId", json.userId || "");
-        sessionStorage.setItem("phoneNo", json.phoneNo || "");
-        sessionStorage.setItem("lastActivity", Date.now().toString()); // Initialize activity tracking
-
-        // Store persistent data
-        const userData = {
-          name: json.userName || "",
-          role: json.userRole || "",
-          id: json.userId || "",
-          photo: json.userPhoto || "images/default-user.png",
-          phone: json.phoneNo || "",
-        };
-        localStorage.setItem("loggedInUser", JSON.stringify(userData));
-        localStorage.setItem("userRole", json.userRole || "");
-
-        // Determine redirect URL
-        const redirectUrl = getSafeRedirectUrl(json.userRole, returnUrl);
-        console.log(`🔄 Redirecting ${json.userRole} to: ${redirectUrl}`);
-
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 2000);
+        // Check if user has existing sessions on other devices
+        if (json.hasExistingSession) {
+          // Show confirmation modal for single device login
+          showSingleDeviceConfirmationModal(json);
+        } else {
+          // No existing sessions, proceed with normal login
+          completeLogin(json, returnUrl);
+        }
       } else {
         showLoginModal("error", json.message || "Invalid login credentials.");
       }
@@ -105,7 +86,116 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ====================================================================
-// LOGIN MODAL FEEDBACK HANDLER
+// SINGLE DEVICE CONFIRMATION MODAL
+// ====================================================================
+function showSingleDeviceConfirmationModal(loginData) {
+  // Remove existing modal if present
+  const existing = document.getElementById("loginModal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "loginModal";
+  modal.className = "auth-modal-overlay login-confirm-modal";
+
+  modal.innerHTML = `
+    <div class="auth-modal">
+      <div class="auth-modal-header"><h3>Multiple Devices Detected</h3></div>
+      <div class="auth-modal-body">
+        <div class="login-warning-icon">⚠️</div>
+        <p>Your account is already active on another device.</p>
+        <p><strong>Do you want to log out from all other devices and continue here?</strong></p>
+        <p class="modal-note">This will immediately log out any other active sessions.</p>
+      </div>
+      <div class="auth-modal-footer dual-buttons">
+        <button id="cancelLogin" class="auth-btn auth-btn-secondary">Cancel</button>
+        <button id="confirmSingleDevice" class="auth-btn auth-btn-primary">Yes, Log Out Others</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Handle button clicks
+  document.getElementById("cancelLogin").addEventListener("click", () => {
+    modal.remove();
+    showLoginModal("info", "Login cancelled. You can only be logged in on one device at a time.");
+  });
+
+  document.getElementById("confirmSingleDevice").addEventListener("click", async () => {
+    modal.remove();
+    await terminateOtherSessions(loginData);
+  });
+
+  // Close on overlay click
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.remove();
+      showLoginModal("info", "Login cancelled. You can only be logged in on one device at a time.");
+    }
+  });
+}
+
+// ====================================================================
+// TERMINATE OTHER SESSIONS
+// ====================================================================
+async function terminateOtherSessions(loginData) {
+  showLoginModal("loading", "Logging out other devices...");
+
+  try {
+    const resp = await fetch("../backend/api/terminate_other_sessions.php", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    const result = await resp.json();
+
+    if (result.success) {
+      showLoginModal("success", `Successfully logged out ${result.terminatedCount} other device(s). Redirecting...`);
+      completeLogin(loginData);
+    } else {
+      throw new Error(result.message || "Failed to terminate other sessions");
+    }
+  } catch (err) {
+    console.error("Failed to terminate other sessions:", err);
+    showLoginModal("error", "Failed to log out other devices. Please try again.");
+  }
+}
+
+// ====================================================================
+// COMPLETE LOGIN PROCESS
+// ====================================================================
+function completeLogin(loginData, returnUrl = null) {
+  // Save session info
+  sessionStorage.setItem("isLoggedIn", "true");
+  sessionStorage.setItem("userName", loginData.userName || "");
+  sessionStorage.setItem("userRole", loginData.userRole || "");
+  sessionStorage.setItem("userId", loginData.userId || "");
+  sessionStorage.setItem("phoneNo", loginData.phoneNo || "");
+  sessionStorage.setItem("lastActivity", Date.now().toString());
+
+  // Store persistent data
+  const userData = {
+    name: loginData.userName || "",
+    role: loginData.userRole || "",
+    id: loginData.userId || "",
+    photo: loginData.userPhoto || "images/default-user.png",
+    phone: loginData.phoneNo || "",
+  };
+  localStorage.setItem("loggedInUser", JSON.stringify(userData));
+  localStorage.setItem("userRole", loginData.userRole || "");
+
+  // Determine redirect URL
+  const redirectUrl = getSafeRedirectUrl(loginData.userRole, returnUrl);
+  console.log(`🔄 Redirecting ${loginData.userRole} to: ${redirectUrl}`);
+
+  setTimeout(() => {
+    window.location.href = redirectUrl;
+  }, 2000);
+}
+
+// ====================================================================
+// LOGIN MODAL FEEDBACK HANDLER (Enhanced)
 // ====================================================================
 function showLoginModal(type, message) {
   // Remove existing modal if present
@@ -150,13 +240,26 @@ function showLoginModal(type, message) {
         </div>
       </div>
     `;
+  } else if (type === "info") {
+    modalContent = `
+      <div class="auth-modal">
+        <div class="auth-modal-header"><h3>Information</h3></div>
+        <div class="auth-modal-body">
+          <div class="login-info-icon">ℹ️</div>
+          <p>${message}</p>
+        </div>
+        <div class="auth-modal-footer">
+          <button id="closeLoginModal" class="auth-btn auth-btn-secondary">Close</button>
+        </div>
+      </div>
+    `;
   }
 
   modal.innerHTML = modalContent;
   document.body.appendChild(modal);
 
-  // Handle modal close
-  if (type === "error") {
+  // Handle modal close for error and info modals
+  if (type === "error" || type === "info") {
     document.getElementById("closeLoginModal").addEventListener("click", () => modal.remove());
     modal.addEventListener("click", (e) => {
       if (e.target === modal) modal.remove();
