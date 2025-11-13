@@ -9,6 +9,7 @@
 //  - Ensures strong session-based authentication security.
 //  - Includes broadcast message checking across all pages.
 //  - Real-time session monitoring with instant device conflict detection
+//  - COMPREHENSIVE USER ACTIVITY LOGGING FOR ADMIN DASHBOARD
 // ====================================================================
 
 import { loadFooter } from './modules/footer.js';
@@ -190,7 +191,7 @@ function checkInactivityTimeout() {
     }
 }
 
-// Enhanced device conflict handler
+// 🔥 ENHANCED: Device conflict handler with comprehensive logging
 function handleDeviceConflictLogout() {
     if (sessionExpired) return;
     
@@ -200,20 +201,31 @@ function handleDeviceConflictLogout() {
     // Store the current page for potential return
     localStorage.setItem("lastVisitedPage", window.location.href);
     
-    // 🔥 CRITICAL FIX: Clear ALL storage data comprehensively
+    // Clear ALL storage data comprehensively
     sessionStorage.clear();
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('userRole');
     localStorage.removeItem('pensionsgo_seen_broadcasts');
     localStorage.removeItem('theme');
     
-    // 🔥 FIXED: Close any active notifications properly
+    // Close any active notifications properly
     closeAllNotifications();
     
     // Stop all monitoring
     stopSessionMonitoring();
     
-    // 🔥 Force a session cleanup request to backend
+    // 🔥 ENHANCED: Log device conflict logout with proper type for admin tracking
+    fetch('../backend/api/logout.php', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'logout_type=device_conflict&logout_reason=Logged+in+from+another+device'
+    }).catch(err => console.log('Logout logging failed:', err));
+    
+    // Force a session cleanup request to backend
     fetch('../backend/api/cleanup_session.php', {
         method: 'POST',
         credentials: 'include',
@@ -224,7 +236,7 @@ function handleDeviceConflictLogout() {
     showDeviceConflictOverlay();
 }
 
-// Enhanced session expiry handler
+// 🔥 ENHANCED: Session expiry handler with comprehensive logging
 function handleSessionExpiry(message = 'Session expired due to inactivity') {
     if (sessionExpired) return;
     
@@ -234,18 +246,29 @@ function handleSessionExpiry(message = 'Session expired due to inactivity') {
     // Store the current page for potential return
     localStorage.setItem("lastVisitedPage", window.location.href);
     
-    // 🔥 CRITICAL FIX: Clear ALL storage data
+    // Clear ALL storage data
     sessionStorage.clear();
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('userRole');
     localStorage.removeItem('pensionsgo_seen_broadcasts');
     localStorage.removeItem('theme');
     
-    // FIXED: Close notifications properly
+    // Close notifications properly
     closeAllNotifications();
     
     // Stop all monitoring
     stopSessionMonitoring();
+    
+    // 🔥 ENHANCED: Log session expiry with proper type for admin tracking
+    fetch('../backend/api/logout.php', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'logout_type=session_expiry&logout_reason=Session+expired+due+to+inactivity'
+    }).catch(err => console.log('Logout logging failed:', err));
     
     // Force session cleanup
     fetch('../backend/api/cleanup_session.php', {
@@ -258,7 +281,7 @@ function handleSessionExpiry(message = 'Session expired due to inactivity') {
     showSessionExpiredOverlay(message);
 }
 
-// 🔥 NEW: Properly close all active notifications
+// Properly close all active notifications
 function closeAllNotifications() {
     if ('Notification' in window && Notification.permission === 'granted') {
         // Get all active service worker registrations and close their notifications
@@ -301,13 +324,13 @@ function initializeSessionMonitoring() {
     // Start backend session verification (2 minute intervals)
     sessionCheckInterval = setInterval(verifyBackendSession, 120000);
     
-    // 🔥 ENHANCED: Real-time session monitoring (every 2 seconds for instant device conflict detection)
+    // ENHANCED: Real-time session monitoring (every 2 seconds for instant device conflict detection)
     realTimeSessionInterval = setInterval(checkSessionStatus, 2000);
     
     console.log('🔐 Session monitoring initialized with real-time checks');
 }
 
-// 🔥 ENHANCED: Real-time session status check with immediate conflict detection
+// ENHANCED: Real-time session status check with immediate conflict detection
 async function checkSessionStatus() {
     if (sessionExpired) return;
     
@@ -378,7 +401,7 @@ async function verifyBackendSession() {
     }
 }
 
-// 🔥 NEW: WebSocket-like polling for immediate session termination detection
+// NEW: WebSocket-like polling for immediate session termination detection
 function initializeImmediateSessionPolling() {
     // Poll every 1.5 seconds for the first minute after page load (most critical time)
     let pollCount = 0;
@@ -429,7 +452,7 @@ function initializeActivityListeners() {
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
             updateSessionActivity();
-            // 🔥 Check session immediately when tab becomes visible
+            // Check session immediately when tab becomes visible
             if (sessionStorage.getItem('isLoggedIn') === 'true' && !sessionExpired) {
                 setTimeout(checkSessionStatus, 500);
             }
@@ -439,7 +462,7 @@ function initializeActivityListeners() {
     // Track page focus
     window.addEventListener('focus', () => {
         updateSessionActivity();
-        // 🔥 Check session immediately when window gains focus
+        // Check session immediately when window gains focus
         if (sessionStorage.getItem('isLoggedIn') === 'true' && !sessionExpired) {
             setTimeout(checkSessionStatus, 500);
         }
@@ -450,149 +473,149 @@ function initializeActivityListeners() {
    🔹 4. ENHANCED SESSION EXPIRED OVERLAY WITH DEVICE CONFLICT
    ============================================================ */
 
-  // Enhanced session expired overlay
-  function showSessionExpiredOverlay(message = 'Your session has expired due to inactivity. Please login again to continue.') {
-      // Prevent multiple overlays
-      const existingOverlay = document.querySelector('.session-overlay');
-      if (existingOverlay) {
-          return;
-      }
+// Enhanced session expired overlay
+function showSessionExpiredOverlay(message = 'Your session has expired due to inactivity. Please login again to continue.') {
+    // Prevent multiple overlays
+    const existingOverlay = document.querySelector('.session-overlay');
+    if (existingOverlay) {
+        return;
+    }
 
-      const overlay = document.createElement('div');
-      overlay.classList.add('session-overlay', 'session-expired');
-      overlay.setAttribute('data-type', 'session-expired');
-      overlay.innerHTML = `
-          <div class="session-overlay-content">
-              <div class="session-icon">⚠️</div>
-              <h2>Session Expired</h2>
-              <p>${message}</p>
-              <div class="session-overlay-buttons">
-                  <button id="sessionOkButton" class="session-btn session-btn-primary">OK</button>
-              </div>
-          </div>
-      `;
-      
-      document.body.appendChild(overlay);
-      
-      // 🔥 FIX: Only blur the background content, not the modal
-      const mainContent = document.querySelector('main, .main-content, #app-content');
-      if (mainContent) {
-          mainContent.classList.add('session-expired-blur');
-      } else {
-          // Fallback: blur everything except the overlay
-          document.body.classList.add('session-expired-blur');
-      }
+    const overlay = document.createElement('div');
+    overlay.classList.add('session-overlay', 'session-expired');
+    overlay.setAttribute('data-type', 'session-expired');
+    overlay.innerHTML = `
+        <div class="session-overlay-content">
+            <div class="session-icon">⚠️</div>
+            <h2>Session Expired</h2>
+            <p>${message}</p>
+            <div class="session-overlay-buttons">
+                <button id="sessionOkButton" class="session-btn session-btn-primary">OK</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // FIX: Only blur the background content, not the modal
+    const mainContent = document.querySelector('main, .main-content, #app-content');
+    if (mainContent) {
+        mainContent.classList.add('session-expired-blur');
+    } else {
+        // Fallback: blur everything except the overlay
+        document.body.classList.add('session-expired-blur');
+    }
 
-      const redirectToLogin = () => {
-          // Remove overlay
-          overlay.remove();
-          
-          // Remove blur from background
-          if (mainContent) {
-              mainContent.classList.remove('session-expired-blur');
-          } else {
-              document.body.classList.remove('session-expired-blur');
-          }
-          
-          // Get the last visited page
-          const lastPage = localStorage.getItem("lastVisitedPage") || window.location.href;
-          
-          // Clear all intervals
-          stopSessionMonitoring();
-          
-          // Redirect to login with return URL
-          window.location.href = `login.html?return=${encodeURIComponent(lastPage)}`;
-      };
+    const redirectToLogin = () => {
+        // Remove overlay
+        overlay.remove();
+        
+        // Remove blur from background
+        if (mainContent) {
+            mainContent.classList.remove('session-expired-blur');
+        } else {
+            document.body.classList.remove('session-expired-blur');
+        }
+        
+        // Get the last visited page
+        const lastPage = localStorage.getItem("lastVisitedPage") || window.location.href;
+        
+        // Clear all intervals
+        stopSessionMonitoring();
+        
+        // Redirect to login with return URL
+        window.location.href = `login.html?return=${encodeURIComponent(lastPage)}`;
+    };
 
-      // Add event listeners
-      document.getElementById('sessionOkButton').addEventListener('click', redirectToLogin, { once: true });
-      
-      overlay.addEventListener('click', (e) => { 
-          if (e.target === overlay) redirectToLogin(); 
-      }, { once: true });
-      
-      // Escape key handler
-      const escapeHandler = (e) => { 
-          if (e.key === 'Escape') {
-              e.preventDefault();
-              document.removeEventListener('keydown', escapeHandler);
-              redirectToLogin();
-          }
-      };
-      document.addEventListener('keydown', escapeHandler, { once: true });
-  }
+    // Add event listeners
+    document.getElementById('sessionOkButton').addEventListener('click', redirectToLogin, { once: true });
+    
+    overlay.addEventListener('click', (e) => { 
+        if (e.target === overlay) redirectToLogin(); 
+    }, { once: true });
+    
+    // Escape key handler
+    const escapeHandler = (e) => { 
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            document.removeEventListener('keydown', escapeHandler);
+            redirectToLogin();
+        }
+    };
+    document.addEventListener('keydown', escapeHandler, { once: true });
+}
 
-  // Device conflict overlay
-  function showDeviceConflictOverlay() {
-      // Prevent multiple overlays
-      const existingOverlay = document.querySelector('.session-overlay');
-      if (existingOverlay) {
-          return;
-      }
+// Device conflict overlay
+function showDeviceConflictOverlay() {
+    // Prevent multiple overlays
+    const existingOverlay = document.querySelector('.session-overlay');
+    if (existingOverlay) {
+        return;
+    }
 
-      const overlay = document.createElement('div');
-      overlay.classList.add('session-overlay', 'device-conflict');
-      overlay.setAttribute('data-type', 'device-conflict');
-      overlay.innerHTML = `
-          <div class="session-overlay-content">
-              <div class="session-icon">🔒</div>
-              <h2>Logged In Elsewhere</h2>
-              <p>Your account was logged in from another device. For security, this session has been terminated.</p>
-              <div class="session-overlay-buttons">
-                  <button id="deviceConflictOkButton" class="session-btn session-btn-primary">OK</button>
-              </div>
-          </div>
-      `;
-      
-      document.body.appendChild(overlay);
-      
-      // 🔥 FIX: Only blur the background content, not the modal
-      const mainContent = document.querySelector('main, .main-content, #app-content');
-      if (mainContent) {
-          mainContent.classList.add('session-expired-blur');
-      } else {
-          // Fallback: blur everything except the overlay
-          document.body.classList.add('session-expired-blur');
-      }
+    const overlay = document.createElement('div');
+    overlay.classList.add('session-overlay', 'device-conflict');
+    overlay.setAttribute('data-type', 'device-conflict');
+    overlay.innerHTML = `
+        <div class="session-overlay-content">
+            <div class="session-icon">🔒</div>
+            <h2>Logged In Elsewhere</h2>
+            <p>Your account was logged in from another device. For security, this session has been terminated.</p>
+            <div class="session-overlay-buttons">
+                <button id="deviceConflictOkButton" class="session-btn session-btn-primary">OK</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // FIX: Only blur the background content, not the modal
+    const mainContent = document.querySelector('main, .main-content, #app-content');
+    if (mainContent) {
+        mainContent.classList.add('session-expired-blur');
+    } else {
+        // Fallback: blur everything except the overlay
+        document.body.classList.add('session-expired-blur');
+    }
 
-      const redirectToLogin = () => {
-          // Remove overlay
-          overlay.remove();
-          
-          // Remove blur from background
-          if (mainContent) {
-              mainContent.classList.remove('session-expired-blur');
-          } else {
-              document.body.classList.remove('session-expired-blur');
-          }
-          
-          // Get the last visited page
-          const lastPage = localStorage.getItem("lastVisitedPage") || window.location.href;
-          
-          // Clear all intervals
-          stopSessionMonitoring();
-          
-          // Redirect to login with return URL
-          window.location.href = `login.html?return=${encodeURIComponent(lastPage)}`;
-      };
+    const redirectToLogin = () => {
+        // Remove overlay
+        overlay.remove();
+        
+        // Remove blur from background
+        if (mainContent) {
+            mainContent.classList.remove('session-expired-blur');
+        } else {
+            document.body.classList.remove('session-expired-blur');
+        }
+        
+        // Get the last visited page
+        const lastPage = localStorage.getItem("lastVisitedPage") || window.location.href;
+        
+        // Clear all intervals
+        stopSessionMonitoring();
+        
+        // Redirect to login with return URL
+        window.location.href = `login.html?return=${encodeURIComponent(lastPage)}`;
+    };
 
-      // Add event listeners
-      document.getElementById('deviceConflictOkButton').addEventListener('click', redirectToLogin, { once: true });
-      
-      overlay.addEventListener('click', (e) => { 
-          if (e.target === overlay) redirectToLogin(); 
-      }, { once: true });
-      
-      // Escape key handler
-      const escapeHandler = (e) => { 
-          if (e.key === 'Escape') {
-              e.preventDefault();
-              document.removeEventListener('keydown', escapeHandler);
-              redirectToLogin();
-          }
-      };
-      document.addEventListener('keydown', escapeHandler, { once: true });
-  }
+    // Add event listeners
+    document.getElementById('deviceConflictOkButton').addEventListener('click', redirectToLogin, { once: true });
+    
+    overlay.addEventListener('click', (e) => { 
+        if (e.target === overlay) redirectToLogin(); 
+    }, { once: true });
+    
+    // Escape key handler
+    const escapeHandler = (e) => { 
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            document.removeEventListener('keydown', escapeHandler);
+            redirectToLogin();
+        }
+    };
+    document.addEventListener('keydown', escapeHandler, { once: true });
+}
 
 /* ============================================================
    🔹 5. ACCESS DENIED OVERLAY
@@ -945,10 +968,10 @@ function initializeApplication() {
         initializeSessionMonitoring();
         initializeActivityListeners();
         
-        // 🔥 NEW: Start aggressive polling for immediate device conflict detection
+        // NEW: Start aggressive polling for immediate device conflict detection
         initializeImmediateSessionPolling();
         
-        // NEW: Initialize broadcast message checking for all pages
+        // Initialize broadcast message checking for all pages
         initializeBroadcastChecker();
         
         // Request notification permission if not already granted/denied

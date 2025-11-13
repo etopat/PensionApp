@@ -1,0 +1,497 @@
+/* ====================================================================
+   USER ACTIVITY LOGS STYLES
+   Professional styling for user activity logs table
+   ==================================================================== */
+
+/* User Activity Logs Specific Styles */
+.user-logs-content {
+    padding: 0;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px var(--shadow-light);
+    overflow: hidden;
+}
+
+.content-toolbar {
+    background: var(--menu-bg-dark);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    flex: 1;
+}
+
+.filter-select,
+.filter-input {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    min-width: 160px;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-btn:hover {
+    background: var(--primary-blue-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 51, 102, 0.3);
+}
+
+.filter-btn.secondary {
+    background: var(--muted-color);
+}
+
+.filter-btn.secondary:hover {
+    background: var(--muted-dark);
+}
+
+/* Logs Table Container */
+.logs-table-container {
+    overflow-x: auto;
+    padding: 1.5rem;
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.logs-table thead {
+    background: linear-gradient(135deg, var(--primary-maroon) 0%, var(--primary-blue) 100%);
+}
+
+.logs-table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--primary-gold);
+}
+
+.logs-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.logs-table tbody tr:hover {
+    background: var(--menu-bg-dark);
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px var(--shadow-light);
+}
+
+.logs-table td {
+    padding: 1rem 0.75rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    vertical-align: top;
+}
+
+/* User Info Styling */
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-info strong {
+    color: var(--heading-color);
+    font-weight: 600;
+}
+
+.user-info small {
+    color: var(--muted-color);
+    font-size: 0.8rem;
+}
+
+/* Activity Badge Styling */
+.activity-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    display: inline-block;
+    text-align: center;
+    min-width: 80px;
+}
+
+.activity-login {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.activity-logout {
+    background: linear-gradient(135deg, #6c757d, #adb5bd);
+    color: white;
+}
+
+.activity-session_expiry {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #212529;
+}
+
+.activity-device_conflict {
+    background: linear-gradient(135deg, #dc3545, #e83e8c);
+    color: white;
+}
+
+.activity-auto_logout {
+    background: linear-gradient(135deg, #17a2b8, #6f42c1);
+    color: white;
+}
+
+/* IP Address Styling */
+.logs-table td:nth-child(3) {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: var(--primary-blue);
+    font-weight: 500;
+}
+
+/* Device Type Styling */
+.logs-table td:nth-child(4) {
+    text-transform: capitalize;
+    color: var(--muted-dark);
+}
+
+/* Duration Styling */
+.logs-table td:nth-child(5) {
+    font-weight: 600;
+    color: var(--primary-maroon);
+}
+
+/* Timestamp Styling */
+.logs-table td:nth-child(6) {
+    color: var(--muted-color);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Details Styling */
+.logs-table td:nth-child(7) {
+    max-width: 200px;
+    word-wrap: break-word;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: var(--menu-bg-dark);
+    border-radius: 8px;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.page-btn:hover {
+    background: var(--primary-blue-dark);
+    transform: translateY(-2px);
+}
+
+.page-current {
+    padding: 0.5rem 1rem;
+    background: var(--primary-maroon);
+    color: white;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.page-ellipsis {
+    padding: 0.5rem;
+    color: var(--muted-color);
+}
+
+/* Loading State for Table */
+.logs-table tbody tr td[colspan] {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted-color);
+    font-style: italic;
+}
+
+/* Empty State */
+.logs-table tbody tr td[colspan] {
+    background: var(--menu-bg-dark);
+    border-radius: 8px;
+}
+
+/* ====================================================================
+   USER LOGS RESPONSIVE DESIGN
+   ==================================================================== */
+
+@media (max-width: 1200px) {
+    .content-toolbar {
+        padding: 1rem;
+    }
+    
+    .filters {
+        gap: 0.75rem;
+    }
+    
+    .filter-select,
+    .filter-input {
+        min-width: 140px;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filters {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .filter-select,
+    .filter-input {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .filter-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logs-table-container {
+        padding: 1rem;
+    }
+    
+    .logs-table {
+        font-size: 0.8rem;
+    }
+    
+    .logs-table th,
+    .logs-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    /* Make table more compact on mobile */
+    .logs-table thead th:nth-child(4), /* Device */
+    .logs-table thead th:nth-child(5), /* Duration */
+    .logs-table tbody td:nth-child(4),
+    .logs-table tbody td:nth-child(5) {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .logs-table {
+        font-size: 0.75rem;
+    }
+    
+    .logs-table th,
+    .logs-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    /* Hide less important columns on very small screens */
+    .logs-table thead th:nth-child(3), /* IP Address */
+    .logs-table thead th:nth-child(7), /* Details */
+    .logs-table tbody td:nth-child(3),
+    .logs-table tbody td:nth-child(7) {
+        display: none;
+    }
+    
+    .activity-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+        min-width: 60px;
+    }
+    
+    .user-info strong {
+        font-size: 0.8rem;
+    }
+    
+    .user-info small {
+        font-size: 0.7rem;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .page-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .content-toolbar,
+    .pagination {
+        display: none !important;
+    }
+    
+    .user-logs-content {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .logs-table {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .logs-table th {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        border-bottom: 2px solid #000;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .logs-table tbody tr {
+        border-bottom: 2px solid #000;
+    }
+    
+    .activity-badge {
+        border: 1px solid #000;
+    }
+    
+    .filter-select,
+    .filter-input {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .logs-table tbody tr,
+    .filter-btn,
+    .page-btn {
+        transition: none;
+        transform: none;
+    }
+    
+    .logs-table tbody tr:hover {
+        transform: none;
+    }
+}
+
+/* Dark Theme Specific Adjustments */
+[data-theme="dark"] .logs-table {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .logs-table tbody tr:hover {
+    background: var(--primary-blue-dark);
+}
+
+[data-theme="dark"] .activity-badge {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Utility Classes for Responsive Design */
+.hide-on-mobile {
+    display: table-cell;
+}
+
+@media (max-width: 768px) {
+    .hide-on-mobile {
+        display: none;
+    }
+}
+
+.show-on-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .show-on-mobile {
+        display: table-cell;
+    }
+}
+
+/* Enhanced Scrollbar for Table */
+.logs-table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.logs-table-container::-webkit-scrollbar-track {
+    background: var(--menu-bg-dark);
+    border-radius: 4px;
+}
+
+.logs-table-container::-webkit-scrollbar-thumb {
+    background: var(--primary-blue);
+    border-radius: 4px;
+}
+
+.logs-table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-blue-dark);
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.logs-table tbody tr.loading td {
+    animation: pulse 1.5s ease-in-out infinite;
+    text-align: center;
+    color: var(--muted-color);
+}

@@ -1,15 +1,15 @@
 <?php
 /**
  * ============================================================
- * check_session.php (Enhanced with Device Validation)
+ * check_session.php (Enhanced with Complete Session Cleanup)
  * ------------------------------------------------------------
- * Purpose:
- *   - Verifies if the session is active and not expired.
- *   - Returns user details (ID, Name, Role) if active.
- *   - Supports inactivity timeout.
+ * PURPOSE:
+ *   - Verifies if the session is active and not expired
+ *   - Returns user details (ID, Name, Role) if active
+ *   - Supports inactivity timeout with complete cleanup
  *   - Validates device session ownership
  *   - Detects and reports device conflicts instantly
- *   - Prevents repeated device conflict messages for different users
+ *   - COMPLETELY REMOVES expired sessions from database
  * ============================================================
  */
 
@@ -20,8 +20,11 @@ header('Pragma: no-cache');
 header('Expires: 0');
 require_once __DIR__ . '/../config.php';
 
-// Session timeout in seconds
-$timeout = 1800; // 1800 = 30 mins
+// Session timeout in seconds (30 minutes)
+$timeout = 1800;
+
+// 🔥 NEW: Clean up expired sessions from database on every check
+cleanupExpiredSessions($conn, $timeout);
 
 // Check if user session exists
 if (!isset($_SESSION['userId']) || !isset($_SESSION['userRole'])) {
@@ -37,7 +40,7 @@ if (!isset($_SESSION['userId']) || !isset($_SESSION['userRole'])) {
 // ------------------------------------------------------------
 if (isset($_SESSION['session_id'])) {
     $stmt = $conn->prepare("
-        SELECT is_active, device_id, user_id 
+        SELECT is_active, device_id, user_id, last_activity 
         FROM tb_user_sessions 
         WHERE session_id = ? AND user_id = ?
     ");
@@ -49,11 +52,14 @@ if (isset($_SESSION['session_id'])) {
     
     // Check if session is marked as inactive (logged out from another device)
     if (!$sessionData || $sessionData['is_active'] == 0) {
-        // 🔥 CRITICAL FIX: Completely destroy PHP session for this user
+        // 🔥 ENHANCED: Completely remove the session from database
+        removeSessionFromDatabase($conn, $_SESSION['session_id']);
+        
+        // Destroy PHP session
         session_unset();
         session_destroy();
         
-        // 🔥 Also clear the session cookie immediately
+        // Clear session cookie immediately
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000,
@@ -90,15 +96,12 @@ if (!isset($_SESSION['last_activity'])) {
 
 // Check for timeout
 if (time() - $_SESSION['last_activity'] > $timeout) {
-    // Mark session as inactive in database
+    // 🔥 ENHANCED: Completely remove expired session from database
     if (isset($_SESSION['session_id'])) {
-        $stmt = $conn->prepare("UPDATE tb_user_sessions SET is_active = 0 WHERE session_id = ?");
-        $stmt->bind_param("s", $_SESSION['session_id']);
-        $stmt->execute();
-        $stmt->close();
+        removeSessionFromDatabase($conn, $_SESSION['session_id']);
     }
     
-    // 🔥 CRITICAL FIX: Completely destroy PHP session
+    // Destroy PHP session
     session_unset();
     session_destroy();
     
@@ -128,4 +131,42 @@ echo json_encode([
     'userName' => $_SESSION['userName'],
     'userRole' => $_SESSION['userRole']
 ]);
+
+// ============================================================
+// 🔥 NEW: COMPLETE SESSION CLEANUP FUNCTIONS
+// ============================================================
+
+/**
+ * Remove session completely from database (not just mark as inactive)
+ * This prevents "ghost sessions" from triggering device conflicts
+ */
+function removeSessionFromDatabase($conn, $sessionId) {
+    $stmt = $conn->prepare("DELETE FROM tb_user_sessions WHERE session_id = ?");
+    $stmt->bind_param("s", $sessionId);
+    $stmt->execute();
+    $stmt->close();
+    
+    error_log("🗑️ Completely removed expired session from database: " . $sessionId);
+}
+
+/**
+ * Clean up all expired sessions from database
+ * Runs on every session check to keep database clean
+ */
+function cleanupExpiredSessions($conn, $timeout) {
+    $expiryTime = date('Y-m-d H:i:s', time() - $timeout);
+    
+    $stmt = $conn->prepare("
+        DELETE FROM tb_user_sessions 
+        WHERE last_activity < ? OR is_active = 0
+    ");
+    $stmt->bind_param("s", $expiryTime);
+    $stmt->execute();
+    $affectedRows = $stmt->affected_rows;
+    $stmt->close();
+    
+    if ($affectedRows > 0) {
+        error_log("🧹 Cleaned up $affectedRows expired sessions from database");
+    }
+}
 ?>

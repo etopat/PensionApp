@@ -1,11 +1,14 @@
 <?php
 /**
  * ============================================================
- * LOGIN API
+ * LOGIN API (Enhanced with Comprehensive User Logging)
  * ============================================================
  * Authenticates users using either Email OR Phone Number.
  * - Uses the correct userId (varchar) from your tb_users table
  * - Single device login enforcement
+ * - SMART detection: Only considers RECENTLY active sessions as "existing"
+ * - Complete cleanup of expired sessions during login
+ * - COMPREHENSIVE USER ACTIVITY LOGGING
  * ============================================================
  */
 
@@ -22,6 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config.php';
+
+// Session timeout in seconds (for smart session detection)
+$timeout = 1800;
 
 // ------------------------------------------------------------
 // 1️⃣ Validate Request Method
@@ -86,19 +92,28 @@ try {
         if (password_verify($password, $row['userPassword'])) {
             $userId = $row['userId']; // This is the VARCHAR userId
             
+            // 🔥 ENHANCED: Clean up expired sessions before checking for existing ones
+            cleanupExpiredSessionsBeforeLogin($conn, $timeout);
+            
             // ------------------------------------------------------------
-            // 6️⃣ SINGLE DEVICE LOGIN: Check for existing active sessions
+            // 6️⃣ SMART SINGLE DEVICE LOGIN: Check for RECENTLY active sessions only
             // ------------------------------------------------------------
             $deviceId = generateDeviceId();
             $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
             $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
             $sessionId = session_id();
+            $deviceType = detectDeviceType($userAgent);
+            $location = getLocationFromIP($ipAddress);
             
-            // Check if user has other active sessions
+            // 🔥 ENHANCED: Only consider sessions active within the timeout period
+            $activeTimeThreshold = date('Y-m-d H:i:s', time() - $timeout);
+            
             $checkStmt = $conn->prepare("
-                SELECT session_id, login_time 
+                SELECT session_id, login_time, last_activity 
                 FROM tb_user_sessions 
-                WHERE user_id = ? AND is_active = 1 
+                WHERE user_id = ? 
+                AND is_active = 1 
+                AND last_activity >= ?
                 ORDER BY last_activity DESC 
                 LIMIT 1
             ");
@@ -107,13 +122,21 @@ try {
                 throw new Exception("Failed to prepare check statement: " . $conn->error);
             }
             
-            $checkStmt->bind_param("s", $userId); // Changed to "s" for string
+            $checkStmt->bind_param("ss", $userId, $activeTimeThreshold);
             $checkStmt->execute();
             $existingSession = $checkStmt->get_result()->fetch_assoc();
             $checkStmt->close();
             
+            // 🔥 ENHANCED: Only show conflict if there's a RECENT active session
             $hasExistingSession = !empty($existingSession);
             $existingSessionId = $existingSession['session_id'] ?? null;
+            
+            // Log for debugging
+            if ($hasExistingSession) {
+                error_log("🔍 Login: Found recent active session for user $userId - " . $existingSessionId);
+            } else {
+                error_log("🔍 Login: No recent active sessions found for user $userId");
+            }
             
             // ------------------------------------------------------------
             // 7️⃣ Create new session in database
@@ -142,6 +165,20 @@ try {
             
             $insertStmt->close();
             
+            // 🔥 NEW: LOG SUCCESSFUL LOGIN ACTIVITY
+            logUserActivity($conn, [
+                'user_id' => $userId,
+                'user_name' => $row['userName'],
+                'user_role' => $row['userRole'],
+                'activity_type' => 'login',
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'device_type' => $deviceType,
+                'location' => $location,
+                'session_id' => $sessionId,
+                'details' => 'Successful login via ' . ($isEmail ? 'email' : 'phone')
+            ]);
+            
             // ------------------------------------------------------------
             // 8️⃣ Create secure PHP session
             // ------------------------------------------------------------
@@ -153,6 +190,7 @@ try {
             $_SESSION['last_activity'] = time();
             $_SESSION['session_id'] = $sessionId;
             $_SESSION['device_id'] = $deviceId;
+            $_SESSION['login_log_id'] = getLastLoginLogId($conn, $sessionId); // Store for logout logging
             
             echo json_encode([
                 'success' => true,
@@ -166,9 +204,37 @@ try {
                 'existingSessionId' => $existingSessionId
             ]);
         } else {
+            // 🔥 NEW: LOG FAILED LOGIN ATTEMPT
+            logUserActivity($conn, [
+                'user_id' => 'unknown',
+                'user_name' => 'Unknown User',
+                'user_role' => 'guest',
+                'activity_type' => 'login',
+                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'Unknown',
+                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
+                'device_type' => detectDeviceType($_SERVER['HTTP_USER_AGENT'] ?? ''),
+                'location' => getLocationFromIP($_SERVER['REMOTE_ADDR'] ?? ''),
+                'session_id' => session_id(),
+                'details' => 'Failed login attempt for username: ' . $username
+            ]);
+            
             echo json_encode(['success' => false, 'message' => 'Incorrect password']);
         }
     } else {
+        // 🔥 NEW: LOG ATTEMPT WITH NON-EXISTENT USERNAME
+        logUserActivity($conn, [
+            'user_id' => 'unknown',
+            'user_name' => 'Unknown User',
+            'user_role' => 'guest',
+            'activity_type' => 'login',
+            'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'Unknown',
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
+            'device_type' => detectDeviceType($_SERVER['HTTP_USER_AGENT'] ?? ''),
+            'location' => getLocationFromIP($_SERVER['REMOTE_ADDR'] ?? ''),
+            'session_id' => session_id(),
+            'details' => 'Attempted login with non-existent username: ' . $username
+        ]);
+        
         echo json_encode(['success' => false, 'message' => 'No user found with that email or phone number']);
     }
 } catch (Exception $e) {
@@ -179,6 +245,121 @@ try {
         $stmt->close();
     }
     $conn->close();
+}
+
+// ============================================================
+// 🔥 NEW: COMPREHENSIVE LOGGING FUNCTIONS
+// ============================================================
+
+/**
+ * Log user activity to tb_user_logs table
+ */
+function logUserActivity($conn, $logData) {
+    try {
+        $stmt = $conn->prepare("
+            INSERT INTO tb_user_logs 
+            (user_id, user_name, user_role, activity_type, ip_address, user_agent, device_type, location, session_id, details)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        
+        $stmt->bind_param(
+            "ssssssssss",
+            $logData['user_id'],
+            $logData['user_name'],
+            $logData['user_role'],
+            $logData['activity_type'],
+            $logData['ip_address'],
+            $logData['user_agent'],
+            $logData['device_type'],
+            $logData['location'],
+            $logData['session_id'],
+            $logData['details']
+        );
+        
+        $stmt->execute();
+        $stmt->close();
+        
+        return true;
+    } catch (Exception $e) {
+        error_log("Failed to log user activity: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Detect device type from user agent string
+ */
+function detectDeviceType($userAgent) {
+    $userAgent = strtolower($userAgent);
+    
+    if (strpos($userAgent, 'mobile') !== false) {
+        return 'Mobile';
+    } elseif (strpos($userAgent, 'tablet') !== false) {
+        return 'Tablet';
+    } elseif (strpos($userAgent, 'android') !== false) {
+        return 'Android Mobile';
+    } elseif (strpos($userAgent, 'iphone') !== false) {
+        return 'iPhone';
+    } elseif (strpos($userAgent, 'ipad') !== false) {
+        return 'iPad';
+    } elseif (strpos($userAgent, 'windows') !== false) {
+        return 'Windows PC';
+    } elseif (strpos($userAgent, 'macintosh') !== false) {
+        return 'Macintosh';
+    } elseif (strpos($userAgent, 'linux') !== false) {
+        return 'Linux PC';
+    } else {
+        return 'Unknown Device';
+    }
+}
+
+/**
+ * Get location from IP address (basic implementation)
+ * Note: For production, consider using a proper IP geolocation service
+ */
+function getLocationFromIP($ip) {
+    // Simple implementation - in production, use a service like ipinfo.io or MaxMind
+    if ($ip === '127.0.0.1' || $ip === '::1') {
+        return 'Localhost';
+    }
+    
+    // You can integrate with a free service like ipapi.co
+    // For now, returning the IP itself as location
+    return "IP: $ip";
+    
+    /*
+    // Example with ipapi.co (requires API key for production)
+    try {
+        $response = file_get_contents("http://ipapi.co/$ip/json/");
+        $data = json_decode($response, true);
+        return $data['city'] . ', ' . $data['country_name'] ?? 'Unknown Location';
+    } catch (Exception $e) {
+        return "IP: $ip";
+    }
+    */
+}
+
+/**
+ * Get the last login log ID for a session (to link logout with login)
+ */
+function getLastLoginLogId($conn, $sessionId) {
+    try {
+        $stmt = $conn->prepare("
+            SELECT log_id FROM tb_user_logs 
+            WHERE session_id = ? AND activity_type = 'login' 
+            ORDER BY created_at DESC LIMIT 1
+        ");
+        $stmt->bind_param("s", $sessionId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $row['log_id'] ?? null;
+    } catch (Exception $e) {
+        error_log("Failed to get last login log ID: " . $e->getMessage());
+        return null;
+    }
 }
 
 /**
@@ -192,5 +373,26 @@ function generateDeviceId() {
     
     $deviceString = $userAgent . $ip . $accept . $language;
     return hash('sha256', $deviceString);
+}
+
+/**
+ * Clean up expired sessions before login check
+ * This ensures we only check for truly active sessions
+ */
+function cleanupExpiredSessionsBeforeLogin($conn, $timeout) {
+    $expiryTime = date('Y-m-d H:i:s', time() - $timeout);
+    
+    $stmt = $conn->prepare("
+        DELETE FROM tb_user_sessions 
+        WHERE last_activity < ? OR is_active = 0
+    ");
+    $stmt->bind_param("s", $expiryTime);
+    $stmt->execute();
+    $affectedRows = $stmt->affected_rows;
+    $stmt->close();
+    
+    if ($affectedRows > 0) {
+        error_log("🧹 Pre-login cleanup: Removed $affectedRows expired sessions");
+    }
 }
 ?>

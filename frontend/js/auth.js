@@ -6,7 +6,7 @@
 // - Displays modals for feedback
 // - Manages session and localStorage
 // - Redirects user based on role or return URL
-// - NEW: Single device login with confirmation modal
+// - Single device login with confirmation modal
 // ====================================================================
 
 document.addEventListener("DOMContentLoaded", () => {

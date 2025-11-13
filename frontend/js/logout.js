@@ -1,5 +1,11 @@
-// frontend/js/logout.js
+// ====================================================================
+// frontend/js/logout.js (Enhanced with Comprehensive Logging)
+// --------------------------------------------------------------------
 // ES module — exports initLogout() so header injection + dynamic import works reliably.
+// - Enhanced with proper logout type classification for admin tracking
+// - Comprehensive user activity logging for admin dashboard analytics
+// - Supports different logout types: user_initiated, session_expiry, device_conflict
+// ====================================================================
 
 export function initLogout(options = {}) {
   console.log("✅ Logout module initializing...");
@@ -36,7 +42,7 @@ export function initLogout(options = {}) {
   fixEditProfileMenuItem();
 }
 
-/* ----- Helpers ----- */
+/* ----- Enhanced Helper Functions ----- */
 
 function computeLogoutUrl() {
   // Most frontend pages live in /frontend/*. If so, ../backend/api/logout.php works.
@@ -110,6 +116,7 @@ function showLogoutModal(logoutUrl) {
   document.addEventListener('keydown', handleEscape);
 }
 
+// 🔥 ENHANCED: Execute logout with comprehensive logging
 async function executeLogout(logoutUrl) {
   console.log("🚪 Executing logout...");
   
@@ -126,13 +133,14 @@ async function executeLogout(logoutUrl) {
     // First, clear client-side data to ensure immediate UI update
     clearAllUserData();
     
-    // Then call server-side logout
+    // 🔥 ENHANCED: Call server-side logout with user-initiated type for admin tracking
     console.log("📡 Calling logout URL:", logoutUrl);
     const response = await fetch(logoutUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
+      body: 'logout_type=user_initiated&logout_reason=User+clicked+logout+button',
       credentials: 'include' // ensures server-side session cookie sent
     });
 
@@ -183,6 +191,8 @@ function clearAllUserData() {
     // Clear user-specific localStorage
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('pensionsgo_seen_broadcasts');
+    localStorage.removeItem('lastVisitedPage');
     
     // Clear all sessionStorage
     sessionStorage.clear();
@@ -240,4 +250,35 @@ if (typeof window !== 'undefined') {
     console.log('📢 User logged out event received');
     // Other modules can listen for this event to perform cleanup
   });
+}
+
+// 🔥 NEW: Global function to handle different logout types for admin tracking
+if (typeof window !== 'undefined') {
+  window.performLogout = async function(logoutType = 'user_initiated', reason = 'User action') {
+    const logoutUrl = computeLogoutUrl();
+    
+    try {
+      const response = await fetch(logoutUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `logout_type=${logoutType}&logout_reason=${encodeURIComponent(reason)}`,
+        credentials: 'include'
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        clearAllUserData();
+        return { success: true, message: result.message };
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      clearAllUserData();
+      return { success: false, message: error.message };
+    }
+  };
 }
